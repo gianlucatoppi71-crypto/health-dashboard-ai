@@ -464,7 +464,7 @@ function handleFoodImage(file) {
 
 async function analyzeFood(imageBase64) {
   try {
-    const res = await fetch("/api/scan-food", {
+    const res = await fetch("https://food-ai-backend.vercel.app/api/scan-food", {
       method: "POST",
       body: JSON.stringify({ imageBase64 })
     });

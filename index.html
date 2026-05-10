@@ -460,17 +460,29 @@ function handleFoodImage(file) {
 }
 
 async function analyzeFood(imageBase64) {
-  const res = await fetch("/api/scan-food", {
-    method: "POST",
-    body: JSON.stringify({ imageBase64 })
-  });
+  try {
+    const res = await fetch("/api/scan-food", {
+      method: "POST",
+      body: JSON.stringify({ imageBase64 })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  // Update UI
-  document.getElementById("last-scan").innerText =
-    `Food: ${data.food_name}\nCalories: ${data.estimated_calories}`;
+    // Update UI with formatted result
+    document.getElementById("last-scan").innerHTML = `
+      <strong>Food:</strong> ${data.name || "Unknown"}<br>
+      <strong>Calories:</strong> ${data.calories || "?"}<br>
+      <strong>Protein:</strong> ${data.protein || "?"} g<br>
+      <strong>Carbs:</strong> ${data.carbs || "?"} g<br>
+      <strong>Fat:</strong> ${data.fat || "?"} g<br>
+      <strong>Description:</strong> ${data.description || "No description"}
+    `;
+  } catch (err) {
+    console.error(err);
+    document.getElementById("last-scan").innerText = "Scan failed";
+  }
 }
+
 
 </script>
 </body>

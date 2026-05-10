@@ -312,15 +312,14 @@ function centerScanClick(){
 }
 
 /* Example scan handlers - replace with your real logic */
-function onScan(){
-  // optional vibration
-  if(navigator.vibrate) navigator.vibrate(30);
-  // TODO: integrate your camera/photo-scan logic here
-  document.getElementById('last-scan').textContent = 'Opening camera... (replace with your scan logic)';
-  // demo: update health score slightly to show aura change
-  const demo = Math.max(10, Math.min(95, Math.round(Math.random()*100)));
-  setHealthScore(demo);
+function centerScanClick(){
+  openFoodScanner();
 }
+
+function onScan(){
+  openFoodScanner();
+}
+
 
 function onBarcode(){
   // TODO: integrate barcode scanning logic

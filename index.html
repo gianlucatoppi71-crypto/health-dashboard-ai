@@ -176,23 +176,26 @@
       </div>
     </section>
 
-    <!-- SCAN TAB -->
-    <section id="tab-scan" class="tab" aria-hidden="true">
-      <div class="section-card">
-        <h3>Scan Food</h3>
-        <p class="muted">Use the camera to scan food or barcode. Add to diary quickly.</p>
-        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
+  <!-- SCAN TAB -->
+<section id="tab-scan" class="tab" aria-hidden="true">
+  <div class="section-card">
+    <h3>Scan Food</h3>
+    <p class="muted">Use the camera to scan food or barcode. Add to diary quickly.</p>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
+      <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
+    </div>
+  </div>
 
-          <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
-        </div>
-      </div>
+  <div class="section-card">
+    <h4>Last scanned</h4>
 
-      <div class="section-card">
-        <h4>Last scanned</h4>
-        <div id="last-scan" class="muted">No scans yet</div>
-      </div>
-    </section>
+    <div id="last-scan" class="section-card" style="padding:12px; margin-top:10px;">
+      <em>No scans yet</em>
+    </div>
+
+  </div>
+</section>
 
     <!-- MEALS TAB -->
     <section id="tab-meals" class="tab" aria-hidden="true">

@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>HealthHub — Dashboard</title>
+
 <style>
   :root{
     --accent:#42a5f5;
@@ -14,353 +15,66 @@
     --radius:14px;
     --btn-height:56px;
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;color:var(--text);background:var(--bg);}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--text);background:var(--bg);}
   .app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;border-left:1px solid #eee;border-right:1px solid #eee;}
-  /* Top menu */
-  .topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #f0f3f7;background:#fff;z-index:20;}
-  .topbar .brand{font-weight:700;color:var(--accent);}
-  .topbar .links{display:flex;gap:12px;color:var(--accent);font-weight:600;}
-  /* Main content area */
-  .content{flex:1;overflow:auto;padding:18px;position:relative;}
-  .tab{display:none;opacity:0;transition:opacity .25s ease;will-change:opacity;}
+  .topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #f0f3f7;background:#fff;}
+  .content{flex:1;overflow:auto;padding:18px;}
+  .tab{display:none;opacity:0;transition:opacity .25s;}
   .tab.active{display:block;opacity:1;}
-  /* Profile hero: aura + avatar */
+
   .profile-hero{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px;}
   .aura-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
-  /* Aura: rotating conic gradient with blur (energy wave) */
-  .aura{
-    position:absolute;inset:0;border-radius:50%;
-    filter:blur(18px) saturate(1.1);
-    transform:scale(1.06);
-    z-index:0;
-    transition:opacity .4s ease, filter .3s ease;
-    background:conic-gradient(from 0deg, #2ecc71, #f39c12, #e74c3c, #8b0000);
-    animation:spin 6s linear infinite;
-    opacity:1;
-  }
-  @keyframes spin{from{transform:rotate(0deg) scale(1.06)} to{transform:rotate(360deg) scale(1.06)}}
-  .avatar{
-    position:relative;z-index:2;width:120px;height:120px;border-radius:50%;overflow:hidden;border:6px solid rgba(255,255,255,0.9);box-shadow:0 8px 20px rgba(0,0,0,0.08);}
-  .avatar img, .avatar svg, .avatar .avatar-bg{width:100%;height:100%;object-fit:cover;display:block;}
-  /* Health ring overlay (progress) */
-  .health-ring{
-    position:absolute;inset:0;border-radius:50%;z-index:1;pointer-events:none;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
-  /* Profile fields */
-  .profile-fields{width:100%;padding:12px 6px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px;}
-  .field{background:#fff;border-radius:12px;padding:10px;border:1px solid #f1f5f9;box-shadow:0 4px 0 rgba(66,165,245,0.06);display:flex;flex-direction:column;}
-  .field label{font-size:12px;color:var(--muted);margin-bottom:6px;}
-  .field .value{font-weight:700;font-size:16px;color:var(--text);}
-  /* Action buttons */
-  .btn-3d{background:var(--accent);color:#fff;padding:12px 18px;border-radius:12px;border:none;font-weight:700;box-shadow:0 8px 0 var(--accent-dark);transition:transform .12s ease,box-shadow .12s ease;display:inline-block;}
-  .btn-3d:active{transform:translateY(6px);box-shadow:0 2px 0 var(--accent-dark);}
-  /* Meals / other content */
-  .section-card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #f1f5f9;box-shadow:0 6px 18px rgba(15,23,42,0.03);}
-  /* Bottom navigation BM2 */
-  .bottom-nav{height:86px;padding:10px 18px;background:transparent;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;border-top:1px solid #f3f6f9;position:sticky;bottom:0;background:linear-gradient(180deg, rgba(255,255,255,0.9), #fff);z-index:30;}
-  .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:12px;color:var(--muted);background:transparent;border:none;transition:transform .12s ease,box-shadow .12s ease;}
-  .nav-btn svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2.2;}
-  .nav-btn.active{color:var(--accent);font-weight:700;}
-  /* Center big circular scan button */
-  .center-wrap{position:relative;flex:0 0 92px;display:flex;align-items:center;justify-content:center;margin-top:-28px;}
-  .scan-btn{
-    width:84px;height:84px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;border:none;box-shadow:0 12px 0 var(--accent-dark);transition:transform .12s ease,box-shadow .12s ease;z-index:40;
-  }
-  .scan-btn:active{transform:translateY(8px);box-shadow:0 4px 0 var(--accent-dark);}
-  .scan-btn svg{width:36px;height:36px;fill:none;stroke:#fff;stroke-width:2.4;}
-  /* small label under nav */
-  .nav-label{font-size:12px;}
-  /* Utility */
-  .muted{color:var(--muted);font-size:13px;}
-  .centered{display:flex;align-items:center;justify-content:center;}
-  /* Responsive */
-  @media (max-width:420px){
-    .aura-wrap{width:170px;height:170px;}
-    .avatar{width:100px;height:100px;}
-    .scan-btn{width:76px;height:76px;}
-  }
-</style>
-</head>
-<body>
-<div class="app" role="application" aria-label="Health app">
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="brand">HealthHub</div>
-    <div class="links">Home &nbsp; • &nbsp; Scan</div>
-  </div>
+  .aura{position:absolute;inset:0;border-radius:50%;filter:blur(18px);transform:scale(1.06);background:conic-gradient(#2ecc71,#f39c12,#e74c3c,#8b0000);animation:spin 6s linear infinite;}
+  @keyframes spin{from{transform:rotate(0deg)} to{transform:rotate(360deg)}}
 
-  <!-- Main content -->
-  <main class="content">
-    <!-- PROFILE TAB (default) -->
-    <section id="tab-profile" class="tab active" aria-hidden="false">
-      <div class="profile-hero">
-        <div class="aura-wrap" aria-hidden="true">
-          <!-- Aura (rotating gradient) -->
-          <div id="aura" class="aura" style="opacity:1;"></div>
-
-          <!-- Health ring (SVG progress) -->
-          <div class="health-ring" aria-hidden="true">
-            <svg class="ring-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-              <defs>
-                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#2ecc71"/>
-                  <stop offset="50%" stop-color="#f39c12"/>
-                  <stop offset="100%" stop-color="#e74c3c"/>
-                </linearGradient>
-              </defs>
-              <circle cx="50" cy="50" r="44" stroke="#f1f5f9" stroke-width="10" fill="none"></circle>
-              <circle id="progress" cx="50" cy="50" r="44" stroke="url(#ringGrad)" stroke-width="10" stroke-linecap="round" fill="none" stroke-dasharray="276.46" stroke-dashoffset="276.46"></circle>
-            </svg>
-          </div>
-
-          <!-- AVATAR: paste the exact avatar markup from your scan.htm here.
-               IMPORTANT: keep id="avatar-img" on the image/SVG element inside this block.
-               Do NOT modify the avatar markup itself — only paste it here so the aura sits behind it. -->
-          <div class="avatar" id="avatar">
-            <!-- Example placeholder (replace with your exact scan.htm avatar markup) -->
-            <!--
-            <img id="avatar-img" src="path/to/your-avatar.png" alt="User avatar">
-            -->
-            <!-- Paste your scan.htm avatar element here (image tag, inline SVG, or element with id="avatar-img") -->
-          </div>
-        </div>
-
-        <div class="centered">
-          <div style="text-align:center;">
-            <div id="health-label" style="font-weight:800;font-size:18px;margin-bottom:4px;">Health Score: <span id="health-score">72</span></div>
-            <div class="muted">Aura indicates overall health</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Profile fields -->
-      <div class="profile-fields" role="form" aria-label="Profile data">
-        <div class="field">
-          <label>Age</label>
-          <div class="value" id="age">45</div>
-        </div>
-        <div class="field">
-          <label>Weight (kg)</label>
-          <div class="value" id="weight">82</div>
-        </div>
-        <div class="field">
-          <label>Height (cm)</label>
-          <div class="value" id="height">176</div>
-        </div>
-        <div class="field">
-          <label>Gender</label>
-          <div class="value" id="gender">Male</div>
-        </div>
-        <div class="field">
-          <label>Activity</label>
-          <div class="value" id="activity">Moderate</div>
-        </div>
-        <div class="field">
-          <label>Waist (cm)</label>
-          <div class="value" id="waist">92</div>
-        </div>
-        <div class="field">
-          <label>BMI</label>
-          <div class="value" id="bmi">26.5</div>
-        </div>
-        <div class="field">
-          <label>Ideal weight</label>
-          <div class="value" id="ideal">75 kg</div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px;">
-        <button class="btn-3d" onclick="editProfile()">Edit profile</button>
-      </div>
-    </section>
-
-<!-- SCAN TAB -->
-<section id="tab-scan" class="tab" aria-hidden="true">
-  <div class="section-card">
-    <h3>Scan Food</h3>
-    <p class="muted">Use the camera to scan food or barcode. Add to diary quickly.</p>
-    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
-      <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
-    </div>
-  </div>
-
-  <div class="section-card">
-    <h4>Last scanned</h4>
-
-    <!-- ⭐ ONLY ONE last-scan element -->
-    <div id="last-scan" style="
-      background:#fff;
-      border-radius:12px;
-      padding:12px;
-      border:1px solid #f1f5f9;
-      margin-top:10px;
-      font-size:14px;
-      color:#333;
-    ">
-      <em>No scans yet</em>
-    </div>
-
-  </div>
-</section>
-
-
-    <!-- MEALS TAB -->
-    <section id="tab-meals" class="tab" aria-hidden="true">
-      <div class="section-card">
-        <h3>Today's Meals</h3>
-        <div id="meals-list" class="muted">No meals logged</div>
-      </div>
-      <div class="section-card">
-        <h4>Weekly calories</h4>
-        <div id="weekly-cal" class="muted">0 kcal</div>
-      </div>
-    </section>
-
-    <!-- HEALTH TAB -->
-    <section id="tab-health" class="tab" aria-hidden="true">
-      <div class="section-card">
-        <h3>Health Overview</h3>
-        <p class="muted">Cholesterol, blood pressure, plant points and habits combined.</p>
-        <div style="margin-top:12px;">
-          <div class="muted">Cholesterol status: <strong id="chol-status">OK</strong></div>
-          <div class="muted">Blood pressure: <strong id="bp-status">120/78</strong></div>
-          <div class="muted">Plant points: <strong id="plant-points">+12</strong></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PLANTS TAB -->
-    <section id="tab-plants" class="tab" aria-hidden="true">
-      <div class="section-card">
-        <h3>Plant Points</h3>
-        <p class="muted">Add fruits/veg to gain points, unhealthy foods subtract points.</p>
-        <div style="margin-top:12px;display:flex;gap:8px;">
-          <button class="btn-3d" onclick="addPlantPoints(5)">Add Fruit +5</button>
-          <button class="btn-3d" onclick="addPlantPoints(-4)">Add Junk -4</button>
-        </div>
-        <div style="margin-top:12px;" class="muted">Daily points: <strong id="daily-points">0</strong></div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Bottom navigation (BM2) -->
-  <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
-    <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">
-      <!-- Meal icon (medium stroke) -->
-      <svg viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div class="nav-label">Meals</div>
-    </button>
-
-    <button class="nav-btn" id="nav-health" onclick="switchTab('health')">
-      <!-- Heart icon -->
-      <svg viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path d="M12 21s-7-4.35-9-7.5C1.5 10 4 6 7.5 6 9.5 6 12 8 12 8s2.5-2 4.5-2C20 6 22.5 10 21 13.5 19 16.65 12 21 12 21z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div class="nav-label">Health</div>
-    </button>
-
-    <div class="center-wrap">
-      <button class="scan-btn" id="nav-scan" title="Scan" onclick="centerScanClick()">
-        <!-- Camera icon -->
-        <svg viewBox="0 0 24 24" stroke="#fff" aria-hidden="true"><path d="M5 7h2l1.5-2h6L17 7h2v12H5z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-
-    <button class="nav-btn" id="nav-plants" onclick="switchTab('plants')">
-      <!-- Leaf icon -->
-      <svg viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path d="M3 12c4-8 12-9 18-9-3 6-1 12-6 15-4 2-8-2-12-6z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div class="nav-label">Plants</div>
-    </button>
-
-    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">
-      <!-- Profile icon -->
-      <svg viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM3 21a9 9 0 0 1 18 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div class="nav-label">Profile</div>
-    </button>
-  </nav>
-</div>
-
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>HealthHub — Dashboard</title>
-<style>
-  :root{
-    --accent:#42a5f5;
-    --accent-dark:#2b7bb8;
-    --bg:#ffffff;
-    --text:#1f2937;
-    --muted:#6b7280;
-    --radius:14px;
-    --btn-height:56px;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;color:var(--text);background:var(--bg);}
-  .app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;border-left:1px solid #eee;border-right:1px solid #eee;}
-  .topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #f0f3f7;background:#fff;z-index:20;}
-  .topbar .brand{font-weight:700;color:var(--accent);}
-  .topbar .links{display:flex;gap:12px;color:var(--accent);font-weight:600;}
-  .content{flex:1;overflow:auto;padding:18px;position:relative;}
-  .tab{display:none;opacity:0;transition:opacity .25s ease;}
-  .tab.active{display:block;opacity:1;}
-  .profile-hero{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px;}
-  .aura-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
-  .aura{
-    position:absolute;inset:0;border-radius:50%;
-    filter:blur(18px) saturate(1.1);
-    transform:scale(1.06);
-    z-index:0;
-    transition:opacity .4s ease, filter .3s ease;
-    background:conic-gradient(from 0deg, #2ecc71, #f39c12, #e74c3c, #8b0000);
-    animation:spin 6s linear infinite;
-    opacity:1;
-  }
-  @keyframes spin{from{transform:rotate(0deg) scale(1.06)} to{transform:rotate(360deg) scale(1.06)}}
-  .avatar{position:relative;z-index:2;width:120px;height:120px;border-radius:50%;overflow:hidden;border:6px solid rgba(255,255,255,0.9);box-shadow:0 8px 20px rgba(0,0,0,0.08);}
+  .avatar{position:relative;z-index:2;width:120px;height:120px;border-radius:50%;overflow:hidden;border:6px solid rgba(255,255,255,0.9);}
   .avatar img{width:100%;height:100%;object-fit:cover;}
-  .health-ring{position:absolute;inset:0;border-radius:50%;z-index:1;pointer-events:none;display:flex;align-items:center;justify-content:center;}
+
+  .health-ring{position:absolute;inset:0;z-index:1;}
   .ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
-  .profile-fields{width:100%;padding:12px 6px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px;}
-  .field{background:#fff;border-radius:12px;padding:10px;border:1px solid #f1f5f9;box-shadow:0 4px 0 rgba(66,165,245,0.06);}
-  .field label{font-size:12px;color:var(--muted);margin-bottom:6px;}
-  .field .value{font-weight:700;font-size:16px;color:var(--text);}
-  .btn-3d{background:var(--accent);color:#fff;padding:12px 18px;border-radius:12px;border:none;font-weight:700;box-shadow:0 8px 0 var(--accent-dark);transition:transform .12s ease,box-shadow .12s ease;}
-  .btn-3d:active{transform:translateY(6px);box-shadow:0 2px 0 var(--accent-dark);}
-  .section-card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #f1f5f9;box-shadow:0 6px 18px rgba(15,23,42,0.03);}
-  .bottom-nav{height:86px;padding:10px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;border-top:1px solid #f3f6f9;background:linear-gradient(180deg, rgba(255,255,255,0.9), #fff);position:sticky;bottom:0;z-index:30;}
-  .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px;border-radius:12px;color:var(--muted);background:transparent;border:none;}
+
+  .profile-fields{width:100%;padding:12px 6px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .field{background:#fff;border-radius:12px;padding:10px;border:1px solid #f1f5f9;}
+  .field label{font-size:12px;color:var(--muted);}
+  .field .value{font-weight:700;font-size:16px;}
+
+  .btn-3d{background:var(--accent);color:#fff;padding:12px 18px;border-radius:12px;border:none;font-weight:700;box-shadow:0 8px 0 var(--accent-dark);}
+  .section-card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #f1f5f9;}
+
+  .bottom-nav{height:86px;padding:10px 18px;display:flex;align-items:flex-end;justify-content:space-between;border-top:1px solid #f3f6f9;background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);}
+  .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;color:var(--muted);background:transparent;border:none;}
   .nav-btn.active{color:var(--accent);font-weight:700;}
-  .scan-btn{width:84px;height:84px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;border:none;box-shadow:0 12px 0 var(--accent-dark);}
-  .scan-btn:active{transform:translateY(8px);box-shadow:0 4px 0 var(--accent-dark);}
-  .muted{color:var(--muted);font-size:13px;}
+
+  .center-wrap{position:relative;flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
+  .scan-btn{width:84px;height:84px;border-radius:50%;background:var(--accent);color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 0 var(--accent-dark);}
+  .muted{color:var(--muted);}
 </style>
 </head>
+
 <body>
 <div class="app">
+
   <div class="topbar">
     <div class="brand">HealthHub</div>
     <div class="links">Home • Scan</div>
   </div>
 
   <main class="content">
+
+    <!-- PROFILE TAB -->
     <section id="tab-profile" class="tab active">
       <div class="profile-hero">
+
         <div class="aura-wrap">
           <div id="aura" class="aura"></div>
 
           <div class="health-ring">
             <svg class="ring-svg" viewBox="0 0 100 100">
-              <defs>
-                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#2ecc71"/>
-                  <stop offset="50%" stop-color="#f39c12"/>
-                  <stop offset="100%" stop-color="#e74c3c"/>
-                </linearGradient>
-              </defs>
               <circle cx="50" cy="50" r="44" stroke="#f1f5f9" stroke-width="10" fill="none"></circle>
-              <circle id="progress" cx="50" cy="50" r="44" stroke="url(#ringGrad)" stroke-width="10" stroke-linecap="round" fill="none" stroke-dasharray="276.46" stroke-dashoffset="276.46"></circle>
+              <circle id="progress" cx="50" cy="50" r="44"
+                stroke="#42a5f5" stroke-width="10" stroke-linecap="round"
+                fill="none" stroke-dasharray="276.46" stroke-dashoffset="276.46">
+              </circle>
             </svg>
           </div>
 
@@ -370,7 +84,9 @@
         </div>
 
         <div style="text-align:center;">
-          <div id="health-label" style="font-weight:800;font-size:18px;">Health Score: <span id="health-score">72</span></div>
+          <div id="health-label" style="font-weight:800;font-size:18px;">
+            Health Score: <span id="health-score">72</span>
+          </div>
           <div class="muted">Aura indicates overall health</div>
         </div>
       </div>
@@ -388,78 +104,82 @@
 
       <button class="btn-3d" onclick="editProfile()">Edit profile</button>
     </section>
-<!-- SCAN TAB -->
-<section id="tab-scan" class="tab">
-  <div class="section-card">
-    <h3>Scan Food</h3>
-    <p class="muted">Use the camera to scan food or barcode.</p>
-    <div style="margin-top:12px;display:flex;gap:10px;">
-      <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
-      <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
+
+    <!-- SCAN TAB -->
+    <section id="tab-scan" class="tab">
+      <div class="section-card">
+        <h3>Scan Food</h3>
+        <p class="muted">Use the camera to scan food or barcode.</p>
+        <div style="margin-top:12px;display:flex;gap:10px;">
+          <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
+          <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>Last scanned</h4>
+        <div id="last-scan" style="background:#fff;border-radius:12px;padding:12px;border:1px solid #f1f5f9;">
+          <em>No scans yet</em>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEALS TAB -->
+    <section id="tab-meals" class="tab">
+      <div class="section-card">
+        <h3>Today's Meals</h3>
+        <div id="meals-list" class="muted">No meals logged</div>
+      </div>
+      <div class="section-card">
+        <h4>Weekly calories</h4>
+        <div id="weekly-cal" class="muted">0 kcal</div>
+      </div>
+    </section>
+
+    <!-- HEALTH TAB -->
+    <section id="tab-health" class="tab">
+      <div class="section-card">
+        <h3>Health Overview</h3>
+        <p class="muted">Cholesterol, blood pressure, plant points.</p>
+        <div style="margin-top:12px;">
+          <div class="muted">Cholesterol: <strong id="chol-status">OK</strong></div>
+          <div class="muted">Blood pressure: <strong id="bp-status">120/78</strong></div>
+          <div class="muted">Plant points: <strong id="plant-points">+12</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANTS TAB -->
+    <section id="tab-plants" class="tab">
+      <div class="section-card">
+        <h3>Plant Points</h3>
+        <p class="muted">Add fruits/veg to gain points.</p>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn-3d" onclick="addPlantPoints(5)">Add Fruit +5</button>
+          <button class="btn-3d" onclick="addPlantPoints(-4)">Add Junk -4</button>
+        </div>
+        <div style="margin-top:12px;" class="muted">Daily points: <strong id="daily-points">0</strong></div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
+    <button class="nav-btn" id="nav-health" onclick="switchTab('health')">Health</button>
+
+    <div class="center-wrap">
+      <button class="scan-btn" id="nav-scan" onclick="centerScanClick()">Scan</button>
     </div>
-  </div>
 
-  <div class="section-card">
-    <h4>Last scanned</h4>
-    <div id="last-scan" style="background:#fff;border-radius:12px;padding:12px;border:1px solid #f1f5f9;">
-      <em>No scans yet</em>
-    </div>
-  </div>
-</section>
+    <button class="nav-btn" id="nav-plants" onclick="switchTab('plants')">Plants</button>
+    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">Profile</button>
+  </nav>
 
-<!-- MEALS TAB -->
-<section id="tab-meals" class="tab">
-  <div class="section-card">
-    <h3>Today's Meals</h3>
-    <div id="meals-list" class="muted">No meals logged</div>
-  </div>
-  <div class="section-card">
-    <h4>Weekly calories</h4>
-    <div id="weekly-cal" class="muted">0 kcal</div>
-  </div>
-</section>
-
-<!-- HEALTH TAB -->
-<section id="tab-health" class="tab">
-  <div class="section-card">
-    <h3>Health Overview</h3>
-    <p class="muted">Cholesterol, blood pressure, plant points.</p>
-    <div style="margin-top:12px;">
-      <div class="muted">Cholesterol: <strong id="chol-status">OK</strong></div>
-      <div class="muted">Blood pressure: <strong id="bp-status">120/78</strong></div>
-      <div class="muted">Plant points: <strong id="plant-points">+12</strong></div>
-    </div>
-  </div>
-</section>
-
-<!-- PLANTS TAB -->
-<section id="tab-plants" class="tab">
-  <div class="section-card">
-    <h3>Plant Points</h3>
-    <p class="muted">Add fruits/veg to gain points.</p>
-    <div style="margin-top:12px;display:flex;gap:8px;">
-      <button class="btn-3d" onclick="addPlantPoints(5)">Add Fruit +5</button>
-      <button class="btn-3d" onclick="addPlantPoints(-4)">Add Junk -4</button>
-    </div>
-    <div style="margin-top:12px;" class="muted">Daily points: <strong id="daily-points">0</strong></div>
-  </div>
-</section>
-
-</main>
-
-<nav class="bottom-nav">
-  <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
-  <button class="nav-btn" id="nav-health" onclick="switchTab('health')">Health</button>
-
-  <div class="center-wrap">
-    <button class="scan-btn" id="nav-scan" onclick="centerScanClick()">Scan</button>
-  </div>
-
-  <button class="nav-btn" id="nav-plants" onclick="switchTab('plants')">Plants</button>
-  <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">Profile</button>
-</nav>
 </div>
+
 <script>
+/* ---------- App state ---------- */
 const tabs = {
   profile: document.getElementById('tab-profile'),
   scan: document.getElementById('tab-scan'),
@@ -479,52 +199,23 @@ let currentTab = 'profile';
 function switchTab(name){
   tabs[currentTab].classList.remove('active');
   tabs[name].classList.add('active');
-  Object.keys(navButtons).forEach(k=>{
-    if(k===name) navButtons[k].classList.add('active');
-    else navButtons[k].classList.remove('active');
-  });
   currentTab = name;
 }
 
-function centerScanClick(){ openFoodScanner(); }
-function onBarcode(){ document.getElementById('last-scan').textContent = 'Barcode scan started...'; }
-
-let dailyPoints = 0;
-function addPlantPoints(n){
-  dailyPoints += n;
-  document.getElementById('daily-points').textContent = dailyPoints;
-}
-
-function editProfile(){ alert('Profile editor coming soon.'); }
-
-function setHealthScore(score){
-  score = Math.max(0, Math.min(100, score));
-  document.getElementById('health-score').textContent = score;
-
-  const progress = document.getElementById('progress');
-  const circumference = 2 * Math.PI * 44;
-  progress.style.strokeDashoffset = circumference * (1 - score/100);
-
-  const aura = document.getElementById('aura');
-  if(score >= 80) aura.style.background = 'conic-gradient(#2ecc71,#27ae60,#2ecc71)';
-  else if(score >= 50) aura.style.background = 'conic-gradient(#f39c12,#f1c40f,#f39c12)';
-  else if(score >= 30) aura.style.background = 'conic-gradient(#e74c3c,#c0392b,#e74c3c)';
-  else aura.style.background = 'conic-gradient(#8b0000,#5b0000,#8b0000)';
-}
-
-(function init(){ setHealthScore(72); switchTab('profile'); })();
-
-/* ---------- SCANNER FIXED ---------- */
+/* ---------- FIXED FOOD SCANNER ---------- */
 function openFoodScanner() {
   const input = document.createElement("input");
   input.type = "file";
   input.accept = "image/*";
+  input.capture = "environment";
+
   input.onchange = () => {
     if (input.files && input.files[0]) {
       handleFoodImage(input.files[0]);
       switchTab('scan');
     }
   };
+
   input.click();
 }
 
@@ -559,6 +250,35 @@ async function analyzeFood(imageBase64) {
     document.getElementById("last-scan").innerText = "Scan failed";
   }
 }
+
+function centerScanClick(){ openFoodScanner(); }
+function onBarcode(){ document.getElementById('last-scan').textContent = 'Barcode scan started...'; }
+
+let dailyPoints = 0;
+function addPlantPoints(n){
+  dailyPoints += n;
+  document.getElementById('daily-points').textContent = dailyPoints;
+}
+
+function editProfile(){ alert('Profile editor coming soon.'); }
+
+function setHealthScore(score){
+  score = Math.max(0, Math.min(100, score));
+  document.getElementById('health-score').textContent = score;
+
+  const progress = document.getElementById('progress');
+  const circumference = 2 * Math.PI * 44;
+  progress.style.strokeDashoffset = circumference * (1 - score/100);
+
+  const aura = document.getElementById('aura');
+  if(score >= 80) aura.style.background = 'conic-gradient(#2ecc71,#27ae60,#2ecc71)';
+  else if(score >= 50) aura.style.background = 'conic-gradient(#f39c12,#f1c40f,#f39c12)';
+  else if(score >= 30) aura.style.background = 'conic-gradient(#e74c3c,#c0392b,#e74c3c)';
+  else aura.style.background = 'conic-gradient(#8b0000,#5b0000,#8b0000)';
+}
+
+(function init(){ setHealthScore(72); switchTab('profile'); })();
 </script>
+
 </body>
 </html>

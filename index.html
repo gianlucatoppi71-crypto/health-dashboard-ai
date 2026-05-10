@@ -92,18 +92,58 @@
         </div>
       </div>
 
-      <div class="profile-fields">
-        <div class="field"><label>Age</label><div class="value" id="age">45</div></div>
-        <div class="field"><label>Weight (kg)</label><div class="value" id="weight">82</div></div>
-        <div class="field"><label>Height (cm)</label><div class="value" id="height">176</div></div>
-        <div class="field"><label>Gender</label><div class="value" id="gender">Male</div></div>
-        <div class="field"><label>Activity</label><div class="value" id="activity">Moderate</div></div>
-        <div class="field"><label>Waist (cm)</label><div class="value" id="waist">92</div></div>
-        <div class="field"><label>BMI</label><div class="value" id="bmi">26.5</div></div>
-        <div class="field"><label>Ideal weight</label><div class="value" id="ideal">75 kg</div></div>
-      </div>
+     <div class="profile-fields">
 
-      <button class="btn-3d" onclick="editProfile()">Edit profile</button>
+  <div class="field">
+    <label>Name</label>
+    <input id="name" type="text" value="User" disabled>
+  </div>
+
+  <div class="field">
+    <label>Age</label>
+    <input id="age" type="number" value="45" disabled>
+  </div>
+
+  <div class="field">
+    <label>Weight (kg)</label>
+    <input id="weight" type="number" value="82" disabled>
+  </div>
+
+  <div class="field">
+    <label>Height (cm)</label>
+    <input id="height" type="number" value="176" disabled>
+  </div>
+
+  <div class="field">
+    <label>Activity</label>
+    <select id="activity" disabled>
+      <option>Low</option>
+      <option selected>Moderate</option>
+      <option>High</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Waist (cm)</label>
+    <input id="waist" type="number" value="92" disabled>
+  </div>
+
+  <div class="field">
+    <label>BMI</label>
+    <div class="value" id="bmi">26.5</div>
+  </div>
+
+  <div class="field">
+    <label>Ideal weight</label>
+    <div class="value" id="ideal">75 kg</div>
+  </div>
+
+</div>
+
+
+      <button id="edit-btn" class="btn-3d" onclick="enableEdit()">Edit Profile</button>
+<button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
+
     </section>
 
     <!-- SCAN TAB -->
@@ -261,8 +301,7 @@ function addPlantPoints(n){
   document.getElementById('daily-points').textContent = dailyPoints;
 }
 
-function editProfile(){ alert('Profile editor coming soon.'); }
-
+/* ---------- HEALTH SCORE ---------- */
 function setHealthScore(score){
   score = Math.max(0, Math.min(100, score));
   document.getElementById('health-score').textContent = score;
@@ -278,8 +317,73 @@ function setHealthScore(score){
   else aura.style.background = 'conic-gradient(#8b0000,#5b0000,#8b0000)';
 }
 
+/* ---------- ENABLE EDIT MODE ---------- */
+function enableEdit() {
+  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist")
+    .forEach(el => el.disabled = false);
+
+  document.getElementById("edit-btn").style.display = "none";
+  document.getElementById("save-btn").style.display = "block";
+}
+
+/* ---------- SAVE PROFILE ---------- */
+function saveProfile() {
+  const name = document.getElementById("name").value;
+  const age = Number(document.getElementById("age").value);
+  const weight = Number(document.getElementById("weight").value);
+  const height = Number(document.getElementById("height").value);
+  const activity = document.getElementById("activity").value;
+  const waist = Number(document.getElementById("waist").value);
+
+  const profile = { name, age, weight, height, activity, waist };
+  localStorage.setItem("profile", JSON.stringify(profile));
+
+  const bmi = (weight / ((height/100)**2)).toFixed(1);
+  document.getElementById("bmi").textContent = bmi;
+
+  const ideal = (22 * ((height/100)**2)).toFixed(1);
+  document.getElementById("ideal").textContent = ideal + " kg";
+
+  const score = Math.max(40, 100 - Math.abs(bmi - 22) * 2);
+  setHealthScore(score);
+
+  document.querySelector(".brand").textContent = name + "'s Dashboard";
+
+  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist")
+    .forEach(el => el.disabled = true);
+
+  document.getElementById("edit-btn").style.display = "block";
+  document.getElementById("save-btn").style.display = "none";
+}
+
+/* ---------- LOAD PROFILE ON START ---------- */
+(function loadProfile() {
+  const p = JSON.parse(localStorage.getItem("profile"));
+  if (!p) return;
+
+  document.getElementById("name").value = p.name;
+  document.getElementById("age").value = p.age;
+  document.getElementById("weight").value = p.weight;
+  document.getElementById("height").value = p.height;
+  document.getElementById("activity").value = p.activity;
+  document.getElementById("waist").value = p.waist;
+
+  const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
+  document.getElementById("bmi").textContent = bmi;
+
+  const ideal = (22 * ((p.height/100)**2)).toFixed(1);
+  document.getElementById("ideal").textContent = ideal + " kg";
+
+  const score = Math.max(40, 100 - Math.abs(bmi - 22) * 2);
+  setHealthScore(score);
+
+  document.querySelector(".brand").textContent = p.name + "'s Dashboard";
+})();
+
+/* ---------- INIT ---------- */
 (function init(){ setHealthScore(72); switchTab('profile'); })();
 </script>
 
 </body>
 </html>
+

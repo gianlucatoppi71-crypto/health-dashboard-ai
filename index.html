@@ -182,7 +182,8 @@
         <h3>Scan Food</h3>
         <p class="muted">Use the camera to scan food or barcode. Add to diary quickly.</p>
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn-3d" onclick="onScan()">Open Camera</button>
+          <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
+
           <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
         </div>
       </div>
@@ -441,6 +442,37 @@ function updateFromData(data){
 }
 
 /* Example: call updateFromData when other pages update values */
+function openFoodScanner() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.capture = "environment";
+  input.onchange = () => handleFoodImage(input.files[0]);
+  input.click();
+}
+
+function handleFoodImage(file) {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64 = reader.result.split(",")[1];
+    analyzeFood(base64);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeFood(imageBase64) {
+  const res = await fetch("/api/scan-food", {
+    method: "POST",
+    body: JSON.stringify({ imageBase64 })
+  });
+
+  const data = await res.json();
+
+  // Update UI
+  document.getElementById("last-scan").innerText =
+    `Food: ${data.food_name}\nCalories: ${data.estimated_calories}`;
+}
+
 </script>
 </body>
 </html>

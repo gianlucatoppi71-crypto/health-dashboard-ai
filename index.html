@@ -466,12 +466,12 @@ async function analyzeFood(imageBase64) {
   try {
     const res = await fetch("https://food-ai-backend.vercel.app/api/scan-food", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageBase64 })
     });
 
     const data = await res.json();
 
-    // Update UI with formatted result
     document.getElementById("last-scan").innerHTML = `
       <strong>Food:</strong> ${data.name || "Unknown"}<br>
       <strong>Calories:</strong> ${data.calories || "?"}<br>
@@ -485,6 +485,7 @@ async function analyzeFood(imageBase64) {
     document.getElementById("last-scan").innerText = "Scan failed";
   }
 }
+
 
 
 </script>

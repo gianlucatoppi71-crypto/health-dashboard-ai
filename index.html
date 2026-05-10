@@ -440,7 +440,6 @@ function updateFromData(data){
   document.getElementById('bp-status').textContent = (data.bpText ?? '120/78');
 }
 
-/* Example: call updateFromData when other pages update values */
 function openFoodScanner() {
   const input = document.createElement("input");
   input.type = "file";
@@ -452,10 +451,14 @@ function openFoodScanner() {
 
 function handleFoodImage(file) {
   const reader = new FileReader();
+
   reader.onloadend = () => {
     const base64 = reader.result.split(",")[1];
+
+    // ⭐ CHIAMATA FONDAMENTALE
     analyzeFood(base64);
   };
+
   reader.readAsDataURL(file);
 }
 

@@ -1,6 +1,7 @@
 export const config = {
   runtime: "nodejs"
 };
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
@@ -38,10 +39,8 @@ export default async function handler(req, res) {
     const result = await model.generateContent([prompt, image]);
     let text = result.response.text().trim();
 
-    // Remove accidental markdown fences
     text = text.replace(/```json/gi, "").replace(/```/g, "").trim();
 
-    // Extract JSON safely
     const start = text.indexOf("{");
     const end = text.lastIndexOf("}");
 

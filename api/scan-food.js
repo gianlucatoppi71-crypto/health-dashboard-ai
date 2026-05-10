@@ -1,3 +1,6 @@
+export const config = {
+  runtime: "nodejs"
+};
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {

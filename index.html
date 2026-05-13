@@ -1,4 +1,4 @@
-<Put your HTML text here<!doctype html>
+Put your HTML text here<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -476,7 +476,7 @@ window.addEventListener("load", () => {
 
   </main>
 
-<nav class="bottom-nav">
+  <nav class="bottom-nav">
     <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
     <button class="nav-btn" id="nav-health" onclick="window.location.href='health.htm'">Health</button>
 
@@ -491,6 +491,10 @@ window.addEventListener("load", () => {
 
 </div>
 <script>
+const bpSys = Number(localStorage.getItem("bpSys") || 120);
+const bpDia = Number(localStorage.getItem("bpDia") || 80);
+const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
+
 /* ---------- TABS ---------- */
 const tabs = {
   profile: document.getElementById('tab-profile'),
@@ -833,6 +837,42 @@ addPlantPoints = function(n) {
   if (n > 0) speak("Nice! Plant points added. Great choice.");
   if (n < 0) speak("Careful. This food reduces your plant score.");
 };
+
+/* ---------- AURA CONNECTION (STEP 3) ---------- */
+function updateAura(bpSys, bpDia, cholTotal) {
+    const inner = document.querySelector('.ring-bp');
+    const middle = document.querySelector('.ring-chol');
+    const outer = document.querySelector('.ring-food');
+
+    // BLOOD PRESSURE → INNER RING
+    const bpAvg = (bpSys + bpDia) / 2;
+    if (bpAvg > 140) {
+        inner.style.stroke = "#ff0033";
+        inner.style.animation = "pulseFast 1s infinite";
+    } else {
+        inner.style.stroke = "#00cc66";
+        inner.style.animation = "pulseSlow 3s infinite";
+    }
+
+    // CHOLESTEROL → MIDDLE RING
+    if (cholTotal > 6.2) {
+        middle.style.stroke = "#ff6600";
+    } else {
+        middle.style.stroke = "#00cc99";
+    }
+
+    // FOOD SCORE → OUTER RING
+    const foodScore = Number(localStorage.getItem("foodScore") || 70);
+    if (foodScore < 50) {
+        outer.style.stroke = "#ff3300";
+    } else {
+        outer.style.stroke = "#33cc33";
+    }
+}
+
+/* ---------- INITIAL AURA UPDATE ---------- */
+updateAura(bpSys, bpDia, cholTotal);
+
 </script>
 
 </body>

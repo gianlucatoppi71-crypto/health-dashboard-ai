@@ -1,8 +1,9 @@
-Put your HTML text here<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<!DOCTYPE html>
+<html lang="en"><head></head><body><put your="" html="" text="" here<!doctype="">
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>HealthHub — Dashboard</title>
 
 <style>
@@ -158,41 +159,19 @@ Put your HTML text here<!doctype html>
 
   .muted{color:var(--muted);}
 </style>
-</head>
 
-<body>
 
-<!-- FULLSCREEN INTRO HEART -->
-<div id="intro-screen" style="
-  position:fixed;
-  inset:0;
-  background:#ffffff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-  opacity:1;
-  transition:opacity 1.2s ease-out;
-">
-  <div id="intro-heart" style="
-    width:260px;
-    height:240px;
-    transform:scale(2.4);
-    opacity:0;
-    transition:
-      transform 2.4s cubic-bezier(0.22,1,0.36,1),
-      opacity 1.2s ease-out;
-  ">
-    <svg viewBox="0 0 200 180" width="260" height="240">
-      <path fill="#ff3366"
-        d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z" />
-    </svg>
-  </div>
-</div>
+
+
+
 
 <script>
 // 4 gentle heartbeats, then slow shrink
 window.addEventListener("load", () => {
+if (window.location.hash === "#health") {
+  switchTab("health");
+}
+
   const intro = document.getElementById("intro-screen");
   const heart = document.getElementById("intro-heart");
 
@@ -233,30 +212,30 @@ window.addEventListener("load", () => {
 
     <!-- FOOD RING GRADIENT -->
     <linearGradient id="grad-food" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00ff88"/>
-      <stop offset="50%" stop-color="#ffee00"/>
-      <stop offset="100%" stop-color="#ff0033"/>
+      <stop offset="0%" stop-color="#00ff88"></stop>
+      <stop offset="50%" stop-color="#ffee00"></stop>
+      <stop offset="100%" stop-color="#ff0033"></stop>
     </linearGradient>
 
     <!-- CHOLESTEROL RING GRADIENT -->
     <linearGradient id="grad-chol" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00ffcc"/>
-      <stop offset="40%" stop-color="#ff8800"/>
-      <stop offset="100%" stop-color="#ff0033"/>
+      <stop offset="0%" stop-color="#00ffcc"></stop>
+      <stop offset="40%" stop-color="#ff8800"></stop>
+      <stop offset="100%" stop-color="#ff0033"></stop>
     </linearGradient>
 
     <!-- BLOOD PRESSURE RING GRADIENT -->
     <linearGradient id="grad-bp" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00ff55"/>
-      <stop offset="40%" stop-color="#ffcc00"/>
-      <stop offset="100%" stop-color="#ff0000"/>
+      <stop offset="0%" stop-color="#00ff55"></stop>
+      <stop offset="40%" stop-color="#ffcc00"></stop>
+      <stop offset="100%" stop-color="#ff0000"></stop>
     </linearGradient>
 
     <!-- CENTER HEART GRADIENT -->
     <radialGradient id="grad-heart" cx="50%" cy="50%" r="60%">
-      <stop offset="0%" stop-color="#ff99bb"/>
-      <stop offset="50%" stop-color="#ff3366"/>
-      <stop offset="100%" stop-color="#cc0033"/>
+      <stop offset="0%" stop-color="#ff99bb"></stop>
+      <stop offset="50%" stop-color="#ff3366"></stop>
+      <stop offset="100%" stop-color="#cc0033"></stop>
     </radialGradient>
 
   </defs>
@@ -302,29 +281,33 @@ window.addEventListener("load", () => {
       <div class="profile-hero">
 
         <!-- AURA -->
-        <div class="aura-wrap-new">
+<div class="aura-wrap-new">
 
-          <svg class="heart-ring ring-food" viewBox="0 0 200 180">
-            <path class="heart-path"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
+  <!-- FOOD RING (outer) -->
+  <svg class="heart-ring ring-food" viewBox="0 0 200 180">
+    <path id="ringFood" class="heart-path"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-          <svg class="heart-ring ring-chol" viewBox="0 0 200 180">
-            <path class="heart-path"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
+  <!-- CHOLESTEROL RING (middle) -->
+  <svg class="heart-ring ring-chol" viewBox="0 0 200 180">
+    <path id="ringChol" class="heart-path"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-          <svg class="heart-ring ring-bp" viewBox="0 0 200 180">
-            <path class="heart-path"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
+  <!-- BLOOD PRESSURE RING (inner) -->
+  <svg class="heart-ring ring-bp" viewBox="0 0 200 180">
+    <path id="ringBP" class="heart-path"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-          <svg class="center-heart" viewBox="0 0 200 180">
-            <path class="heart-fill"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
+  <!-- CENTER HEART (general health score) -->
+  <svg class="center-heart" viewBox="0 0 200 180">
+    <path id="heartAuraPath" class="heart-fill"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-        </div>
+</div>
 
         <div style="text-align:center;">
    <div id="health-label" style="
@@ -348,54 +331,54 @@ window.addEventListener("load", () => {
 
         <div class="field">
           <label>Name</label>
-          <input id="name" type="text" value="User" disabled>
+          <input id="name" type="text" value="User" disabled="">
         </div>
 
         <div class="field">
           <label>Gender</label>
-          <select id="gender" disabled onchange="toggleHip()">
-            <option value="male" selected>Male</option>
+          <select id="gender" disabled="" onchange="toggleHip()">
+            <option value="male" selected="">Male</option>
             <option value="female">Female</option>
           </select>
         </div>
 
         <div class="field">
           <label>Age</label>
-          <input id="age" type="number" value="45" disabled>
+          <input id="age" type="number" value="45" disabled="">
         </div>
 
         <div class="field">
           <label>Weight (kg)</label>
-          <input id="weight" type="number" value="82" disabled>
+          <input id="weight" type="number" value="82" disabled="">
         </div>
 
         <div class="field">
           <label>Height (cm)</label>
-          <input id="height" type="number" value="176" disabled>
+          <input id="height" type="number" value="176" disabled="">
         </div>
 
         <div class="field">
           <label>Waist (cm)</label>
-          <input id="waist" type="number" value="92" disabled>
+          <input id="waist" type="number" value="92" disabled="">
         </div>
 
         <div class="field">
           <label>Neck (cm)</label>
-          <input id="neck" type="number" value="38" disabled>
+          <input id="neck" type="number" value="38" disabled="">
         </div>
 
         <div class="field" id="hip-field">
           <label>Hip (cm) — women only</label>
-          <input id="hip" type="number" value="95" disabled>
+          <input id="hip" type="number" value="95" disabled="">
         </div>
 
         <div class="field">
           <label>Body Fat %</label>
-          <input id="bodyfat" type="number" value="22" disabled>
+          <input id="bodyfat" type="number" value="22" disabled="">
         </div>
 
         <div class="field">
-          <button id="calc-fat-btn" class="btn-3d" disabled onclick="autoCalcBodyFat()">
+          <button id="calc-fat-btn" class="btn-3d" disabled="" onclick="autoCalcBodyFat()">
             Calculate automatically
           </button>
         </div>
@@ -491,9 +474,21 @@ window.addEventListener("load", () => {
 
 </div>
 <script>
+
 const bpSys = Number(localStorage.getItem("bpSys") || 120);
 const bpDia = Number(localStorage.getItem("bpDia") || 80);
 const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
+const healthScore = Number(localStorage.getItem("healthScore") || 100);
+function updateAuraFromScore(score) {
+  const aura = document.getElementById("heartAuraPath");
+  if (!aura) return;
+
+  if (score >= 80) aura.setAttribute("fill", "#00ff99");
+  else if (score >= 60) aura.setAttribute("fill", "#ffee66");
+  else if (score >= 40) aura.setAttribute("fill", "#ff9900");
+  else aura.setAttribute("fill", "#ff3366");
+}
+updateAuraFromScore(healthScore);
 
 /* ---------- TABS ---------- */
 const tabs = {
@@ -875,5 +870,6 @@ updateAura(bpSys, bpDia, cholTotal);
 
 </script>
 
-</body>
-</html>
+
+
+</put></body></html>

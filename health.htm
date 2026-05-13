@@ -1086,6 +1086,11 @@ window.saveBloodPressure = function() {
   const hr  = Number(document.getElementById("hrInput").value);
 
   lastBP = { sys, dia, hr };
+// SAVE TO LOCAL STORAGE FOR INDEX AURA
+localStorage.setItem("bpSys", sys);
+localStorage.setItem("bpDia", dia);
+localStorage.setItem("bpHR", hr);
+
 
   document.getElementById("sysValue").innerText = sys || 0;
   document.getElementById("diaValue").innerText = dia || 0;
@@ -1198,6 +1203,12 @@ window.saveCholesterol = function() {
   const total = Number(document.getElementById("totalInput").value);
 
   lastChol = { ldl, hdl, tri, total };
+// SAVE TO LOCAL STORAGE FOR INDEX AURA
+localStorage.setItem("cholLDL", ldl);
+localStorage.setItem("cholHDL", hdl);
+localStorage.setItem("cholTRI", tri);
+localStorage.setItem("cholTotal", total);
+
 
   document.getElementById("ldlValue").innerText = ldl || 0;
   document.getElementById("hdlValue").innerText = hdl || 0;

@@ -866,6 +866,26 @@
 <div class="divider"></div>
 <script>
 window.addEventListener("load", function () {
+// ⭐ LOAD SAVED BLOOD PRESSURE
+const savedSys = localStorage.getItem("bpSys");
+const savedDia = localStorage.getItem("bpDia");
+const savedHR  = localStorage.getItem("bpHR");
+
+if (savedSys) document.getElementById("sysInput").value = savedSys;
+if (savedDia) document.getElementById("diaInput").value = savedDia;
+if (savedHR)  document.getElementById("hrInput").value  = savedHR;
+
+// ⭐ LOAD SAVED CHOLESTEROL
+const savedLDL   = localStorage.getItem("cholLDL");
+const savedHDL   = localStorage.getItem("cholHDL");
+const savedTRI   = localStorage.getItem("cholTRI");
+const savedTotal = localStorage.getItem("cholTotal");
+
+if (savedLDL)   document.getElementById("ldlInput").value = savedLDL;
+if (savedHDL)   document.getElementById("hdlInput").value = savedHDL;
+if (savedTRI)   document.getElementById("triInput").value = savedTRI;
+if (savedTotal) document.getElementById("totalInput").value = savedTotal;
+
 
 /* ============================================================
    GLOBAL STATE

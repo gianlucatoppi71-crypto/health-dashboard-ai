@@ -281,25 +281,33 @@ if (window.location.hash === "#health") {
       <div class="profile-hero">
 
         <!-- AURA -->
-        <div class="aura-wrap-new">
+<div class="aura-wrap-new">
 
-          <svg class="heart-ring ring-food" viewBox="0 0 200 180">
-            <path class="heart-path" d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
-          </svg>
+  <!-- FOOD RING (outer) -->
+  <svg class="heart-ring ring-food" viewBox="0 0 200 180">
+    <path id="ringFood" class="heart-path"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-          <svg class="heart-ring ring-chol" viewBox="0 0 200 180">
-            <path class="heart-path" d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
-          </svg>
+  <!-- CHOLESTEROL RING (middle) -->
+  <svg class="heart-ring ring-chol" viewBox="0 0 200 180">
+    <path id="ringChol" class="heart-path"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-          <svg class="heart-ring ring-bp" viewBox="0 0 200 180">
-            <path class="heart-path" d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
-          </svg>
+  <!-- BLOOD PRESSURE RING (inner) -->
+  <svg class="heart-ring ring-bp" viewBox="0 0 200 180">
+    <path id="ringBP" class="heart-path"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-          <svg class="center-heart" viewBox="0 0 200 180">
-            <path class="heart-fill" d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
-          </svg>
+  <!-- CENTER HEART (general health score) -->
+  <svg class="center-heart" viewBox="0 0 200 180">
+    <path id="heartAuraPath" class="heart-fill"
+      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"></path>
+  </svg>
 
-        </div>
+</div>
 
         <div style="text-align:center;">
    <div id="health-label" style="
@@ -466,9 +474,21 @@ if (window.location.hash === "#health") {
 
 </div>
 <script>
+
 const bpSys = Number(localStorage.getItem("bpSys") || 120);
 const bpDia = Number(localStorage.getItem("bpDia") || 80);
 const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
+const healthScore = Number(localStorage.getItem("healthScore") || 100);
+function updateAuraFromScore(score) {
+  const aura = document.getElementById("heartAuraPath");
+  if (!aura) return;
+
+  if (score >= 80) aura.setAttribute("fill", "#00ff99");
+  else if (score >= 60) aura.setAttribute("fill", "#ffee66");
+  else if (score >= 40) aura.setAttribute("fill", "#ff9900");
+  else aura.setAttribute("fill", "#ff3366");
+}
+updateAuraFromScore(healthScore);
 
 /* ---------- TABS ---------- */
 const tabs = {

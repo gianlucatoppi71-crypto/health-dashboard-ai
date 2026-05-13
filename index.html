@@ -1,4 +1,4 @@
-<!doctype html>
+Put your HTML text here<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -12,47 +12,283 @@
     --bg:#ffffff;
     --text:#1f2937;
     --muted:#6b7280;
-    --radius:14px;
-    --btn-height:56px;
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--text);background:var(--bg);}
-  .app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;border-left:1px solid #eee;border-right:1px solid #eee;}
-  .topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #f0f3f7;background:#fff;}
+
+  html,body{
+    height:100%;margin:0;
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+    background:#fff;color:var(--text);
+  }
+
+  .app{
+    display:flex;flex-direction:column;
+    height:100vh;max-width:480px;margin:0 auto;
+    border-left:1px solid #eee;border-right:1px solid #eee;
+  }
+
+  .topbar{
+    height:56px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 16px;
+    border-bottom:1px solid #f0f3f7;background:#fff;
+  }
+
   .content{flex:1;overflow:auto;padding:18px;}
   .tab{display:none;opacity:0;transition:opacity .25s;}
   .tab.active{display:block;opacity:1;}
 
-  .profile-hero{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px;}
-  .aura-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
-  .aura{position:absolute;inset:0;border-radius:50%;filter:blur(18px);transform:scale(1.06);background:conic-gradient(#2ecc71,#f39c12,#e74c3c,#8b0000);animation:spin 6s linear infinite;}
-  @keyframes spin{from{transform:rotate(0deg)} to{transform:rotate(360deg)}}
+  /* ------------------ AURA HEART RINGS ------------------ */
+  .aura-wrap-new{
+    position:relative;width:300px;height:280px;margin:0 auto;margin-top:10px;
+  }
 
-  .avatar{position:relative;z-index:2;width:120px;height:120px;border-radius:50%;overflow:hidden;border:6px solid rgba(255,255,255,0.9);}
-  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .heart-ring{
+  position:absolute;top:0;left:0;width:300px;height:280px;
+}
 
-  .health-ring{position:absolute;inset:0;z-index:1;}
-  .ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ring-bp  { transform: scale(0.92); }
+.ring-chol{ transform: scale(1.15); }
+.ring-food{ transform: scale(1.25); }
 
-  .profile-fields{width:100%;padding:12px 6px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-  .field{background:#fff;border-radius:12px;padding:10px;border:1px solid #f1f5f9;}
+
+
+  .heart-path{
+    fill:none;stroke-width:6;stroke-linecap:round;
+  }
+
+  .ring-food .heart-path{
+    stroke:url(#grad-food);
+    animation:pulseFood 3s infinite ease-in-out;
+  }
+
+  .ring-chol .heart-path{
+    stroke:url(#grad-chol);
+    animation:pulseChol 2.6s infinite ease-in-out;
+  }
+
+  .ring-bp .heart-path{
+    stroke:url(#grad-bp);
+    animation:pulseBP 2s infinite ease-in-out;
+  }
+
+  .center-heart{
+    position:absolute;top:40px;left:40px;width:220px;height:220px;
+  }
+
+  .center-heart .heart-fill{
+    fill:url(#grad-heart);
+    animation:heartPulse 1.8s infinite ease-in-out;
+  }
+
+  @keyframes heartPulse{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.04);}
+    100%{transform:scale(1);}
+  }
+
+  @keyframes pulseBP{
+    0%{stroke-width:6;}
+    50%{stroke-width:9;}
+    100%{stroke-width:6;}
+  }
+
+  @keyframes pulseChol{
+    0%{stroke-width:5;}
+    50%{stroke-width:8;}
+    100%{stroke-width:5;}
+  }
+
+  @keyframes pulseFood{
+    0%{stroke-width:4;}
+    50%{stroke-width:7;}
+    100%{stroke-width:4;}
+  }
+
+  /* ------------------ PROFILE FIELDS ------------------ */
+  .profile-fields{
+    width:100%;padding:12px 6px;
+    display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+  }
+
+  .field{
+    background:#fff;border-radius:12px;padding:10px;
+    border:1px solid #f1f5f9;
+  }
+
   .field label{font-size:12px;color:var(--muted);}
-  .field .value{font-weight:700;font-size:16px;}
+  .field input,.field select{
+    width:100%;padding:6px;border-radius:8px;
+    border:1px solid #ddd;font-size:15px;
+  }
 
-  .btn-3d{background:var(--accent);color:#fff;padding:12px 18px;border-radius:12px;border:none;font-weight:700;box-shadow:0 8px 0 var(--accent-dark);}
-  .section-card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #f1f5f9;}
+  .value{font-weight:700;font-size:16px;}
 
-  .bottom-nav{height:86px;padding:10px 18px;display:flex;align-items:flex-end;justify-content:space-between;border-top:1px solid #f3f6f9;background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);}
-  .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;color:var(--muted);background:transparent;border:none;}
+  .btn-3d{
+    background:var(--accent);color:#fff;padding:12px 18px;
+    border-radius:12px;border:none;font-weight:700;
+    box-shadow:0 8px 0 var(--accent-dark);
+  }
+
+  .section-card{
+    background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;
+    border:1px solid #f1f5f9;
+  }
+
+  .bottom-nav{
+    height:86px;padding:10px 18px;display:flex;
+    align-items:flex-end;justify-content:space-between;
+    border-top:1px solid #f3f6f9;
+    background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);
+  }
+
+  .nav-btn{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;background:none;border:none;
+    color:var(--muted);
+  }
+
   .nav-btn.active{color:var(--accent);font-weight:700;}
 
-  .center-wrap{position:relative;flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
-  .scan-btn{width:84px;height:84px;border-radius:50%;background:var(--accent);color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 0 var(--accent-dark);}
+  .center-wrap{flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
+  .scan-btn{
+    width:84px;height:84px;border-radius:50%;
+    background:var(--accent);color:#fff;border:none;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 12px 0 var(--accent-dark);
+  }
+
   .muted{color:var(--muted);}
 </style>
 </head>
 
 <body>
+
+<!-- FULLSCREEN INTRO HEART -->
+<div id="intro-screen" style="
+  position:fixed;
+  inset:0;
+  background:#ffffff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  opacity:1;
+  transition:opacity 1.2s ease-out;
+">
+  <div id="intro-heart" style="
+    width:260px;
+    height:240px;
+    transform:scale(2.4);
+    opacity:0;
+    transition:
+      transform 2.4s cubic-bezier(0.22,1,0.36,1),
+      opacity 1.2s ease-out;
+  ">
+    <svg viewBox="0 0 200 180" width="260" height="240">
+      <path fill="#ff3366"
+        d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z" />
+    </svg>
+  </div>
+</div>
+
+<script>
+// 4 gentle heartbeats, then slow shrink
+window.addEventListener("load", () => {
+  const intro = document.getElementById("intro-screen");
+  const heart = document.getElementById("intro-heart");
+
+  let beat = 0;
+
+  function heartbeat() {
+    if (beat < 4) {
+      heart.style.transform = "scale(2.6)";
+      setTimeout(() => {
+        heart.style.transform = "scale(2.3)";
+      }, 300);
+      beat++;
+      setTimeout(heartbeat, 600);
+    } else {
+      heart.style.transform = "scale(1)";
+      heart.style.opacity = "1";
+
+      setTimeout(() => {
+        intro.style.opacity = "0";
+      }, 1200);
+
+      setTimeout(() => {
+        intro.style.display = "none";
+      }, 2200);
+    }
+  }
+
+  setTimeout(() => {
+    heart.style.opacity = "1";
+    heartbeat();
+  }, 200);
+});
+</script>
+
+<!-- SVG GRADIENTS FOR HEART + RINGS -->
+<svg width="0" height="0">
+  <defs>
+
+    <!-- FOOD RING GRADIENT -->
+    <linearGradient id="grad-food" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ff88"/>
+      <stop offset="50%" stop-color="#ffee00"/>
+      <stop offset="100%" stop-color="#ff0033"/>
+    </linearGradient>
+
+    <!-- CHOLESTEROL RING GRADIENT -->
+    <linearGradient id="grad-chol" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffcc"/>
+      <stop offset="40%" stop-color="#ff8800"/>
+      <stop offset="100%" stop-color="#ff0033"/>
+    </linearGradient>
+
+    <!-- BLOOD PRESSURE RING GRADIENT -->
+    <linearGradient id="grad-bp" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ff55"/>
+      <stop offset="40%" stop-color="#ffcc00"/>
+      <stop offset="100%" stop-color="#ff0000"/>
+    </linearGradient>
+
+    <!-- CENTER HEART GRADIENT -->
+    <radialGradient id="grad-heart" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#ff99bb"/>
+      <stop offset="50%" stop-color="#ff3366"/>
+      <stop offset="100%" stop-color="#cc0033"/>
+    </radialGradient>
+
+  </defs>
+</svg>
 <div class="app">
+
+  <!-- AUDIO TOGGLE -->
+  <div id="audio-toggle" class="audio-btn">🔊</div>
+
+  <style>
+    .audio-btn {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      width: 42px;
+      height: 42px;
+      background: #42a5f5;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      z-index: 9999;
+      user-select: none;
+    }
+    .audio-btn.muted {
+      background: #999;
+    }
+  </style>
 
   <div class="topbar">
     <div class="brand">HealthHub</div>
@@ -65,84 +301,119 @@
     <section id="tab-profile" class="tab active">
       <div class="profile-hero">
 
-        <div class="aura-wrap">
-  <div id="aura" class="aura"></div>
+        <!-- AURA -->
+        <div class="aura-wrap-new">
 
-  <div class="health-ring">
-    <svg class="ring-svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="44" stroke="#f1f5f9" stroke-width="10" fill="none"></circle>
-      <circle id="progress" cx="50" cy="50" r="44"
-        stroke="#42a5f5" stroke-width="10" stroke-linecap="round"
-        fill="none" stroke-dasharray="276.46" stroke-dashoffset="276.46">
-      </circle>
-    </svg>
-  </div>
+          <svg class="heart-ring ring-food" viewBox="0 0 200 180">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
 
-  <div class="avatar">
-    <img id="avatar-img" src="https://i.imgur.com/4ZQZ4Z4.png" alt="Avatar">
-  </div>
-</div>
+          <svg class="heart-ring ring-chol" viewBox="0 0 200 180">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
 
+          <svg class="heart-ring ring-bp" viewBox="0 0 200 180">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
+          <svg class="center-heart" viewBox="0 0 200 180">
+            <path class="heart-fill"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
+        </div>
 
         <div style="text-align:center;">
-          <div id="health-label" style="font-weight:800;font-size:18px;">
+   <div id="health-label" style="
+  font-weight:800;
+  font-size:16px;
+  margin-top:28px;
+  position:relative;
+  top:18px;
+  margin-bottom:18px;
+">
+
+
             Health Score: <span id="health-score">72</span>
           </div>
           <div class="muted">Aura indicates overall health</div>
         </div>
       </div>
 
-     <div class="profile-fields">
+      <!-- PROFILE FIELDS -->
+      <div class="profile-fields">
 
-  <div class="field">
-    <label>Name</label>
-    <input id="name" type="text" value="User" disabled>
-  </div>
+        <div class="field">
+          <label>Name</label>
+          <input id="name" type="text" value="User" disabled>
+        </div>
 
-  <div class="field">
-    <label>Age</label>
-    <input id="age" type="number" value="45" disabled>
-  </div>
+        <div class="field">
+          <label>Gender</label>
+          <select id="gender" disabled onchange="toggleHip()">
+            <option value="male" selected>Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
 
-  <div class="field">
-    <label>Weight (kg)</label>
-    <input id="weight" type="number" value="82" disabled>
-  </div>
+        <div class="field">
+          <label>Age</label>
+          <input id="age" type="number" value="45" disabled>
+        </div>
 
-  <div class="field">
-    <label>Height (cm)</label>
-    <input id="height" type="number" value="176" disabled>
-  </div>
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input id="weight" type="number" value="82" disabled>
+        </div>
 
-  <div class="field">
-    <label>Activity</label>
-    <select id="activity" disabled>
-      <option>Low</option>
-      <option selected>Moderate</option>
-      <option>High</option>
-    </select>
-  </div>
+        <div class="field">
+          <label>Height (cm)</label>
+          <input id="height" type="number" value="176" disabled>
+        </div>
 
-  <div class="field">
-    <label>Waist (cm)</label>
-    <input id="waist" type="number" value="92" disabled>
-  </div>
+        <div class="field">
+          <label>Waist (cm)</label>
+          <input id="waist" type="number" value="92" disabled>
+        </div>
 
-  <div class="field">
-    <label>BMI</label>
-    <div class="value" id="bmi">26.5</div>
-  </div>
+        <div class="field">
+          <label>Neck (cm)</label>
+          <input id="neck" type="number" value="38" disabled>
+        </div>
 
-  <div class="field">
-    <label>Ideal weight</label>
-    <div class="value" id="ideal">75 kg</div>
-  </div>
+        <div class="field" id="hip-field">
+          <label>Hip (cm) — women only</label>
+          <input id="hip" type="number" value="95" disabled>
+        </div>
 
-</div>
+        <div class="field">
+          <label>Body Fat %</label>
+          <input id="bodyfat" type="number" value="22" disabled>
+        </div>
 
+        <div class="field">
+          <button id="calc-fat-btn" class="btn-3d" disabled onclick="autoCalcBodyFat()">
+            Calculate automatically
+          </button>
+        </div>
+
+        <div class="field">
+          <label>BMI</label>
+          <div class="value" id="bmi">26.5</div>
+        </div>
+
+        <div class="field">
+          <label>Ideal weight</label>
+          <div class="value" id="ideal">75 kg</div>
+        </div>
+
+      </div>
 
       <button id="edit-btn" class="btn-3d" onclick="enableEdit()">Edit Profile</button>
-<button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
+      <button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
 
     </section>
 
@@ -207,7 +478,8 @@
 
   <nav class="bottom-nav">
     <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
-    <button class="nav-btn" id="nav-health" onclick="switchTab('health')">Health</button>
+    <button class="nav-btn" id="nav-health" onclick="window.location.href='health.htm'">Health</button>
+
 
     <div class="center-wrap">
       <button class="scan-btn" id="nav-scan" onclick="centerScanClick()">Scan</button>
@@ -218,9 +490,8 @@
   </nav>
 
 </div>
-
 <script>
-/* ---------- App state ---------- */
+/* ---------- TABS ---------- */
 const tabs = {
   profile: document.getElementById('tab-profile'),
   scan: document.getElementById('tab-scan'),
@@ -228,14 +499,6 @@ const tabs = {
   health: document.getElementById('tab-health'),
   plants: document.getElementById('tab-plants')
 };
-const navButtons = {
-  meals: document.getElementById('nav-meals'),
-  health: document.getElementById('nav-health'),
-  plants: document.getElementById('nav-plants'),
-  profile: document.getElementById('nav-profile'),
-  scan: document.getElementById('nav-scan')
-};
-
 let currentTab = 'profile';
 function switchTab(name){
   tabs[currentTab].classList.remove('active');
@@ -243,7 +506,14 @@ function switchTab(name){
   currentTab = name;
 }
 
-/* ---------- FIXED FOOD SCANNER ---------- */
+/* ---------- SHOW/HIDE HIP FIELD ---------- */
+function toggleHip(){
+  const gender = document.getElementById("gender").value;
+  const hipField = document.getElementById("hip-field");
+  hipField.style.display = (gender === "female") ? "block" : "none";
+}
+
+/* ---------- FOOD SCANNER ---------- */
 function openFoodScanner() {
   const input = document.createElement("input");
   input.type = "file";
@@ -287,6 +557,9 @@ async function analyzeFood(imageBase64) {
       <strong>Fat:</strong> ${data.fat || "?"} g<br>
       <strong>Description:</strong> ${data.description || "No description"}
     `;
+
+    onFoodScanned(data);
+
   } catch (err) {
     document.getElementById("last-scan").innerText = "Scan failed";
   }
@@ -295,32 +568,85 @@ async function analyzeFood(imageBase64) {
 function centerScanClick(){ openFoodScanner(); }
 function onBarcode(){ document.getElementById('last-scan').textContent = 'Barcode scan started...'; }
 
+/* ---------- PLANT POINTS ---------- */
 let dailyPoints = 0;
 function addPlantPoints(n){
   dailyPoints += n;
   document.getElementById('daily-points').textContent = dailyPoints;
 }
 
-/* ---------- HEALTH SCORE ---------- */
+/* ---------- NAVY BODY FAT FORMULAS ---------- */
+function autoCalcBodyFat() {
+  const gender = document.getElementById("gender").value;
+  const waist = Number(document.getElementById("waist").value);
+  const neck = Number(document.getElementById("neck").value);
+  const height = Number(document.getElementById("height").value);
+  const hip = Number(document.getElementById("hip").value);
+
+  if (!waist || !neck || !height) {
+    alert("Enter waist, neck and height first");
+    return;
+  }
+
+  let bf;
+
+  if (gender === "male") {
+    bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck)
+                + 0.15456 * Math.log10(height)) - 450;
+  } else {
+    if (!hip) {
+      alert("Enter hip measurement for female calculation");
+      return;
+    }
+    bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck)
+                + 0.22100 * Math.log10(height)) - 450;
+  }
+
+  const clean = Math.max(5, Math.min(60, bf.toFixed(1)));
+  document.getElementById("bodyfat").value = clean;
+
+  return clean;
+}
+
+/* ---------- AURA ENGINE ---------- */
+function updateAura(health) {
+  const { bpSys, bpDia, cholTotal, foodQuality, score } = health;
+
+  const food = document.querySelector(".ring-food");
+  const chol = document.querySelector(".ring-chol");
+  const bp   = document.querySelector(".ring-bp");
+  const heart = document.querySelector(".center-heart");
+
+  let intensity = 0.6;
+  if (score > 80) intensity = 0.9;
+  if (score < 40) intensity = 0.35;
+
+  food.style.opacity = intensity;
+  chol.style.opacity = intensity;
+  bp.style.opacity   = intensity;
+
+  let speed = 1.8;
+  if (bpSys > 140 || cholTotal > 240) speed = 2.4;
+  if (score > 80) speed = 1.2;
+
+  heart.style.animationDuration = speed + "s";
+}
+
+/* ---------- HEALTH SCORE (FIXED) ---------- */
 function setHealthScore(score){
   score = Math.max(0, Math.min(100, score));
   document.getElementById('health-score').textContent = score;
 
-  const progress = document.getElementById('progress');
-  const circumference = 2 * Math.PI * 44;
-  progress.style.strokeDashoffset = circumference * (1 - score/100);
-
-  const aura = document.getElementById('aura');
-  if(score >= 80) aura.style.background = 'conic-gradient(#2ecc71,#27ae60,#2ecc71)';
-  else if(score >= 50) aura.style.background = 'conic-gradient(#f39c12,#f1c40f,#f39c12)';
-  else if(score >= 30) aura.style.background = 'conic-gradient(#e74c3c,#c0392b,#e74c3c)';
-  else aura.style.background = 'conic-gradient(#8b0000,#5b0000,#8b0000)';
+  lastHealth.score = score;
+  updateAura(lastHealth);
 }
 
 /* ---------- ENABLE EDIT MODE ---------- */
 function enableEdit() {
-  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist")
+  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = false);
+
+  document.getElementById("calc-fat-btn").disabled = false;
 
   document.getElementById("edit-btn").style.display = "none";
   document.getElementById("save-btn").style.display = "block";
@@ -329,13 +655,17 @@ function enableEdit() {
 /* ---------- SAVE PROFILE ---------- */
 function saveProfile() {
   const name = document.getElementById("name").value;
+  const gender = document.getElementById("gender").value;
   const age = Number(document.getElementById("age").value);
   const weight = Number(document.getElementById("weight").value);
   const height = Number(document.getElementById("height").value);
-  const activity = document.getElementById("activity").value;
   const waist = Number(document.getElementById("waist").value);
+  const neck = Number(document.getElementById("neck").value);
+  const hip = Number(document.getElementById("hip").value);
 
-  const profile = { name, age, weight, height, activity, waist };
+  const bodyfat = autoCalcBodyFat();
+
+  const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
   localStorage.setItem("profile", JSON.stringify(profile));
 
   const bmi = (weight / ((height/100)**2)).toFixed(1);
@@ -344,29 +674,42 @@ function saveProfile() {
   const ideal = (22 * ((height/100)**2)).toFixed(1);
   document.getElementById("ideal").textContent = ideal + " kg";
 
-  const score = Math.max(40, 100 - Math.abs(bmi - 22) * 2);
+  const score = Math.max(
+    20,
+    100
+    - Math.abs(bmi - 22) * 2
+    - Math.abs(bodyfat - 18) * 1.2
+  );
+
   setHealthScore(score);
 
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
-  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist")
+  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = true);
+
+  document.getElementById("calc-fat-btn").disabled = true;
 
   document.getElementById("edit-btn").style.display = "block";
   document.getElementById("save-btn").style.display = "none";
+
+  toggleHip();
 }
 
-/* ---------- LOAD PROFILE ON START ---------- */
+/* ---------- LOAD PROFILE ---------- */
 (function loadProfile() {
   const p = JSON.parse(localStorage.getItem("profile"));
   if (!p) return;
 
   document.getElementById("name").value = p.name;
+  document.getElementById("gender").value = p.gender;
   document.getElementById("age").value = p.age;
   document.getElementById("weight").value = p.weight;
   document.getElementById("height").value = p.height;
-  document.getElementById("activity").value = p.activity;
   document.getElementById("waist").value = p.waist;
+  document.getElementById("neck").value = p.neck;
+  document.getElementById("hip").value = p.hip;
+  document.getElementById("bodyfat").value = p.bodyfat;
 
   const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
   document.getElementById("bmi").textContent = bmi;
@@ -374,16 +717,123 @@ function saveProfile() {
   const ideal = (22 * ((p.height/100)**2)).toFixed(1);
   document.getElementById("ideal").textContent = ideal + " kg";
 
-  const score = Math.max(40, 100 - Math.abs(bmi - 22) * 2);
+  const score = Math.max(
+    20,
+    100
+    - Math.abs(bmi - 22) * 2
+    - Math.abs(p.bodyfat - 18) * 1.2
+  );
+
   setHealthScore(score);
 
   document.querySelector(".brand").textContent = p.name + "'s Dashboard";
+
+  toggleHip();
 })();
 
 /* ---------- INIT ---------- */
-(function init(){ setHealthScore(72); switchTab('profile'); })();
+(function init(){
+  setHealthScore(72);
+  switchTab('profile');
+  toggleHip();
+})();
+
+/* ---------- ENGLISH VOICE ENGINE ---------- */
+
+let audioEnabled = JSON.parse(localStorage.getItem("audioEnabled") || "true");
+
+function updateAudioButton() {
+  const btn = document.getElementById("audio-toggle");
+  if (!btn) return;
+  btn.textContent = audioEnabled ? "🔊" : "🔇";
+  btn.classList.toggle("muted", !audioEnabled);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("audio-toggle");
+  btn.onclick = () => {
+    audioEnabled = !audioEnabled;
+    localStorage.setItem("audioEnabled", JSON.stringify(audioEnabled));
+    updateAudioButton();
+  };
+  updateAudioButton();
+});
+
+function speak(text) {
+  if (!audioEnabled) return;
+
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "en-US";
+  msg.rate = 0.95;
+  msg.pitch = 1.0;
+  msg.volume = 1;
+
+  const voices = speechSynthesis.getVoices();
+  const english = voices.find(v => v.lang.startsWith("en"));
+
+  if (english) msg.voice = english;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
+}
+
+/* ---------- HEALTH REACTION ENGINE ---------- */
+
+let lastHealth = {
+  bpSys: 120,
+  bpDia: 80,
+  cholTotal: 180,
+  foodQuality: 0.7,
+  score: 72
+};
+
+function updateHealth(bpSys, bpDia, cholTotal, foodQuality, score) {
+  const newHealth = { bpSys, bpDia, cholTotal, foodQuality, score };
+
+  updateAura(newHealth);
+
+  if (newHealth.bpSys > lastHealth.bpSys + 10) {
+    speak("Your blood pressure is rising. Let's keep an eye on salt and stress today.");
+  }
+  if (newHealth.cholTotal > lastHealth.cholTotal + 15) {
+    speak("Your cholesterol is slightly higher. Try adding more fiber and vegetables.");
+  }
+  if (newHealth.foodQuality > lastHealth.foodQuality + 0.1) {
+    speak("Great choice! Your food quality is improving.");
+  }
+  if (newHealth.score > lastHealth.score + 5) {
+    speak("Your overall health score is improving. Well done.");
+  }
+  if (newHealth.score < lastHealth.score - 5) {
+    speak("Your health score dropped a bit. No worries, we can improve this together.");
+  }
+
+  lastHealth = newHealth;
+}
+
+/* ---------- FOOD SCAN REACTION ---------- */
+function onFoodScanned(data) {
+  if (!data || !data.name) {
+    speak("I couldn't recognize this food. Try again.");
+    return;
+  }
+
+  if (data.calories < 200) {
+    speak("This food looks healthy and supports your goals.");
+  } else {
+    speak("This food is a bit heavy. Try to balance it with lighter meals.");
+  }
+}
+
+/* ---------- PLANT POINTS REACTION ---------- */
+const oldAddPlantPoints = addPlantPoints;
+addPlantPoints = function(n) {
+  oldAddPlantPoints(n);
+
+  if (n > 0) speak("Nice! Plant points added. Great choice.");
+  if (n < 0) speak("Careful. This food reduces your plant score.");
+};
 </script>
 
 </body>
 </html>
-

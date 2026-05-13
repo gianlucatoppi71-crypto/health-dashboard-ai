@@ -168,6 +168,10 @@
 <script>
 // 4 gentle heartbeats, then slow shrink
 window.addEventListener("load", () => {
+if (window.location.hash === "#health") {
+  switchTab("health");
+}
+
   const intro = document.getElementById("intro-screen");
   const heart = document.getElementById("intro-heart");
 

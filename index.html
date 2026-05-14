@@ -42,16 +42,17 @@
   /* ------------------ AURA HEART RINGS (FIXED) ------------------ */
 .aura-wrap-new{
   position:relative;
-  width:300px;
-  height:280px;
+  width:340px;
+  height:320px;
   margin:0 auto;
   margin-top:10px;
 }
 
 /* Bigger spacing between rings */
-.ring-bp  { transform: scale(0.85); }
-.ring-chol{ transform: scale(1.05); }
-.ring-food{ transform: scale(1.25); }
+.ring-bp  { transform: scale(0.75); }   /* smallest */
+.ring-chol{ transform: scale(0.95); }   /* middle */
+.ring-food{ transform: scale(1.20); }   /* largest */
+
 
 .heart-ring{
   position:absolute;
@@ -70,9 +71,9 @@
 }
 
 /* Solid colors (easier to read) */
-.ring-bp   .heart-path{ stroke:#ff3366; }
-.ring-chol .heart-path{ stroke:#ffaa00; }
-.ring-food .heart-path{ stroke:#33dd55; }
+.ring-bp .heart-path { stroke: #ff0000 !important; }   /* red */
+.ring-chol .heart-path { stroke: #00aaff !important; } /* blue */
+.ring-food .heart-path { stroke: #ffaa00 !important; } /* gold */
 
 /* Optional pulse animations */
 @keyframes pulseBP{

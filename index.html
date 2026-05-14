@@ -577,29 +577,7 @@ function autoCalcBodyFat() {
   return clean;
 }
 
-/* ---------- AURA ENGINE ---------- */
-function updateAura(health) {
-  const { bpSys, bpDia, cholTotal, foodQuality, score } = health;
 
-  const food = document.querySelector(".ring-food");
-  const chol = document.querySelector(".ring-chol");
-  const bp   = document.querySelector(".ring-bp");
-  const heart = document.querySelector(".center-heart");
-
-  let intensity = 0.6;
-  if (score > 80) intensity = 0.9;
-  if (score < 40) intensity = 0.35;
-
-  food.style.opacity = intensity;
-  chol.style.opacity = intensity;
-  bp.style.opacity   = intensity;
-
-  let speed = 1.8;
-  if (bpSys > 140 || cholTotal > 240) speed = 2.4;
-  if (score > 80) speed = 1.2;
-
-  heart.style.animationDuration = speed + "s";
-}
 
 /* ---------- HEALTH SCORE (FIXED) ---------- */
 function setHealthScore(score){

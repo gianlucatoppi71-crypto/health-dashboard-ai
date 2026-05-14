@@ -9,60 +9,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-.bottom-nav{
-  height:86px;
-  padding:10px 18px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  border-top:1px solid #f3f6f9;
-  background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);
-}
-
-.nav-btn{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  background:none;
-  border:none;
-  color:#6b7280;
-}
-
-.nav-btn.active{
-  color:#42a5f5;
-  font-weight:700;
-}
-
-.center-wrap{
-  flex:0 0 92px;
-  display:flex;
-  justify-content:center;
-  margin-top:-28px;
-}
-
-.scan-btn{
-  width:84px;
-  height:84px;
-  border-radius:50%;
-  background:#42a5f5;
-  color:#fff;
-  border:none;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 12px 0 #2b7bb8;
-}
-
-.topbar{
-  height:56px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 16px;
-  border-bottom:1px solid #f0f3f7;
-  background:#fff;
-}
     /* ------------------------------
        GLOBAL / PAGE
     ------------------------------ */
@@ -520,12 +466,6 @@
   </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="brand">HealthHub</div>
-  <div class="links">Home • Scan</div>
-</div>
-
-
 <h1>Health Dashboard</h1>
 
 <div class="page-container">
@@ -866,26 +806,6 @@
 <div class="divider"></div>
 <script>
 window.addEventListener("load", function () {
-// ⭐ LOAD SAVED BLOOD PRESSURE
-const savedSys = localStorage.getItem("bpSys");
-const savedDia = localStorage.getItem("bpDia");
-const savedHR  = localStorage.getItem("bpHR");
-
-if (savedSys) document.getElementById("sysInput").value = savedSys;
-if (savedDia) document.getElementById("diaInput").value = savedDia;
-if (savedHR)  document.getElementById("hrInput").value  = savedHR;
-
-// ⭐ LOAD SAVED CHOLESTEROL
-const savedLDL   = localStorage.getItem("cholLDL");
-const savedHDL   = localStorage.getItem("cholHDL");
-const savedTRI   = localStorage.getItem("cholTRI");
-const savedTotal = localStorage.getItem("cholTotal");
-
-if (savedLDL)   document.getElementById("ldlInput").value = savedLDL;
-if (savedHDL)   document.getElementById("hdlInput").value = savedHDL;
-if (savedTRI)   document.getElementById("triInput").value = savedTRI;
-if (savedTotal) document.getElementById("totalInput").value = savedTotal;
-
 
 /* ============================================================
    GLOBAL STATE
@@ -1106,10 +1026,11 @@ window.saveBloodPressure = function() {
   const hr  = Number(document.getElementById("hrInput").value);
 
   lastBP = { sys, dia, hr };
-// SAVE TO LOCAL STORAGE FOR INDEX AURA
 localStorage.setItem("bpSys", sys);
 localStorage.setItem("bpDia", dia);
 localStorage.setItem("bpHR", hr);
+localStorage.setItem("auraNeedsUpdate", "true");
+
 
 
   document.getElementById("sysValue").innerText = sys || 0;
@@ -1223,7 +1144,6 @@ window.saveCholesterol = function() {
   const total = Number(document.getElementById("totalInput").value);
 
   lastChol = { ldl, hdl, tri, total };
-// SAVE TO LOCAL STORAGE FOR INDEX AURA
 localStorage.setItem("cholLDL", ldl);
 localStorage.setItem("cholHDL", hdl);
 localStorage.setItem("cholTRI", tri);
@@ -1548,18 +1468,6 @@ window.saveCholesterol = function() {
 ============================================================ */
 }); // end window.load
 </script>
-<nav class="bottom-nav">
-  <button class="nav-btn" id="nav-meals" onclick="window.location.href='index.html#meals'">Meals</button>
-<button class="nav-btn active" id="nav-health">Health</button>
-
-
-  <div class="center-wrap">
-    <button class="scan-btn" id="nav-scan" onclick="window.location.href='index.html#scan'">Scan</button>
-  </div>
-
-  <button class="nav-btn" id="nav-plants" onclick="window.location.href='index.html#plants'">Plants</button>
-  <button class="nav-btn" id="nav-profile" onclick="window.location.href='index.html#profile'">Profile</button>
-</nav>
 
 </body>
 </html>

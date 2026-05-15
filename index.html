@@ -265,13 +265,12 @@ svg {
        <!-- AURA -->
 <div class="aura-wrap-new">
 
-  <!-- FOOD RING -->
-  <svg class="heart-ring ring-food" viewBox="0 0 200 180">
+<!-- FOOD RING -->
+<svg class="heart-ring ring-food" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <path class="heart-path"
+    d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+</svg>
 
- width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-    <path class="heart-path"
-      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-  </svg>
 
   <!-- CHOLESTEROL RING -->
   <svg class="heart-ring ring-chol" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
@@ -832,11 +831,49 @@ function updateFullAura() {
 /* ---------- INITIAL AURA UPDATE ---------- */
 updateFullAura();
 
-/* ---------- AUTO UPDATE WHEN RETURNING FROM HEALTH PAGE ---------- */
-if (localStorage.getItem("auraNeedsUpdate") === "true") {
-    updateFullAura();
-    localStorage.removeItem("auraNeedsUpdate");
+function getNumber(key, fallback = 0) {
+  const v = localStorage.getItem(key);
+  return v ? Number(v) : fallback;
 }
+
+function updateAuraRingsFromStorage() {
+  const needs = localStorage.getItem("auraNeedsUpdate");
+  if (needs !== "true") return;
+
+  const sys   = getNumber("bpSys");
+  const dia   = getNumber("bpDia");
+  const hr    = getNumber("bpHR");
+  const ldl   = getNumber("cholLDL");
+  const hdl   = getNumber("cholHDL");
+  const tri   = getNumber("cholTRI");
+  const total = getNumber("cholTotal");
+
+  let bpColor   = "#00ff99";
+  let cholColor = "#00ff99";
+  let foodColor = "#00ff99";
+
+  if (sys > 139 || dia > 89) bpColor = "#ff3366";
+  else if (sys > 120 || dia > 80) bpColor = "#ffcc00";
+
+  if (ldl > 5 || total > 6.2) cholColor = "#ff3366";
+  else if (ldl > 3 || total > 5) cholColor = "#ffcc00";
+
+  foodColor = "#ffaa00";
+
+  const bpPath   = document.querySelector(".ring-bp .heart-path");
+  const cholPath = document.querySelector(".ring-chol .heart-path");
+  const foodPath = document.querySelector(".ring-food .heart-path");
+
+  if (bpPath)   bpPath.style.stroke   = bpColor;
+  if (cholPath) cholPath.style.stroke = cholColor;
+  if (foodPath) foodPath.style.stroke = foodColor;
+
+  localStorage.setItem("auraNeedsUpdate", "false");
+}
+
+window.addEventListener("load",  updateAuraRingsFromStorage);
+window.addEventListener("focus", updateAuraRingsFromStorage);
+
 
 
 </script>

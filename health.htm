@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -363,7 +363,7 @@
       color: #555;
     }
 
-    /* ------------------------------
+ /* ------------------------------
        GAUGE / CHARTS
     ------------------------------ */
     .gauge-wrapper {
@@ -1137,6 +1137,8 @@ localStorage.setItem("auraNeedsUpdate", "true");
 
   addWeeklyEntry();
   updateHealthScore();
+  /* ⭐ NEW — UPDATE AURA */
+  updateAuraFromData();
 };
 
 function updateBPBars(sys, dia) {
@@ -1575,7 +1577,6 @@ function buildLongCholAdvice(ldl, hdl, tri, total) {
   text += "You absolutely can improve these numbers. With consistent choices, your heart will thank you. I am here to guide you every day.";
   return text;
 }
-
 /* -----------------------------
    COMBINED SPEECH LOGIC (C3)
 ----------------------------- */
@@ -1592,9 +1593,12 @@ function maybeSpeakCombined() {
    OVERRIDE SAVE BLOOD PRESSURE
 ----------------------------- */
 const originalSaveBP = window.saveBloodPressure;
-window.saveBloodPressure = function() {
-  originalSaveBP();
+window.saveBloodPressure = function () {
+  originalSaveBP();   // run the real save
   lastBPTime = Date.now();
+
+  /* ⭐ UPDATE AURA */
+  updateAuraFromData();
 
   setTimeout(() => {
     if (Math.abs(lastBPTime - lastCholTime) > 10000) {
@@ -1609,9 +1613,12 @@ window.saveBloodPressure = function() {
    OVERRIDE SAVE CHOLESTEROL
 ----------------------------- */
 const originalSaveChol = window.saveCholesterol;
-window.saveCholesterol = function() {
-  originalSaveChol();
+window.saveCholesterol = function () {
+  originalSaveChol();   // run the real save
   lastCholTime = Date.now();
+
+  /* ⭐ UPDATE AURA */
+  updateAuraFromData();
 
   setTimeout(() => {
     if (Math.abs(lastBPTime - lastCholTime) > 10000) {
@@ -1627,18 +1634,6 @@ window.saveCholesterol = function() {
 ============================================================ */
 }); // end window.load
 </script>
-<nav class="bottom-nav">
-  <button class="nav-btn" id="nav-meals" onclick="window.location.href='index.html#meals'">Meals</button>
-<button class="nav-btn active" id="nav-health">Health</button>
-
-
-  <div class="center-wrap">
-    <button class="scan-btn" id="nav-scan" onclick="window.location.href='index.html#scan'">Scan</button>
-  </div>
-
-  <button class="nav-btn" id="nav-plants" onclick="window.location.href='index.html#plants'">Plants</button>
-  <button class="nav-btn" id="nav-profile" onclick="window.location.href='index.html#profile'">Profile</button>
-</nav>
 
 </body>
 </html>

@@ -39,7 +39,7 @@
   .tab{display:none;opacity:0;transition:opacity .25s;}
   .tab.active{display:block;opacity:1;}
 
-  /* ------------------ AURA HEART RINGS (FIXED) ------------------ */
+/* ------------------ AURA HEART RINGS (DYNAMIC, MEDICAL) ------------------ */
 .aura-wrap-new{
   position:relative;
   width:340px;
@@ -53,7 +53,6 @@
 .ring-chol{ transform: scale(0.95); }   /* middle */
 .ring-food{ transform: scale(1.20); }   /* largest */
 
-
 .heart-ring{
   position:absolute;
   top:0; left:0;
@@ -61,19 +60,30 @@
   height:280px;
 }
 
-/* THICKER neon strokes */
+/* Base stroke, color will be set by JS */
 .heart-path{
   fill:none;
   stroke-width:14px;
   stroke-linecap:round;
+  stroke:#cccccc;
   filter: drop-shadow(0 0 12px currentColor)
           drop-shadow(0 0 24px currentColor);
 }
 
-/* Solid colors (easier to read) */
-.ring-bp .heart-path { stroke: #ff0000 !important; }   /* red */
-.ring-chol .heart-path { stroke: #00aaff !important; } /* blue */
-.ring-food .heart-path { stroke: #ffaa00 !important; } /* gold */
+/* Center heart */
+.center-heart{
+  position:absolute;
+  top:40px; left:40px;
+  width:220px; height:220px;
+}
+
+.center-heart .heart-fill{
+  fill:#4ade80; /* default soft green */
+  filter: drop-shadow(0 0 10px #4ade80)
+          drop-shadow(0 0 20px #4ade80);
+  animation:heartPulse 1.8s infinite ease-in-out;
+}
+
 
 /* Optional pulse animations */
 @keyframes pulseBP{
@@ -724,16 +734,64 @@ function speak(text) {
   speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 }
-
 /* ---------- HEALTH REACTION ENGINE ---------- */
 
 let lastHealth = {
-  bpSys: 120,
-  bpDia: 80,
-  cholTotal: 180,
-  foodQuality: 0.7,
+  bpSys: Number(localStorage.getItem("bpSys") || 120),
+  bpDia: Number(localStorage.getItem("bpDia") || 80),
+  cholTotal: Number(localStorage.getItem("cholTotal") || 5.0),
+  foodQuality: (Number(localStorage.getItem("foodScore") || 60) / 100),
   score: 72
 };
+
+function updateAura(state) {
+  const bpPath   = document.querySelector(".ring-bp .heart-path");
+  const cholPath = document.querySelector(".ring-chol .heart-path");
+  const foodPath = document.querySelector(".ring-food .heart-path");
+  const heart    = document.querySelector(".center-heart .heart-fill");
+  if (!bpPath || !cholPath || !foodPath || !heart) return;
+
+  const bpSys = state.bpSys;
+  const bpDia = state.bpDia;
+  const cholTotal = state.cholTotal;
+  const foodScore = (state.foodQuality || 0.6) * 100;
+  const score = state.score;
+
+  // ---- BP COLOR (NHS-style) ----
+  let bpColor = "#22c55e"; // green
+  if (bpSys >= 160 || bpDia >= 100)      bpColor = "#ef4444"; // red
+  else if (bpSys >= 140 || bpDia >= 90)  bpColor = "#f97316"; // orange
+  else if (bpSys >= 120 || bpDia >= 80)  bpColor = "#eab308"; // yellow
+
+  // ---- CHOLESTEROL COLOR ----
+  let cholColor = "#22c55e"; // green
+  if (cholTotal > 6.2)       cholColor = "#ef4444"; // red
+  else if (cholTotal >= 5.0) cholColor = "#f97316"; // orange
+  else if (cholTotal >= 3.0) cholColor = "#eab308"; // yellow
+
+  // ---- FOOD COLOR ----
+  let foodColor = "#22c55e"; // green
+  if (foodScore <= 2)        foodColor = "#ef4444"; // red
+  else if (foodScore <= 4)   foodColor = "#f97316"; // orange
+  else if (foodScore <= 7)   foodColor = "#eab308"; // yellow
+
+  // ---- OVERALL HEART COLOR ----
+  let heartColor = "#22c55e"; // green
+  if (score < 40)       heartColor = "#ef4444"; // red
+  else if (score < 60)  heartColor = "#f97316"; // orange
+  else if (score < 80)  heartColor = "#eab308"; // yellow
+
+  bpPath.style.stroke   = bpColor;
+  cholPath.style.stroke = cholColor;
+  foodPath.style.stroke = foodColor;
+
+  bpPath.style.filter   = `drop-shadow(0 0 12px ${bpColor}) drop-shadow(0 0 24px ${bpColor})`;
+  cholPath.style.filter = `drop-shadow(0 0 12px ${cholColor}) drop-shadow(0 0 24px ${cholColor})`;
+  foodPath.style.filter = `drop-shadow(0 0 12px ${foodColor}) drop-shadow(0 0 24px ${foodColor})`;
+
+  heart.setAttribute("fill", heartColor);
+  heart.style.filter = `drop-shadow(0 0 10px ${heartColor}) drop-shadow(0 0 20px ${heartColor})`;
+}
 
 function updateHealth(bpSys, bpDia, cholTotal, foodQuality, score) {
   const newHealth = { bpSys, bpDia, cholTotal, foodQuality, score };
@@ -743,7 +801,7 @@ function updateHealth(bpSys, bpDia, cholTotal, foodQuality, score) {
   if (newHealth.bpSys > lastHealth.bpSys + 10) {
     speak("Your blood pressure is rising. Let's keep an eye on salt and stress today.");
   }
-  if (newHealth.cholTotal > lastHealth.cholTotal + 15) {
+  if (newHealth.cholTotal > lastHealth.cholTotal + 0.5) {
     speak("Your cholesterol is slightly higher. Try adding more fiber and vegetables.");
   }
   if (newHealth.foodQuality > lastHealth.foodQuality + 0.1) {
@@ -780,101 +838,33 @@ addPlantPoints = function(n) {
 
   if (n > 0) speak("Nice! Plant points added. Great choice.");
   if (n < 0) speak("Careful. This food reduces your plant score.");
+
+  const foodScore = Math.max(0, Math.min(100, (lastHealth.foodQuality || 0.6) * 100 + n));
+  lastHealth.foodQuality = foodScore / 100;
+  updateAura(lastHealth);
 };
 
-/* ---------- AURA CONNECTION (STEP 3) ---------- */
-function updateAura(bpSys, bpDia, cholTotal) {
-    const inner = document.querySelector('.ring-bp');
-    const middle = document.querySelector('.ring-chol');
-    const outer = document.querySelector('.ring-food');
+/* ============================================================
+   AURA WRAPPER — SYNC FROM LOCAL STORAGE
+============================================================ */
+function updateAuraFromData() {
+  const bpSys = Number(localStorage.getItem("bpSys") || 120);
+  const bpDia = Number(localStorage.getItem("bpDia") || 80);
+  const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
+  const foodScore = Number(localStorage.getItem("foodScore") || 60);
+  const score = Number(document.getElementById("health-score").textContent || 72);
 
-    // BLOOD PRESSURE → INNER RING
-    const bpAvg = (bpSys + bpDia) / 2;
-    if (bpAvg > 140) {
-        inner.style.stroke = "#ff0033";
-        inner.style.animation = "pulseFast 1s infinite";
-    } else {
-        inner.style.stroke = "#00cc66";
-        inner.style.animation = "pulseSlow 3s infinite";
-    }
+  const state = {
+    bpSys,
+    bpDia,
+    cholTotal,
+    foodQuality: foodScore / 100,
+    score
+  };
 
-    // CHOLESTEROL → MIDDLE RING
-    if (cholTotal > 6.2) {
-        middle.style.stroke = "#ff6600";
-    } else {
-        middle.style.stroke = "#00cc99";
-    }
-
-    // FOOD SCORE → OUTER RING
-    const foodScore = Number(localStorage.getItem("foodScore") || 70);
-    if (foodScore < 50) {
-        outer.style.stroke = "#ff3300";
-    } else {
-        outer.style.stroke = "#33cc33";
-    }
+  lastHealth = state;
+  updateAura(state);
 }
-
-/* ---------- FULL AURA UPDATE (REBUILT) ---------- */
-function updateFullAura() {
-    const bpSys = Number(localStorage.getItem("bpSys") || 120);
-    const bpDia = Number(localStorage.getItem("bpDia") || 80);
-    const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
-    const foodScore = Number(localStorage.getItem("foodScore") || 70);
-
-    updateAura(bpSys, bpDia, cholTotal);
-
-    const score = Number(document.getElementById("health-score").textContent || 72);
-
-    updateHealth(bpSys, bpDia, cholTotal, foodScore / 100, score);
-}
-
-/* ---------- INITIAL AURA UPDATE ---------- */
-updateFullAura();
-
-function getNumber(key, fallback = 0) {
-  const v = localStorage.getItem(key);
-  return v ? Number(v) : fallback;
-}
-
-function updateAuraRingsFromStorage() {
-  const needs = localStorage.getItem("auraNeedsUpdate");
-  if (needs !== "true") return;
-
-  const sys   = getNumber("bpSys");
-  const dia   = getNumber("bpDia");
-  const hr    = getNumber("bpHR");
-  const ldl   = getNumber("cholLDL");
-  const hdl   = getNumber("cholHDL");
-  const tri   = getNumber("cholTRI");
-  const total = getNumber("cholTotal");
-
-  let bpColor   = "#00ff99";
-  let cholColor = "#00ff99";
-  let foodColor = "#00ff99";
-
-  if (sys > 139 || dia > 89) bpColor = "#ff3366";
-  else if (sys > 120 || dia > 80) bpColor = "#ffcc00";
-
-  if (ldl > 5 || total > 6.2) cholColor = "#ff3366";
-  else if (ldl > 3 || total > 5) cholColor = "#ffcc00";
-
-  foodColor = "#ffaa00";
-
-  const bpPath   = document.querySelector(".ring-bp .heart-path");
-  const cholPath = document.querySelector(".ring-chol .heart-path");
-  const foodPath = document.querySelector(".ring-food .heart-path");
-
-  if (bpPath)   bpPath.style.stroke   = bpColor;
-  if (cholPath) cholPath.style.stroke = cholColor;
-  if (foodPath) foodPath.style.stroke = foodColor;
-
-  localStorage.setItem("auraNeedsUpdate", "false");
-}
-
-window.addEventListener("load",  updateAuraRingsFromStorage);
-window.addEventListener("focus", updateAuraRingsFromStorage);
-
-
 
 </script>
 

@@ -373,7 +373,14 @@ svg { overflow: visible !important; }
 </div> <!-- END .app -->
 
 <script>
-
+/* ---------- HEALTH REACTION ENGINE ---------- */
+let lastHealth = {
+  bpSys: Number(localStorage.getItem("bpSys") || 120),
+  bpDia: Number(localStorage.getItem("bpDia") || 80),
+  cholTotal: Number(localStorage.getItem("cholTotal") || 5.0),
+  foodQuality: (Number(localStorage.getItem("foodScore") || 60) / 100),
+  score: 72
+};
 /* ---------- TABS ---------- */
 const tabs = {
   profile: document.getElementById('tab-profile'),
@@ -542,6 +549,7 @@ function saveProfile() {
 
   setHealthScore(score);
 
+
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
   document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
@@ -637,13 +645,7 @@ function speak(text) {
 }
 
 /* ---------- HEALTH REACTION ENGINE ---------- */
-let lastHealth = {
-  bpSys: Number(localStorage.getItem("bpSys") || 120),
-  bpDia: Number(localStorage.getItem("bpDia") || 80),
-  cholTotal: Number(localStorage.getItem("cholTotal") || 5.0),
-  foodQuality: (Number(localStorage.getItem("foodScore") || 60) / 100),
-  score: 72
-};
+
 
 function updateAura(state) {
   const bpPath   = document.querySelector(".ring-bp .heart-path");

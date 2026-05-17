@@ -592,7 +592,7 @@ function saveProfile() {
 
 /* ---------- INIT ---------- */
 (function init(){
-  setHealthScore(72);
+  
   updateAuraFromData();   // IMPORTANT FIX
   switchTab('profile');
   toggleHip();
@@ -768,21 +768,15 @@ function updateAuraFromData() {
   lastHealth = state;
   updateAura(state);
 }
-/* ---------- AURA AUTO-REFRESH WHEN RETURNING FROM HEALTH PAGE ---------- */
+/* ---------- AURA AUTO-REFRESH ---------- */
 document.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("auraNeedsUpdate") === "true") {
-    updateAuraFromData();
-    localStorage.setItem("auraNeedsUpdate", "false");
-  }
+  updateAuraFromData();
 });
 
-/* Also refresh aura whenever the user returns to the tab */
 window.addEventListener("focus", () => {
-  if (localStorage.getItem("auraNeedsUpdate") === "true") {
-    updateAuraFromData();
-    localStorage.setItem("auraNeedsUpdate", "false");
-  }
+  updateAuraFromData();
 });
+
 
 </script>
 

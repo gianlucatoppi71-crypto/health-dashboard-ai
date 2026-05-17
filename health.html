@@ -1030,14 +1030,6 @@ function speak(text) {
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
-
-          /* ============================================================
-             ENSURE VOICES LOAD CORRECTLY
-          ============================================================ */
-          speechSynthesis.onvoiceschanged = () => {
-            speechSynthesis.getVoices(); // preload voices
-          };
-
           /* ============================================================
              HEALTH SCORE ENGINE
           ============================================================ */
@@ -1655,23 +1647,24 @@ function speak(text) {
           /* ============================================================
              SPEAK SUMMARY BUTTON — NHS DOCTOR READING
           ============================================================ */
-          function speakHealthSummary() {
-            if (!voiceEnabled) return;
+        function speakHealthSummary() {
+  if (!voiceEnabled) return;
 
-            const sys   = lastBP.sys || Number(document.getElementById("sysValue").innerText) || 0;
-            const dia   = lastBP.dia || Number(document.getElementById("diaValue").innerText) || 0;
-            const hr    = lastBP.hr  || Number(document.getElementById("hrValue").innerText)  || 0;
+  const sys   = Number(lastBP.sys   || document.getElementById("sysValue").innerText   || 0);
+  const dia   = Number(lastBP.dia   || document.getElementById("diaValue").innerText   || 0);
+  const hr    = Number(lastBP.hr    || document.getElementById("hrValue").innerText    || 0);
 
-            const ldl   = lastChol.ldl   || Number(document.getElementById("ldlValue").innerText)   || 0;
-            const hdl   = lastChol.hdl   || Number(document.getElementById("hdlValue").innerText)   || 0;
-            const tri   = lastChol.tri   || Number(document.getElementById("triValue").innerText)   || 0;
-            const total = lastChol.total || Number(document.getElementById("totalValue").innerText) || 0;
+  const ldl   = Number(lastChol.ldl || document.getElementById("ldlValue").innerText   || 0);
+  const hdl   = Number(lastChol.hdl || document.getElementById("hdlValue").innerText   || 0);
+  const tri   = Number(lastChol.tri || document.getElementById("triValue").innerText   || 0);
+  const total = Number(lastChol.total || document.getElementById("totalValue").innerText || 0);
 
-            const bpText   = buildLongBPAdvice(sys, dia, hr);
-            const cholText = buildLongCholAdvice(ldl, hdl, tri, total);
+  const bpText   = buildLongBPAdvice(sys, dia, hr);
+  const cholText = buildLongCholAdvice(ldl, hdl, tri, total);
 
-            speak(bpText + " " + cholText);
-          }
+  speak(bpText + " " + cholText);
+}
+
 
           /* ============================================================
              TREND RANGE BUTTONS

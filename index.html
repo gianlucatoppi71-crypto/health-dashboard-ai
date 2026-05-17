@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -7,37 +7,35 @@
 
 <style>
 
-#intro-screen { display:none !important; }
+:root{
+  --accent:#42a5f5;
+  --accent-dark:#2b7bb8;
+  --bg:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+}
 
-  :root{
-    --accent:#42a5f5;
-    --accent-dark:#2b7bb8;
-    --bg:#ffffff;
-    --text:#1f2937;
-    --muted:#6b7280;
-  }
+html,body{
+  height:100%;margin:0;
+  font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+  background:#fff;color:var(--text);
+}
 
-  html,body{
-    height:100%;margin:0;
-    font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-    background:#fff;color:var(--text);
-  }
+.app{
+  display:flex;flex-direction:column;
+  height:100vh;max-width:480px;margin:0 auto;
+  border-left:1px solid #eee;border-right:1px solid #eee;
+}
 
-  .app{
-    display:flex;flex-direction:column;
-    height:100vh;max-width:480px;margin:0 auto;
-    border-left:1px solid #eee;border-right:1px solid #eee;
-  }
+.topbar{
+  height:56px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;
+  border-bottom:1px solid #f0f3f7;background:#fff;
+}
 
-  .topbar{
-    height:56px;display:flex;align-items:center;
-    justify-content:space-between;padding:0 16px;
-    border-bottom:1px solid #f0f3f7;background:#fff;
-  }
-
-  .content{flex:1;overflow:auto;padding:18px;}
-  .tab{display:none;opacity:0;transition:opacity .25s;}
-  .tab.active{display:block;opacity:1;}
+.content{flex:1;overflow:auto;padding:18px;}
+.tab{display:none;opacity:0;transition:opacity .25s;}
+.tab.active{display:block;opacity:1;}
 
 /* ------------------ AURA HEART RINGS (DYNAMIC, MEDICAL) ------------------ */
 .aura-wrap-new{
@@ -48,10 +46,10 @@
   margin-top:10px;
 }
 
-/* Bigger spacing between rings */
-.ring-bp  { transform: scale(0.75); }   /* smallest */
-.ring-chol{ transform: scale(0.95); }   /* middle */
-.ring-food{ transform: scale(1.20); }   /* largest */
+/* Ring scaling */
+.ring-bp  { transform: scale(0.75); }
+.ring-chol{ transform: scale(0.95); }
+.ring-food{ transform: scale(1.20); }
 
 .heart-ring{
   position:absolute;
@@ -60,7 +58,7 @@
   height:280px;
 }
 
-/* Base stroke, color will be set by JS */
+/* Base stroke (JS will recolor) */
 .heart-path{
   fill:none;
   stroke-width:14px;
@@ -78,26 +76,23 @@
 }
 
 .center-heart .heart-fill{
-  fill:#4ade80; /* default soft green */
+  fill:#4ade80;
   filter: drop-shadow(0 0 10px #4ade80)
           drop-shadow(0 0 20px #4ade80);
   animation:heartPulse 1.8s infinite ease-in-out;
 }
 
-
-/* Optional pulse animations */
+/* Pulse animations */
 @keyframes pulseBP{
   0%{stroke-width:14px;}
   50%{stroke-width:18px;}
   100%{stroke-width:14px;}
 }
-
 @keyframes pulseChol{
   0%{stroke-width:14px;}
   50%{stroke-width:17px;}
   100%{stroke-width:14px;}
 }
-
 @keyframes pulseFood{
   0%{stroke-width:14px;}
   50%{stroke-width:16px;}
@@ -108,158 +103,72 @@
 .ring-chol .heart-path{ animation:pulseChol 2.4s infinite ease-in-out; }
 .ring-food .heart-path{ animation:pulseFood 3s infinite ease-in-out; }
 
-/* Center heart */
-.center-heart{
-  position:absolute;
-  top:40px; left:40px;
-  width:220px; height:220px;
+/* PROFILE FIELDS */
+.profile-fields{
+  width:100%;padding:12px 6px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
 }
 
-.center-heart .heart-fill{
-  fill:#ff3366;
-  filter: drop-shadow(0 0 10px #ff3366)
-          drop-shadow(0 0 20px #ff3366);
-  animation:heartPulse 1.8s infinite ease-in-out;
+.field{
+  background:#fff;border-radius:12px;padding:10px;
+  border:1px solid #f1f5f9;
 }
 
-  /* ------------------ PROFILE FIELDS ------------------ */
-  .profile-fields{
-    width:100%;padding:12px 6px;
-    display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
-  }
-
-  .field{
-    background:#fff;border-radius:12px;padding:10px;
-    border:1px solid #f1f5f9;
-  }
-
-  .field label{font-size:12px;color:var(--muted);}
-  .field input,.field select{
-    width:100%;padding:6px;border-radius:8px;
-    border:1px solid #ddd;font-size:15px;
-  }
-
-  .value{font-weight:700;font-size:16px;}
-
-  .btn-3d{
-    background:var(--accent);color:#fff;padding:12px 18px;
-    border-radius:12px;border:none;font-weight:700;
-    box-shadow:0 8px 0 var(--accent-dark);
-  }
-
-  .section-card{
-    background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;
-    border:1px solid #f1f5f9;
-  }
-
-  .bottom-nav{
-    height:86px;padding:10px 18px;display:flex;
-    align-items:flex-end;justify-content:space-between;
-    border-top:1px solid #f3f6f9;
-    background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);
-  }
-
-  .nav-btn{
-    flex:1;display:flex;flex-direction:column;
-    align-items:center;background:none;border:none;
-    color:var(--muted);
-  }
-
-  .nav-btn.active{color:var(--accent);font-weight:700;}
-
-  .center-wrap{flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
-  .scan-btn{
-    width:84px;height:84px;border-radius:50%;
-    background:var(--accent);color:#fff;border:none;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 12px 0 var(--accent-dark);
-  }
-
-  .muted{color:var(--muted);}
-.heart-ring svg,
-.center-heart svg {
-  background: transparent !important;
+.field label{font-size:12px;color:var(--muted);}
+.field input,.field select{
+  width:100%;padding:6px;border-radius:8px;
+  border:1px solid #ddd;font-size:15px;
 }
 
-.heart-path {
-  filter: drop-shadow(0 0 12px currentColor)
-          drop-shadow(0 0 24px currentColor);
+.value{font-weight:700;font-size:16px;}
+
+.btn-3d{
+  background:var(--accent);color:#fff;padding:12px 18px;
+  border-radius:12px;border:none;font-weight:700;
+  box-shadow:0 8px 0 var(--accent-dark);
 }
 
-svg {
-  overflow: visible !important;
+.section-card{
+  background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;
+  border:1px solid #f1f5f9;
 }
+
+/* Bottom navigation */
+.bottom-nav{
+  height:86px;padding:10px 18px;display:flex;
+  align-items:flex-end;justify-content:space-between;
+  border-top:1px solid #f3f6f9;
+  background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);
+}
+
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;background:none;border:none;
+  color:var(--muted);
+}
+
+.nav-btn.active{color:var(--accent);font-weight:700;}
+
+.center-wrap{flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
+.scan-btn{
+  width:84px;height:84px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 12px 0 var(--accent-dark);
+}
+
+.muted{color:var(--muted);}
+
+svg { overflow: visible !important; }
 
 </style>
 </head>
 
 <body>
-
-<!-- INTRO HEART REMOVED COMPLETELY -->
-
-<!-- SVG GRADIENTS FOR HEART + RINGS -->
-<svg width="0" height="0">
-  <defs>
-
-    <!-- FOOD RING GRADIENT -->
-    <linearGradient id="grad-food" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00ff88"/>
-      <stop offset="50%" stop-color="#ffee00"/>
-      <stop offset="100%" stop-color="#ff0033"/>
-    </linearGradient>
-
-    <!-- CHOLESTEROL RING GRADIENT -->
-    <linearGradient id="grad-chol" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00ffcc"/>
-      <stop offset="40%" stop-color="#ff8800"/>
-      <stop offset="100%" stop-color="#ff0033"/>
-    </linearGradient>
-
-    <!-- BLOOD PRESSURE RING GRADIENT -->
-    <linearGradient id="grad-bp" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00ff55"/>
-      <stop offset="40%" stop-color="#ffcc00"/>
-      <stop offset="100%" stop-color="#ff0000"/>
-    </linearGradient>
-
-    <!-- CENTER HEART GRADIENT -->
-    <radialGradient id="grad-heart" cx="50%" cy="50%" r="60%">
-      <stop offset="0%" stop-color="#ff99bb"/>
-      <stop offset="50%" stop-color="#ff3366"/>
-      <stop offset="100%" stop-color="#cc0033"/>
-    </radialGradient>
-
-  </defs>
-</svg>
-
 <div class="app">
 
   <!-- AUDIO TOGGLE -->
   <div id="audio-toggle" class="audio-btn">🔊</div>
-
-  <style>
-    .audio-btn {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      width: 42px;
-      height: 42px;
-      background: #42a5f5;
-      color: #fff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-      z-index: 9999;
-      user-select: none;
-    }
-    .audio-btn.muted {
-      background: #999;
-    }
-  </style>
 
   <div class="topbar">
     <div class="brand">HealthHub</div>
@@ -272,47 +181,44 @@ svg {
     <section id="tab-profile" class="tab active">
       <div class="profile-hero">
 
-       <!-- AURA -->
-<div class="aura-wrap-new">
+        <!-- AURA -->
+        <div class="aura-wrap-new">
 
-<!-- FOOD RING -->
-<svg class="heart-ring ring-food" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-  <path class="heart-path"
-    d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-</svg>
+          <!-- FOOD RING -->
+          <svg class="heart-ring ring-food" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
 
+          <!-- CHOLESTEROL RING -->
+          <svg class="heart-ring ring-chol" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
 
-  <!-- CHOLESTEROL RING -->
-  <svg class="heart-ring ring-chol" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-    <path class="heart-path"
-      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-  </svg>
+          <!-- BLOOD PRESSURE RING -->
+          <svg class="heart-ring ring-bp" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
 
-  <!-- BLOOD PRESSURE RING -->
-  <svg class="heart-ring ring-bp" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-    <path class="heart-path"
-      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-  </svg>
+          <!-- CENTER HEART -->
+          <svg class="center-heart" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-fill"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
 
-  <!-- CENTER HEART -->
-  <svg class="center-heart" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-    <path class="heart-fill"
-      d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-  </svg>
-
-</div>
+        </div>
 
         <div style="text-align:center;">
-   <div id="health-label" style="
-  font-weight:800;
-  font-size:16px;
-  margin-top:28px;
-  position:relative;
-  top:18px;
-  margin-bottom:18px;
-">
-
-
+          <div id="health-label" style="
+            font-weight:800;
+            font-size:16px;
+            margin-top:28px;
+            position:relative;
+            top:18px;
+            margin-bottom:18px;
+          ">
             Health Score: <span id="health-score">72</span>
           </div>
           <div class="muted">Aura indicates overall health</div>
@@ -451,11 +357,10 @@ svg {
     </section>
 
   </main>
-
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
-    <button class="nav-btn" id="nav-health" onclick="window.location.href='health.htm'">Health</button>
-
+    <button class="nav-btn" id="nav-health" onclick="window.location.href='health.html'">Health</button>
 
     <div class="center-wrap">
       <button class="scan-btn" id="nav-scan" onclick="centerScanClick()">Scan</button>
@@ -465,11 +370,9 @@ svg {
     <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">Profile</button>
   </nav>
 
-</div>
+</div> <!-- END .app -->
+
 <script>
-const bpSys = Number(localStorage.getItem("bpSys") || 120);
-const bpDia = Number(localStorage.getItem("bpDia") || 80);
-const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
 
 /* ---------- TABS ---------- */
 const tabs = {
@@ -489,8 +392,8 @@ function switchTab(name){
 /* ---------- SHOW/HIDE HIP FIELD ---------- */
 function toggleHip(){
   const gender = document.getElementById("gender").value;
-  const hipField = document.getElementById("hip-field");
-  hipField.style.display = (gender === "female") ? "block" : "none";
+  document.getElementById("hip-field").style.display =
+    (gender === "female") ? "block" : "none";
 }
 
 /* ---------- FOOD SCANNER ---------- */
@@ -555,7 +458,7 @@ function addPlantPoints(n){
   document.getElementById('daily-points').textContent = dailyPoints;
 }
 
-/* ---------- NAVY BODY FAT FORMULAS ---------- */
+/* ---------- BODY FAT FORMULA ---------- */
 function autoCalcBodyFat() {
   const gender = document.getElementById("gender").value;
   const waist = Number(document.getElementById("waist").value);
@@ -588,9 +491,7 @@ function autoCalcBodyFat() {
   return clean;
 }
 
-
-
-/* ---------- HEALTH SCORE (FIXED) ---------- */
+/* ---------- HEALTH SCORE ---------- */
 function setHealthScore(score){
   score = Math.max(0, Math.min(100, score));
   document.getElementById('health-score').textContent = score;
@@ -601,7 +502,7 @@ function setHealthScore(score){
 
 /* ---------- ENABLE EDIT MODE ---------- */
 function enableEdit() {
-  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist, #neck, #hip, #bodyfat, #gender")
+  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = false);
 
   document.getElementById("calc-fat-btn").disabled = false;
@@ -643,7 +544,7 @@ function saveProfile() {
 
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
-  document.querySelectorAll("#name, #age, #weight, #height, #activity, #waist, #neck, #hip, #bodyfat, #gender")
+  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = true);
 
   document.getElementById("calc-fat-btn").disabled = true;
@@ -692,12 +593,12 @@ function saveProfile() {
 /* ---------- INIT ---------- */
 (function init(){
   setHealthScore(72);
+  updateAuraFromData();   // IMPORTANT FIX
   switchTab('profile');
   toggleHip();
 })();
 
-/* ---------- ENGLISH VOICE ENGINE ---------- */
-
+/* ---------- AUDIO ENGINE ---------- */
 let audioEnabled = JSON.parse(localStorage.getItem("audioEnabled") || "true");
 
 function updateAudioButton() {
@@ -734,8 +635,8 @@ function speak(text) {
   speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 }
-/* ---------- HEALTH REACTION ENGINE ---------- */
 
+/* ---------- HEALTH REACTION ENGINE ---------- */
 let lastHealth = {
   bpSys: Number(localStorage.getItem("bpSys") || 120),
   bpDia: Number(localStorage.getItem("bpDia") || 80),
@@ -757,29 +658,29 @@ function updateAura(state) {
   const foodScore = (state.foodQuality || 0.6) * 100;
   const score = state.score;
 
-  // ---- BP COLOR (NHS-style) ----
-  let bpColor = "#22c55e"; // green
-  if (bpSys >= 160 || bpDia >= 100)      bpColor = "#ef4444"; // red
-  else if (bpSys >= 140 || bpDia >= 90)  bpColor = "#f97316"; // orange
-  else if (bpSys >= 120 || bpDia >= 80)  bpColor = "#eab308"; // yellow
+  /* BP COLOR */
+  let bpColor = "#22c55e";
+  if (bpSys >= 160 || bpDia >= 100)      bpColor = "#ef4444";
+  else if (bpSys >= 140 || bpDia >= 90)  bpColor = "#f97316";
+  else if (bpSys >= 120 || bpDia >= 80)  bpColor = "#eab308";
 
-  // ---- CHOLESTEROL COLOR ----
-  let cholColor = "#22c55e"; // green
-  if (cholTotal > 6.2)       cholColor = "#ef4444"; // red
-  else if (cholTotal >= 5.0) cholColor = "#f97316"; // orange
-  else if (cholTotal >= 3.0) cholColor = "#eab308"; // yellow
+  /* CHOLESTEROL COLOR */
+  let cholColor = "#22c55e";
+  if (cholTotal > 6.2)       cholColor = "#ef4444";
+  else if (cholTotal >= 5.0) cholColor = "#f97316";
+  else if (cholTotal >= 3.0) cholColor = "#eab308";
 
-  // ---- FOOD COLOR ----
-  let foodColor = "#22c55e"; // green
-  if (foodScore <= 2)        foodColor = "#ef4444"; // red
-  else if (foodScore <= 4)   foodColor = "#f97316"; // orange
-  else if (foodScore <= 7)   foodColor = "#eab308"; // yellow
+  /* FOOD COLOR */
+  let foodColor = "#22c55e";
+  if (foodScore <= 2)        foodColor = "#ef4444";
+  else if (foodScore <= 4)   foodColor = "#f97316";
+  else if (foodScore <= 7)   foodColor = "#eab308";
 
-  // ---- OVERALL HEART COLOR ----
-  let heartColor = "#22c55e"; // green
-  if (score < 40)       heartColor = "#ef4444"; // red
-  else if (score < 60)  heartColor = "#f97316"; // orange
-  else if (score < 80)  heartColor = "#eab308"; // yellow
+  /* HEART COLOR */
+  let heartColor = "#22c55e";
+  if (score < 40)       heartColor = "#ef4444";
+  else if (score < 60)  heartColor = "#f97316";
+  else if (score < 80)  heartColor = "#eab308";
 
   bpPath.style.stroke   = bpColor;
   cholPath.style.stroke = cholColor;
@@ -831,7 +732,7 @@ function onFoodScanned(data) {
   }
 }
 
-/* ---------- PLANT POINTS REACTION ---------- */
+/* ---------- PLANT POINTS REACTION (FIXED) ---------- */
 const oldAddPlantPoints = addPlantPoints;
 addPlantPoints = function(n) {
   oldAddPlantPoints(n);
@@ -841,12 +742,13 @@ addPlantPoints = function(n) {
 
   const foodScore = Math.max(0, Math.min(100, (lastHealth.foodQuality || 0.6) * 100 + n));
   lastHealth.foodQuality = foodScore / 100;
+
+  localStorage.setItem("foodScore", foodScore);  // IMPORTANT FIX
+
   updateAura(lastHealth);
 };
 
-/* ============================================================
-   AURA WRAPPER — SYNC FROM LOCAL STORAGE
-============================================================ */
+/* ---------- AURA WRAPPER ---------- */
 function updateAuraFromData() {
   const bpSys = Number(localStorage.getItem("bpSys") || 120);
   const bpDia = Number(localStorage.getItem("bpDia") || 80);

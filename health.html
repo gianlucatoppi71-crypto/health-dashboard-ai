@@ -926,761 +926,785 @@
         <div class="divider"></div>
         <script>
           window.addEventListener("load", function () {
-            /* ============================================================
-   LOAD SAVED VALUES
+
+          /* ============================================================
+             LOAD SAVED VALUES
+          ============================================================ */
+          const savedSys = localStorage.getItem("bpSys");
+          const savedDia = localStorage.getItem("bpDia");
+          const savedHR  = localStorage.getItem("bpHR");
+
+          if (savedSys) document.getElementById("sysInput").value = savedSys;
+          if (savedDia) document.getElementById("diaInput").value = savedDia;
+          if (savedHR)  document.getElementById("hrInput").value  = savedHR;
+
+          const savedLDL   = localStorage.getItem("cholLDL");
+          const savedHDL   = localStorage.getItem("cholHDL");
+          const savedTRI   = localStorage.getItem("cholTRI");
+          const savedTotal = localStorage.getItem("cholTotal");
+
+          if (savedLDL)   document.getElementById("ldlInput").value = savedLDL;
+          if (savedHDL)   document.getElementById("hdlInput").value = savedHDL;
+          if (savedTRI)   document.getElementById("triInput").value = savedTRI;
+          if (savedTotal) document.getElementById("totalInput").value = savedTotal;
+
+          /* ============================================================
+             GLOBAL STATE
+          ============================================================ */
+          let voiceEnabled = true;
+
+          let lastBP = { sys: 0, dia: 0, hr: 0 };
+          let lastChol = { ldl: 0, hdl: 0, tri: 0, total: 0 };
+          let lastPlantPoints = 0;
+
+          let weeklyData = {
+            bp: [],
+            hr: [],
+            ldl: [],
+            hdl: [],
+            tri: [],
+            total: [],
+            plants: [],
+            score: []
+          };
+
+          let bpHistory   = JSON.parse(localStorage.getItem("bpHistory")   || "[]");
+          let cholHistory = JSON.parse(localStorage.getItem("cholHistory") || "[]");
+
+          /* ============================================================
+             ACCORDION
+          ============================================================ */
+          window.toggleAccordion = function(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle("open");
+          };
+
+          /* ============================================================
+             VOICE TOGGLE (MASTER MUTE)
+          ============================================================ */
+          window.toggleVoice = function() {
+            voiceEnabled = !voiceEnabled;
+          };
+
+         /* ============================================================
+   SPEAK FUNCTION — RELIABLE VOICE LOADING
 ============================================================ */
-            const savedSys = localStorage.getItem("bpSys");
-            const savedDia = localStorage.getItem("bpDia");
-            const savedHR = localStorage.getItem("bpHR");
+let voicesLoaded = false;
 
-            if (savedSys) document.getElementById("sysInput").value = savedSys;
-            if (savedDia) document.getElementById("diaInput").value = savedDia;
-            if (savedHR) document.getElementById("hrInput").value = savedHR;
+function loadVoices() {
+  const voices = speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    voicesLoaded = true;
+  }
+}
 
-            const savedLDL = localStorage.getItem("cholLDL");
-            const savedHDL = localStorage.getItem("cholHDL");
-            const savedTRI = localStorage.getItem("cholTRI");
-            const savedTotal = localStorage.getItem("cholTotal");
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices(); // also try immediately
 
-            if (savedLDL) document.getElementById("ldlInput").value = savedLDL;
-            if (savedHDL) document.getElementById("hdlInput").value = savedHDL;
-            if (savedTRI) document.getElementById("triInput").value = savedTRI;
-            if (savedTotal) document.getElementById("totalInput").value = savedTotal;
+function speak(text) {
+  if (!voiceEnabled) return;
+  if (!window.speechSynthesis) return;
 
-            /* ============================================================
-   GLOBAL STATE
-============================================================ */
-            let voiceEnabled = true;
+  // Wait until voices are loaded
+  if (!voicesLoaded) {
+    setTimeout(() => speak(text), 150);
+    return;
+  }
 
-            let lastBP = { sys: 0, dia: 0, hr: 0 };
-            let lastChol = { ldl: 0, hdl: 0, tri: 0, total: 0 };
-            let lastPlantPoints = 0;
+  const u = new SpeechSynthesisUtterance(text);
 
-            let weeklyData = {
-              bp: [],
-              hr: [],
-              ldl: [],
-              hdl: [],
-              tri: [],
-              total: [],
-              plants: [],
-              score: [],
-            };
+  u.lang = "en-GB";
+  u.rate = 0.88;
+  u.pitch = 0.92;
+  u.volume = 1.0;
 
-            let bpHistory = JSON.parse(localStorage.getItem("bpHistory") || "[]");
-            let cholHistory = JSON.parse(localStorage.getItem("cholHistory") || "[]");
+  const voices = speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    v.name.toLowerCase().includes("male") ||
+    v.name.toLowerCase().includes("uk") ||
+    v.name.toLowerCase().includes("english")
+  );
 
-            /* ============================================================
-   ACCORDION
-============================================================ */
-            window.toggleAccordion = function (id) {
-              const el = document.getElementById(id);
-              el.classList.toggle("open");
-            };
+  if (preferred) u.voice = preferred;
 
-            /* ============================================================
-   VOICE TOGGLE (MASTER MUTE)
-============================================================ */
-            window.toggleVoice = function () {
-              voiceEnabled = !voiceEnabled;
-            };
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
 
-            /* ============================================================
-   SPEAK FUNCTION — ITALIAN DOCTOR VOICE
-============================================================ */
-            function speak(text) {
-              if (!voiceEnabled) return;
-              if (!window.speechSynthesis) return;
+          /* ============================================================
+             ENSURE VOICES LOAD CORRECTLY
+          ============================================================ */
+          speechSynthesis.onvoiceschanged = () => {
+            speechSynthesis.getVoices(); // preload voices
+          };
 
-              const u = new SpeechSynthesisUtterance(text);
+          /* ============================================================
+             HEALTH SCORE ENGINE
+          ============================================================ */
+          function updateHealthScore() {
+            const { sys, dia, hr } = lastBP;
+            const { ldl, hdl, tri, total } = lastChol;
 
-              u.lang = "en-GB";
-              u.rate = 0.88;
-              u.pitch = 0.92;
-              u.volume = 1.0;
+            let score = 100;
 
-              const voices = speechSynthesis.getVoices();
-              const preferred = voices.find(
-                (v) =>
-                  v.name.toLowerCase().includes("male") ||
-                  v.name.toLowerCase().includes("uk") ||
-                  v.name.toLowerCase().includes("english"),
-              );
-              if (preferred) u.voice = preferred;
+            if (sys > 120 || dia > 80) score -= 10;
+            if (sys > 139 || dia > 89) score -= 20;
+            if (sys > 159 || dia > 99) score -= 30;
 
-              speechSynthesis.cancel();
-              speechSynthesis.speak(u);
-            }
-            /* ============================================================
-   ENSURE VOICES LOAD CORRECTLY
-============================================================ */
-            speechSynthesis.onvoiceschanged = () => {
-              speechSynthesis.getVoices(); // preload voices
-            };
+            if (ldl > 3.0) score -= 10;
+            if (ldl > 5.0) score -= 20;
 
-            /* ============================================================
-   HEALTH SCORE ENGINE
-============================================================ */
-            function updateHealthScore() {
-              const { sys, dia, hr } = lastBP;
-              const { ldl, hdl, tri, total } = lastChol;
+            if (hdl < 1.0) score -= 10;
 
-              let score = 100;
+            if (total > 5.0) score -= 10;
+            if (total > 6.2) score -= 20;
 
-              if (sys > 120 || dia > 80) score -= 10;
-              if (sys > 139 || dia > 89) score -= 20;
-              if (sys > 159 || dia > 99) score -= 30;
+            if (hr > 90) score -= 5;
+            if (hr > 110) score -= 10;
 
-              if (ldl > 3.0) score -= 10;
-              if (ldl > 5.0) score -= 20;
+            score = Math.max(0, Math.min(100, score));
 
-              if (hdl < 1.0) score -= 10;
+            document.getElementById("healthScoreValue").innerText = score;
+            document.getElementById("healthScoreBar").style.width = score + "%";
 
-              if (total > 5.0) score -= 10;
-              if (total > 6.2) score -= 20;
+            updateAvatarFromScore(score);
+            updateAuraFromScore(score);
+            updateCoachFromScore(score);
 
-              if (hr > 90) score -= 5;
-              if (hr > 110) score -= 10;
+            weeklyData.score.push(score);
+            updateWeeklySummary();
 
-              score = Math.max(0, Math.min(100, score));
+            return score;
+          }
+          /* ============================================================
+             UPDATE AURA FROM SAVED DATA (USED BY INDEX)
+          ============================================================ */
+          window.updateAuraFromData = function () {
+            const sys   = Number(localStorage.getItem("bpSys") || 0);
+            const dia   = Number(localStorage.getItem("bpDia") || 0);
+            const ldl   = Number(localStorage.getItem("cholLDL") || 0);
+            const hdl   = Number(localStorage.getItem("cholHDL") || 0);
+            const total = Number(localStorage.getItem("cholTotal") || 0);
 
-              document.getElementById("healthScoreValue").innerText = score;
-              document.getElementById("healthScoreBar").style.width = score + "%";
+            let score = 100;
 
-              updateAvatarFromScore(score);
-              updateAuraFromScore(score);
-              updateCoachFromScore(score);
+            if (sys > 120 || dia > 80) score -= 10;
+            if (sys > 139 || dia > 89) score -= 20;
+            if (sys > 159 || dia > 99) score -= 30;
 
-              weeklyData.score.push(score);
-              updateWeeklySummary();
+            if (ldl > 3.0) score -= 10;
+            if (ldl > 5.0) score -= 20;
 
-              return score;
-            }
-            /* ============================================================
-   UPDATE AURA FROM SAVED DATA (USED BY INDEX)
-============================================================ */
-            window.updateAuraFromData = function () {
-              const sys = Number(localStorage.getItem("bpSys") || 0);
-              const dia = Number(localStorage.getItem("bpDia") || 0);
-              const ldl = Number(localStorage.getItem("cholLDL") || 0);
-              const hdl = Number(localStorage.getItem("cholHDL") || 0);
-              const total = Number(localStorage.getItem("cholTotal") || 0);
+            if (hdl < 1.0) score -= 10;
 
-              let score = 100;
+            if (total > 5.0) score -= 10;
+            if (total > 6.2) score -= 20;
 
-              if (sys > 120 || dia > 80) score -= 10;
-              if (sys > 139 || dia > 89) score -= 20;
-              if (sys > 159 || dia > 99) score -= 30;
+            score = Math.max(0, Math.min(100, score));
 
-              if (ldl > 3.0) score -= 10;
-              if (ldl > 5.0) score -= 20;
+            localStorage.setItem("auraScore", score);
+          };
 
-              if (hdl < 1.0) score -= 10;
+          /* ============================================================
+             AVATAR LOGIC
+          ============================================================ */
+          function updateAvatarFromScore(score) {
+            const head = document.getElementById("avatarHead");
+            const chest = document.getElementById("avatarChest");
+            const belly = document.getElementById("avatarBelly");
 
-              if (total > 5.0) score -= 10;
-              if (total > 6.2) score -= 20;
+            const mouth = document.getElementById("avatarMouth");
+            const tearL = document.getElementById("tearLeft");
+            const tearR = document.getElementById("tearRight");
+            const sweat = document.getElementById("sweatDrop");
 
-              score = Math.max(0, Math.min(100, score));
+            let skinColor = "#ffd6e8";
 
-              localStorage.setItem("auraScore", score);
-            };
+            if (score >= 80) skinColor = "#ffd6e8";
+            else if (score >= 60) skinColor = "#ffe0d6";
+            else if (score >= 40) skinColor = "#d9ffd9";
+            else skinColor = "#c8ffcc";
 
-            /* ============================================================
-   AVATAR LOGIC
-============================================================ */
-            function updateAvatarFromScore(score) {
-              const head = document.getElementById("avatarHead");
-              const chest = document.getElementById("avatarChest");
-              const belly = document.getElementById("avatarBelly");
+            [head, chest, belly,
+             document.getElementById("armLeft"),
+             document.getElementById("armRight"),
+             document.getElementById("legLeft"),
+             document.getElementById("legRight")
+            ].forEach(p => p && p.setAttribute("fill", skinColor));
 
-              const mouth = document.getElementById("avatarMouth");
-              const tearL = document.getElementById("tearLeft");
-              const tearR = document.getElementById("tearRight");
-              const sweat = document.getElementById("sweatDrop");
-
-              let skinColor = "#ffd6e8";
-
-              if (score >= 80) skinColor = "#ffd6e8";
-              else if (score >= 60) skinColor = "#ffe0d6";
-              else if (score >= 40) skinColor = "#d9ffd9";
-              else skinColor = "#c8ffcc";
-
-              [
-                head,
-                chest,
-                belly,
-                document.getElementById("armLeft"),
-                document.getElementById("armRight"),
-                document.getElementById("legLeft"),
-                document.getElementById("legRight"),
-              ].forEach((p) => p && p.setAttribute("fill", skinColor));
-
-              if (score >= 80) {
-                mouth.setAttribute("d", "M135 110 Q150 125 165 110");
-                tearL.setAttribute("opacity", 0);
-                tearR.setAttribute("opacity", 0);
-                sweat.setAttribute("opacity", 0);
-              } else if (score >= 60) {
-                mouth.setAttribute("d", "M135 110 Q150 118 165 110");
-                tearL.setAttribute("opacity", 0);
-                tearR.setAttribute("opacity", 0);
-                sweat.setAttribute("opacity", 0);
-              } else if (score >= 40) {
-                mouth.setAttribute("d", "M135 115 Q150 108 165 115");
-                tearL.setAttribute("opacity", 0);
-                tearR.setAttribute("opacity", 0);
-                sweat.setAttribute("opacity", 1);
-              } else {
-                mouth.setAttribute("d", "M135 120 Q150 105 165 120");
-                tearL.setAttribute("opacity", 1);
-                tearR.setAttribute("opacity", 1);
-                sweat.setAttribute("opacity", 0);
-              }
-
-              const bmi = 24;
-              const bellySize = Math.min(70, 45 + (bmi - 20) * 2);
-              belly.setAttribute("rx", bellySize);
-            }
-
-            /* ============================================================
-   AURA COLOR
-============================================================ */
-            function updateAuraFromScore(score) {
-              const aura = document.getElementById("heartAuraPath");
-              if (!aura) return;
-
-              if (score >= 80) aura.setAttribute("fill", "#00ff99");
-              else if (score >= 60) aura.setAttribute("fill", "#ffee66");
-              else if (score >= 40) aura.setAttribute("fill", "#ff9900");
-              else aura.setAttribute("fill", "#ff3366");
-            }
-
-            /* ============================================================
-   COACH BUBBLE (SILENT)
-============================================================ */
-            window.toggleCoachPanel = function () {
-              const panel = document.getElementById("coachPanel");
-              panel.style.display = panel.style.display === "block" ? "none" : "block";
-            };
-
-            function coachSay(text) {
-              document.getElementById("coachMessage").innerText = text;
-              // silent — no speak()
+            if (score >= 80) {
+              mouth.setAttribute("d", "M135 110 Q150 125 165 110");
+              tearL.setAttribute("opacity", 0);
+              tearR.setAttribute("opacity", 0);
+              sweat.setAttribute("opacity", 0);
+            } else if (score >= 60) {
+              mouth.setAttribute("d", "M135 110 Q150 118 165 110");
+              tearL.setAttribute("opacity", 0);
+              tearR.setAttribute("opacity", 0);
+              sweat.setAttribute("opacity", 0);
+            } else if (score >= 40) {
+              mouth.setAttribute("d", "M135 115 Q150 108 165 115");
+              tearL.setAttribute("opacity", 0);
+              tearR.setAttribute("opacity", 0);
+              sweat.setAttribute("opacity", 1);
+            } else {
+              mouth.setAttribute("d", "M135 120 Q150 105 165 120");
+              tearL.setAttribute("opacity", 1);
+              tearR.setAttribute("opacity", 1);
+              sweat.setAttribute("opacity", 0);
             }
 
-            function updateCoachFromScore(score) {
-              const bubble = document.getElementById("coachBubble");
-              if (!bubble) return;
+            const bmi = 24;
+            const bellySize = Math.min(70, 45 + (bmi - 20) * 2);
+            belly.setAttribute("rx", bellySize);
+          }
 
-              if (score >= 80) {
-                bubble.style.background = "linear-gradient(135deg, #00ff99, #00cc66)";
-                coachSay("Amazing work! Your health score is fantastic.");
-              } else if (score >= 60) {
-                bubble.style.background = "linear-gradient(135deg, #00eaff, #00b8ff)";
-                coachSay("Good job! A few small improvements will boost your score.");
-              } else if (score >= 40) {
-                bubble.style.background = "linear-gradient(135deg, #ffcc00, #ff9900)";
-                coachSay("Let’s focus on improving your numbers.");
-              } else {
-                bubble.style.background = "linear-gradient(135deg, #ff3366, #ff0033)";
-                coachSay("Your health needs attention. Let’s fix this together.");
-              }
+          /* ============================================================
+             AURA COLOR
+          ============================================================ */
+          function updateAuraFromScore(score) {
+            const aura = document.getElementById("heartAuraPath");
+            if (!aura) return;
+
+            if (score >= 80) aura.setAttribute("fill", "#00ff99");
+            else if (score >= 60) aura.setAttribute("fill", "#ffee66");
+            else if (score >= 40) aura.setAttribute("fill", "#ff9900");
+            else aura.setAttribute("fill", "#ff3366");
+          }
+
+          /* ============================================================
+             COACH BUBBLE (SILENT)
+          ============================================================ */
+          window.toggleCoachPanel = function() {
+            const panel = document.getElementById("coachPanel");
+            panel.style.display = panel.style.display === "block" ? "none" : "block";
+          };
+
+          function coachSay(text) {
+            document.getElementById("coachMessage").innerText = text;
+            // silent — no speak()
+          }
+
+          function updateCoachFromScore(score) {
+            const bubble = document.getElementById("coachBubble");
+            if (!bubble) return;
+
+            if (score >= 80) {
+              bubble.style.background = "linear-gradient(135deg, #00ff99, #00cc66)";
+              coachSay("Amazing work! Your health score is fantastic.");
+            } else if (score >= 60) {
+              bubble.style.background = "linear-gradient(135deg, #00eaff, #00b8ff)";
+              coachSay("Good job! A few small improvements will boost your score.");
+            } else if (score >= 40) {
+              bubble.style.background = "linear-gradient(135deg, #ffcc00, #ff9900)";
+              coachSay("Let’s focus on improving your numbers.");
+            } else {
+              bubble.style.background = "linear-gradient(135deg, #ff3366, #ff0033)";
+              coachSay("Your health needs attention. Let’s fix this together.");
+            }
+          }
+
+          /* ============================================================
+             BLOOD PRESSURE SAVE
+          ============================================================ */
+          window.saveBloodPressure = function() {
+            const sys = Number(document.getElementById("sysInput").value);
+            const dia = Number(document.getElementById("diaInput").value);
+            const hr  = Number(document.getElementById("hrInput").value);
+
+            lastBP = { sys, dia, hr };
+
+            localStorage.setItem("bpSys", sys);
+            localStorage.setItem("bpDia", dia);
+            localStorage.setItem("bpHR", hr);
+            localStorage.setItem("auraNeedsUpdate", "true");
+
+            document.getElementById("sysValue").innerText = sys || 0;
+            document.getElementById("diaValue").innerText = dia || 0;
+            document.getElementById("hrValue").innerText  = hr  || 0;
+
+            if (sys && dia) updateBPBars(sys, dia);
+            if (hr) updateHRBar(hr);
+
+            addWeeklyEntry();
+            updateHealthScore();
+          };
+
+          /* ============================================================
+             BP UI UPDATE
+          ============================================================ */
+          function updateBPBars(sys, dia) {
+            const bpBar = document.getElementById("bpBar");
+            const bpLabel = document.getElementById("bpLabel");
+            const bpTip = document.getElementById("bpTip");
+
+            const avg = (sys + dia) / 2;
+            const percent = Math.min(100, avg);
+            bpBar.style.width = percent + "%";
+            bpLabel.innerText = `${sys}/${dia}`;
+
+            if (sys < 90 || dia < 60) {
+              bpBar.className = "progress-bar blue-bar";
+              bpTip.innerText = "Low blood pressure (NHS).";
+            }
+            else if (sys <= 120 && dia <= 80) {
+              bpBar.className = "progress-bar green-bar";
+              bpTip.innerText = "Normal blood pressure (NHS).";
+            }
+            else if (sys <= 139 || dia <= 89) {
+              bpBar.className = "progress-bar orange-bar";
+              bpTip.innerText = "Pre‑high blood pressure (NHS).";
+            }
+            else if (sys <= 159 || dia <= 99) {
+              bpBar.className = "progress-bar red-bar";
+              bpTip.innerText = "High blood pressure – Stage 1 (NHS).";
+            }
+            else if (sys <= 179 || dia <= 119) {
+              bpBar.className = "progress-bar red-bar";
+              bpTip.innerText = "High blood pressure – Stage 2 (NHS).";
+            }
+            else {
+              bpBar.className = "progress-bar red-bar";
+              bpTip.innerText = "Hypertensive crisis – seek medical help (NHS).";
             }
 
-            /* ============================================================
-   BLOOD PRESSURE SAVE
-============================================================ */
-            window.saveBloodPressure = function () {
-              const sys = Number(document.getElementById("sysInput").value);
-              const dia = Number(document.getElementById("diaInput").value);
-              const hr = Number(document.getElementById("hrInput").value);
+            updateBPTrend(avg);
+          }
 
-              lastBP = { sys, dia, hr };
+          /* ============================================================
+             HEART RATE UI UPDATE
+          ============================================================ */
+          function updateHRBar(hr) {
+            const bar = document.getElementById("hrBar");
+            const label = document.getElementById("hrLabel");
+            const tip = document.getElementById("hrTip");
 
-              localStorage.setItem("bpSys", sys);
-              localStorage.setItem("bpDia", dia);
-              localStorage.setItem("bpHR", hr);
-              localStorage.setItem("auraNeedsUpdate", "true");
+            bar.style.width = Math.min(100, hr) + "%";
+            label.innerText = hr;
 
-              document.getElementById("sysValue").innerText = sys || 0;
-              document.getElementById("diaValue").innerText = dia || 0;
-              document.getElementById("hrValue").innerText = hr || 0;
-
-              if (sys && dia) updateBPBars(sys, dia);
-              if (hr) updateHRBar(hr);
-
-              addWeeklyEntry();
-              updateHealthScore();
-            };
-
-            /* ============================================================
-   BP UI UPDATE
-============================================================ */
-            function updateBPBars(sys, dia) {
-              const bpBar = document.getElementById("bpBar");
-              const bpLabel = document.getElementById("bpLabel");
-              const bpTip = document.getElementById("bpTip");
-
-              const avg = (sys + dia) / 2;
-              const percent = Math.min(100, avg);
-              bpBar.style.width = percent + "%";
-              bpLabel.innerText = `${sys}/${dia}`;
-
-              if (sys < 90 || dia < 60) {
-                bpBar.className = "progress-bar blue-bar";
-                bpTip.innerText = "Low blood pressure (NHS).";
-              } else if (sys <= 120 && dia <= 80) {
-                bpBar.className = "progress-bar green-bar";
-                bpTip.innerText = "Normal blood pressure (NHS).";
-              } else if (sys <= 139 || dia <= 89) {
-                bpBar.className = "progress-bar orange-bar";
-                bpTip.innerText = "Pre‑high blood pressure (NHS).";
-              } else if (sys <= 159 || dia <= 99) {
-                bpBar.className = "progress-bar red-bar";
-                bpTip.innerText = "High blood pressure – Stage 1 (NHS).";
-              } else if (sys <= 179 || dia <= 119) {
-                bpBar.className = "progress-bar red-bar";
-                bpTip.innerText = "High blood pressure – Stage 2 (NHS).";
-              } else {
-                bpBar.className = "progress-bar red-bar";
-                bpTip.innerText = "Hypertensive crisis – seek medical help (NHS).";
-              }
-
-              updateBPTrend(avg);
+            if (hr < 60) {
+              bar.className = "progress-bar blue-bar";
+              tip.innerText = "Low heart rate.";
+            } else if (hr <= 90) {
+              bar.className = "progress-bar green-bar";
+              tip.innerText = "Healthy heart rate.";
+            } else {
+              bar.className = "progress-bar red-bar";
+              tip.innerText = "High heart rate.";
             }
-
-            /* ============================================================
-   HEART RATE UI UPDATE
-============================================================ */
-            function updateHRBar(hr) {
-              const bar = document.getElementById("hrBar");
-              const label = document.getElementById("hrLabel");
-              const tip = document.getElementById("hrTip");
-
-              bar.style.width = Math.min(100, hr) + "%";
-              label.innerText = hr;
-
-              if (hr < 60) {
-                bar.className = "progress-bar blue-bar";
-                tip.innerText = "Low heart rate.";
-              } else if (hr <= 90) {
-                bar.className = "progress-bar green-bar";
-                tip.innerText = "Healthy heart rate.";
-              } else {
-                bar.className = "progress-bar red-bar";
-                tip.innerText = "High heart rate.";
-              }
-            }
-            /* ============================================================
-   BP TREND CHART
-============================================================ */
-            let bpTrendChart = null;
-            const bpCanvas = document.getElementById("bpTrendChart");
-            if (bpCanvas && window.Chart) {
-              bpTrendChart = new Chart(bpCanvas, {
+          }
+          /* ============================================================
+             BP TREND CHART
+          ============================================================ */
+          let bpTrendChart = null;
+          const bpCanvas = document.getElementById("bpTrendChart");
+          if (bpCanvas && window.Chart) {
+            bpTrendChart = new Chart(
+              bpCanvas,
+              {
                 type: "line",
                 data: {
                   labels: [],
-                  datasets: [
-                    {
-                      label: "BP Avg",
-                      data: [],
-                      borderColor: "#00c6ff",
-                      backgroundColor: "rgba(0,200,255,0.15)",
-                      tension: 0.45,
-                      borderWidth: 3,
-                      pointRadius: 0,
-                    },
-                  ],
+                  datasets: [{
+                    label: "BP Avg",
+                    data: [],
+                    borderColor: "#00c6ff",
+                    backgroundColor: "rgba(0,200,255,0.15)",
+                    tension: 0.45,
+                    borderWidth: 3,
+                    pointRadius: 0
+                  }]
                 },
                 options: {
                   responsive: true,
                   scales: {
                     x: { grid: { display: false } },
-                    y: { grid: { color: "rgba(0,0,0,0.05)" } },
-                  },
-                },
-              });
-            }
-
-            function updateBPTrend(value) {
-              const entry = { t: Date.now(), v: value };
-              bpHistory.push(entry);
-              localStorage.setItem("bpHistory", JSON.stringify(bpHistory));
-
-              if (!bpTrendChart) return;
-
-              bpTrendChart.data.labels.push(formatDateLabel(entry.t));
-              bpTrendChart.data.datasets[0].data.push(entry.v);
-              bpTrendChart.update();
-            }
-
-            /* ============================================================
-   CHOLESTEROL SAVE
-============================================================ */
-            window.saveCholesterol = function () {
-              const ldl = Number(document.getElementById("ldlInput").value);
-              const hdl = Number(document.getElementById("hdlInput").value);
-              const tri = Number(document.getElementById("triInput").value);
-              const total = Number(document.getElementById("totalInput").value);
-
-              lastChol = { ldl, hdl, tri, total };
-
-              localStorage.setItem("cholLDL", ldl);
-              localStorage.setItem("cholHDL", hdl);
-              localStorage.setItem("cholTRI", tri);
-              localStorage.setItem("cholTotal", total);
-
-              document.getElementById("ldlValue").innerText = ldl || 0;
-              document.getElementById("hdlValue").innerText = hdl || 0;
-              document.getElementById("triValue").innerText = tri || 0;
-              document.getElementById("totalValue").innerText = total || 0;
-
-              updateCholBars(ldl, hdl, tri, total);
-              updateCholGauge(ldl, hdl, total);
-              updateCholTrend(total);
-
-              generateDailyAction();
-              addWeeklyEntry();
-              updateHealthScore();
-            };
-
-            function updateCholBars(ldl, hdl, tri, total) {
-              if (ldl < 3.0) {
-                setBar("ldlBar", "ldlLabel", ldl, 6);
-                document.getElementById("ldlBar").className = "progress-bar green-bar";
-              } else if (ldl < 5.0) {
-                setBar("ldlBar", "ldlLabel", ldl, 6);
-                document.getElementById("ldlBar").className = "progress-bar orange-bar";
-              } else {
-                setBar("ldlBar", "ldlLabel", ldl, 6);
-                document.getElementById("ldlBar").className = "progress-bar red-bar";
+                    y: { grid: { color: "rgba(0,0,0,0.05)" } }
+                  }
+                }
               }
+            );
+          }
 
-              if (hdl < 1.0) {
-                setBar("hdlBar", "hdlLabel", hdl, 3);
-                document.getElementById("hdlBar").className = "progress-bar red-bar";
-              } else if (hdl <= 1.5) {
-                setBar("hdlBar", "hdlLabel", hdl, 3);
-                document.getElementById("hdlBar").className = "progress-bar orange-bar";
-              } else {
-                setBar("hdlBar", "hdlLabel", hdl, 3);
-                document.getElementById("hdlBar").className = "progress-bar green-bar";
-              }
+          function updateBPTrend(value) {
+            const entry = { t: Date.now(), v: value };
+            bpHistory.push(entry);
+            localStorage.setItem("bpHistory", JSON.stringify(bpHistory));
 
-              if (tri < 1.7) {
-                setBar("triBar", "triLabel", tri, 6);
-                document.getElementById("triBar").className = "progress-bar green-bar";
-              } else if (tri < 2.3) {
-                setBar("triBar", "triLabel", tri, 6);
-                document.getElementById("triBar").className = "progress-bar orange-bar";
-              } else {
-                setBar("triBar", "triLabel", tri, 6);
-                document.getElementById("triBar").className = "progress-bar red-bar";
-              }
+            if (!bpTrendChart) return;
 
-              if (total < 5.0) {
-                setBar("totalBar", "totalLabel", total, 8);
-                document.getElementById("totalBar").className = "progress-bar green-bar";
-              } else if (total < 6.2) {
-                setBar("totalBar", "totalLabel", total, 8);
-                document.getElementById("totalBar").className = "progress-bar orange-bar";
-              } else {
-                setBar("totalBar", "totalLabel", total, 8);
-                document.getElementById("totalBar").className = "progress-bar red-bar";
-              }
+            bpTrendChart.data.labels.push(formatDateLabel(entry.t));
+            bpTrendChart.data.datasets[0].data.push(entry.v);
+            bpTrendChart.update();
+          }
+
+          /* ============================================================
+             CHOLESTEROL SAVE
+          ============================================================ */
+          window.saveCholesterol = function() {
+            const ldl = Number(document.getElementById("ldlInput").value);
+            const hdl = Number(document.getElementById("hdlInput").value);
+            const tri = Number(document.getElementById("triInput").value);
+            const total = Number(document.getElementById("totalInput").value);
+
+            lastChol = { ldl, hdl, tri, total };
+
+            localStorage.setItem("cholLDL", ldl);
+            localStorage.setItem("cholHDL", hdl);
+            localStorage.setItem("cholTRI", tri);
+            localStorage.setItem("cholTotal", total);
+
+            document.getElementById("ldlValue").innerText = ldl || 0;
+            document.getElementById("hdlValue").innerText = hdl || 0;
+            document.getElementById("triValue").innerText = tri || 0;
+            document.getElementById("totalValue").innerText = total || 0;
+
+            updateCholBars(ldl, hdl, tri, total);
+            updateCholGauge(ldl, hdl, total);
+            updateCholTrend(total);
+
+            generateDailyAction();
+            addWeeklyEntry();
+            updateHealthScore();
+          };
+
+          function updateCholBars(ldl, hdl, tri, total) {
+            if (ldl < 3.0) {
+              setBar("ldlBar", "ldlLabel", ldl, 6);
+              document.getElementById("ldlBar").className = "progress-bar green-bar";
+            } else if (ldl < 5.0) {
+              setBar("ldlBar", "ldlLabel", ldl, 6);
+              document.getElementById("ldlBar").className = "progress-bar orange-bar";
+            } else {
+              setBar("ldlBar", "ldlLabel", ldl, 6);
+              document.getElementById("ldlBar").className = "progress-bar red-bar";
             }
 
-            function setBar(barId, labelId, value, max) {
-              const bar = document.getElementById(barId);
-              const label = document.getElementById(labelId);
-              if (!bar || !label || value === null || isNaN(value)) return;
-
-              const percent = Math.min(100, (value / max) * 100);
-              bar.style.width = percent + "%";
-              label.innerText = value.toFixed(1);
+            if (hdl < 1.0) {
+              setBar("hdlBar", "hdlLabel", hdl, 3);
+              document.getElementById("hdlBar").className = "progress-bar red-bar";
+            } else if (hdl <= 1.5) {
+              setBar("hdlBar", "hdlLabel", hdl, 3);
+              document.getElementById("hdlBar").className = "progress-bar orange-bar";
+            } else {
+              setBar("hdlBar", "hdlLabel", hdl, 3);
+              document.getElementById("hdlBar").className = "progress-bar green-bar";
             }
 
-            /* ============================================================
-   CHOLESTEROL GAUGE
-============================================================ */
-            let gaugeCtx = null;
-            const gaugeCanvas = document.getElementById("cholesterolGauge");
-            if (gaugeCanvas) {
-              gaugeCtx = gaugeCanvas.getContext("2d");
+            if (tri < 1.7) {
+              setBar("triBar", "triLabel", tri, 6);
+              document.getElementById("triBar").className = "progress-bar green-bar";
+            } else if (tri < 2.3) {
+              setBar("triBar", "triLabel", tri, 6);
+              document.getElementById("triBar").className = "progress-bar orange-bar";
+            } else {
+              setBar("triBar", "triLabel", tri, 6);
+              document.getElementById("triBar").className = "progress-bar red-bar";
             }
 
-            function updateCholGauge(ldl, hdl, total) {
-              if (!gaugeCtx) return;
-              gaugeCtx.clearRect(0, 0, gaugeCanvas.width, gaugeCanvas.height);
-
-              gaugeCtx.fillStyle = "#ff0066";
-              gaugeCtx.fillRect(20, 120 - ldl * 20, 40, ldl * 20);
-
-              gaugeCtx.fillStyle = "#00ff99";
-              gaugeCtx.fillRect(110, 120 - hdl * 40, 40, hdl * 40);
-
-              gaugeCtx.fillStyle = "#00c6ff";
-              gaugeCtx.fillRect(200, 120 - total * 15, 40, total * 15);
+            if (total < 5.0) {
+              setBar("totalBar", "totalLabel", total, 8);
+              document.getElementById("totalBar").className = "progress-bar green-bar";
+            } else if (total < 6.2) {
+              setBar("totalBar", "totalLabel", total, 8);
+              document.getElementById("totalBar").className = "progress-bar orange-bar";
+            } else {
+              setBar("totalBar", "totalLabel", total, 8);
+              document.getElementById("totalBar").className = "progress-bar red-bar";
             }
+          }
 
-            /* ============================================================
-   CHOLESTEROL TREND
-============================================================ */
-            let cholTrendChart = null;
-            const cholCanvas = document.getElementById("cholTrendChart");
-            if (cholCanvas && window.Chart) {
-              cholTrendChart = new Chart(cholCanvas, {
+          function setBar(barId, labelId, value, max) {
+            const bar = document.getElementById(barId);
+            const label = document.getElementById(labelId);
+            if (!bar || !label || value === null || isNaN(value)) return;
+
+            const percent = Math.min(100, (value / max) * 100);
+            bar.style.width = percent + "%";
+            label.innerText = value.toFixed(1);
+          }
+
+          /* ============================================================
+             CHOLESTEROL GAUGE
+          ============================================================ */
+          let gaugeCtx = null;
+          const gaugeCanvas = document.getElementById("cholesterolGauge");
+          if (gaugeCanvas) {
+            gaugeCtx = gaugeCanvas.getContext("2d");
+          }
+
+          function updateCholGauge(ldl, hdl, total) {
+            if (!gaugeCtx) return;
+            gaugeCtx.clearRect(0, 0, gaugeCanvas.width, gaugeCanvas.height);
+
+            gaugeCtx.fillStyle = "#ff0066";
+            gaugeCtx.fillRect(20, 120 - ldl * 20, 40, ldl * 20);
+
+            gaugeCtx.fillStyle = "#00ff99";
+            gaugeCtx.fillRect(110, 120 - hdl * 40, 40, hdl * 40);
+
+            gaugeCtx.fillStyle = "#00c6ff";
+            gaugeCtx.fillRect(200, 120 - total * 15, 40, total * 15);
+          }
+
+          /* ============================================================
+             CHOLESTEROL TREND
+          ============================================================ */
+          let cholTrendChart = null;
+          const cholCanvas = document.getElementById("cholTrendChart");
+          if (cholCanvas && window.Chart) {
+            cholTrendChart = new Chart(
+              cholCanvas,
+              {
                 type: "line",
                 data: {
                   labels: [],
-                  datasets: [
-                    {
-                      label: "Total Cholesterol",
-                      data: [],
-                      borderColor: "#ff0066",
-                      backgroundColor: "rgba(255,0,102,0.2)",
-                      tension: 0.3,
-                    },
-                  ],
+                  datasets: [{
+                    label: "Total Cholesterol",
+                    data: [],
+                    borderColor: "#ff0066",
+                    backgroundColor: "rgba(255,0,102,0.2)",
+                    tension: 0.3
+                  }]
                 },
-                options: { responsive: true },
-              });
-            }
-
-            function updateCholTrend(value) {
-              const entry = { t: Date.now(), v: value };
-              cholHistory.push(entry);
-              localStorage.setItem("cholHistory", JSON.stringify(cholHistory));
-
-              if (!cholTrendChart) return;
-
-              cholTrendChart.data.labels.push(formatDateLabel(entry.t));
-              cholTrendChart.data.datasets[0].data.push(entry.v);
-              cholTrendChart.update();
-            }
-
-            /* ============================================================
-   DATE LABEL FORMATTER
-============================================================ */
-            function formatDateLabel(timestamp) {
-              const d = new Date(timestamp);
-              const day = d.getDate();
-              const month = d.toLocaleString("en-GB", { month: "short" });
-              return `${day} ${month}`;
-            }
-            /* ============================================================
-   REBUILD TREND CHARTS (DAY / WEEK / MONTH)
-============================================================ */
-            function rebuildBPTrend(days = 1) {
-              if (!bpTrendChart) return;
-
-              const now = Date.now();
-              const cutoff = now - days * 24 * 60 * 60 * 1000;
-
-              const filtered = bpHistory.filter((e) => e.t >= cutoff);
-
-              bpTrendChart.data.labels = filtered.map((e) => formatDateLabel(e.t));
-              bpTrendChart.data.datasets[0].data = filtered.map((e) => e.v);
-              bpTrendChart.update();
-            }
-
-            function rebuildCholTrend(days = 1) {
-              if (!cholTrendChart) return;
-
-              const now = Date.now();
-              const cutoff = now - days * 24 * 60 * 60 * 1000;
-
-              const filtered = cholHistory.filter((e) => e.t >= cutoff);
-
-              cholTrendChart.data.labels = filtered.map((e) => formatDateLabel(e.t));
-              cholTrendChart.data.datasets[0].data = filtered.map((e) => e.v);
-              cholTrendChart.update();
-            }
-
-            /* INITIAL LOAD — show last 1 day */
-            rebuildBPTrend(1);
-            rebuildCholTrend(1);
-
-            /* ============================================================
-   DAILY ACTION
-============================================================ */
-            function generateDailyAction() {
-              const actions = [
-                "Walk 20 minutes today.",
-                "Replace butter with olive oil.",
-                "Eat one piece of fruit.",
-                "Drink two extra glasses of water.",
-                "Add one plant-based meal today.",
-                "Avoid fried foods today.",
-                "Add 10 minutes of stretching.",
-              ];
-
-              const pick = actions[Math.floor(Math.random() * actions.length)];
-              const el = document.getElementById("dailyActionText");
-              if (el) el.innerText = pick;
-            }
-
-            /* ============================================================
-   WEEKLY SUMMARY
-============================================================ */
-            function addWeeklyEntry() {
-              const { sys, dia, hr } = lastBP;
-              const { ldl, hdl, tri, total } = lastChol;
-
-              if (sys && dia) weeklyData.bp.push((sys + dia) / 2);
-              if (hr) weeklyData.hr.push(hr);
-              if (ldl) weeklyData.ldl.push(ldl);
-              if (hdl) weeklyData.hdl.push(hdl);
-              if (tri) weeklyData.tri.push(tri);
-              if (total) weeklyData.total.push(total);
-
-              weeklyData.plants.push(lastPlantPoints);
-
-              updateWeeklySummary();
-            }
-
-            function avg(arr) {
-              if (!arr.length) return "–";
-              return (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1);
-            }
-
-            function updateWeeklySummary() {
-              const bpEl = document.getElementById("weeklyBP");
-              const hrEl = document.getElementById("weeklyHR");
-              const cholEl = document.getElementById("weeklyChol");
-              const plantsEl = document.getElementById("weeklyPlants");
-              const scoreEl = document.getElementById("weeklyScore");
-
-              if (bpEl) bpEl.innerText = avg(weeklyData.bp);
-              if (hrEl) hrEl.innerText = avg(weeklyData.hr);
-              if (cholEl)
-                cholEl.innerText = `LDL ${avg(weeklyData.ldl)}, HDL ${avg(weeklyData.hdl)}, TRI ${avg(weeklyData.tri)}, Total ${avg(weeklyData.total)}`;
-              if (plantsEl) plantsEl.innerText = avg(weeklyData.plants);
-              if (scoreEl) scoreEl.innerText = avg(weeklyData.score);
-            }
-
-            /* ============================================================
-   INITIAL HEALTH SCORE
-============================================================ */
-            updateHealthScore();
-
-            /* ============================================================
-   LONG DOCTOR COMMENTARY (BP + CHOL)
-============================================================ */
-            function buildLongBPAdvice(sys, dia, hr) {
-              let text = "Alright, let’s take a calm and careful look at your blood pressure today. ";
-
-              if (sys < 90 || dia < 60) {
-                text += "Your reading is on the low side. This can happen if you are dehydrated or tired. ";
-              } else if (sys <= 120 && dia <= 80) {
-                text += "Your blood pressure is in the healthy NHS range. Excellent work. ";
-              } else if (sys <= 139 || dia <= 89) {
-                text += "Your blood pressure is slightly elevated. Try reducing salt and walking daily. ";
-              } else if (sys <= 159 || dia <= 99) {
-                text += "Your blood pressure is high. Focus on reducing salt and processed foods. ";
-              } else if (sys <= 179 || dia <= 119) {
-                text += "Your blood pressure is very high. Consider booking a GP review. ";
-              } else {
-                text += "Your blood pressure is dangerously high. Seek urgent medical help. ";
+                options: { responsive: true }
               }
+            );
+          }
 
-              if (hr < 60) {
-                text += "Your heart rate is low. If you feel dizzy, speak with a doctor. ";
-              } else if (hr <= 90) {
-                text += "Your heart rate is in a healthy range. ";
-              } else if (hr <= 110) {
-                text += "Your heart rate is slightly elevated. Reduce caffeine and stay hydrated. ";
-              } else {
-                text += "Your heart rate is high. If this continues, seek medical advice. ";
-              }
+          function updateCholTrend(value) {
+            const entry = { t: Date.now(), v: value };
+            cholHistory.push(entry);
+            localStorage.setItem("cholHistory", JSON.stringify(cholHistory));
 
-              text += "Small daily habits make a huge difference. I’m here with you every step.";
-              return text;
+            if (!cholTrendChart) return;
+
+            cholTrendChart.data.labels.push(formatDateLabel(entry.t));
+            cholTrendChart.data.datasets[0].data.push(entry.v);
+            cholTrendChart.update();
+          }
+
+          /* ============================================================
+             DATE LABEL FORMATTER
+          ============================================================ */
+          function formatDateLabel(timestamp) {
+            const d = new Date(timestamp);
+            const day = d.getDate();
+            const month = d.toLocaleString("en-GB", { month: "short" });
+            return `${day} ${month}`;
+          }
+          /* ============================================================
+             REBUILD TREND CHARTS (DAY / WEEK / MONTH)
+          ============================================================ */
+          function rebuildBPTrend(days = 1) {
+            if (!bpTrendChart) return;
+
+            const now = Date.now();
+            const cutoff = now - days * 24 * 60 * 60 * 1000;
+
+            const filtered = bpHistory.filter(e => e.t >= cutoff);
+
+            bpTrendChart.data.labels = filtered.map(e => formatDateLabel(e.t));
+            bpTrendChart.data.datasets[0].data = filtered.map(e => e.v);
+            bpTrendChart.update();
+          }
+
+          function rebuildCholTrend(days = 1) {
+            if (!cholTrendChart) return;
+
+            const now = Date.now();
+            const cutoff = now - days * 24 * 60 * 60 * 1000;
+
+            const filtered = cholHistory.filter(e => e.t >= cutoff);
+
+            cholTrendChart.data.labels = filtered.map(e => formatDateLabel(e.t));
+            cholTrendChart.data.datasets[0].data = filtered.map(e => e.v);
+            cholTrendChart.update();
+          }
+
+          /* INITIAL LOAD — show last 1 day */
+          rebuildBPTrend(1);
+          rebuildCholTrend(1);
+
+          /* ============================================================
+             DAILY ACTION
+          ============================================================ */
+          function generateDailyAction() {
+            const actions = [
+              "Walk 20 minutes today.",
+              "Replace butter with olive oil.",
+              "Eat one piece of fruit.",
+              "Drink two extra glasses of water.",
+              "Add one plant-based meal today.",
+              "Avoid fried foods today.",
+              "Add 10 minutes of stretching."
+            ];
+
+            const pick = actions[Math.floor(Math.random() * actions.length)];
+            const el = document.getElementById("dailyActionText");
+            if (el) el.innerText = pick;
+          }
+
+          /* ============================================================
+             WEEKLY SUMMARY
+          ============================================================ */
+          function addWeeklyEntry() {
+            const { sys, dia, hr } = lastBP;
+            const { ldl, hdl, tri, total } = lastChol;
+
+            if (sys && dia) weeklyData.bp.push((sys + dia) / 2);
+            if (hr) weeklyData.hr.push(hr);
+            if (ldl) weeklyData.ldl.push(ldl);
+            if (hdl) weeklyData.hdl.push(hdl);
+            if (tri) weeklyData.tri.push(tri);
+            if (total) weeklyData.total.push(total);
+
+            weeklyData.plants.push(lastPlantPoints);
+
+            updateWeeklySummary();
+          }
+
+          function avg(arr) {
+            if (!arr.length) return "–";
+            return (arr.reduce((a,b)=>a+b,0) / arr.length).toFixed(1);
+          }
+
+          function updateWeeklySummary() {
+            const bpEl = document.getElementById("weeklyBP");
+            const hrEl = document.getElementById("weeklyHR");
+            const cholEl = document.getElementById("weeklyChol");
+            const plantsEl = document.getElementById("weeklyPlants");
+            const scoreEl = document.getElementById("weeklyScore");
+
+            if (bpEl) bpEl.innerText = avg(weeklyData.bp);
+            if (hrEl) hrEl.innerText = avg(weeklyData.hr);
+            if (cholEl) cholEl.innerText =
+              `LDL ${avg(weeklyData.ldl)}, HDL ${avg(weeklyData.hdl)}, TRI ${avg(weeklyData.tri)}, Total ${avg(weeklyData.total)}`;
+            if (plantsEl) plantsEl.innerText = avg(weeklyData.plants);
+            if (scoreEl) scoreEl.innerText = avg(weeklyData.score);
+          }
+
+          /* ============================================================
+             INITIAL HEALTH SCORE
+          ============================================================ */
+          updateHealthScore();
+
+          /* ============================================================
+             LONG DOCTOR COMMENTARY (BP + CHOL)
+          ============================================================ */
+          function buildLongBPAdvice(sys, dia, hr) {
+            let text = "Alright, let’s take a calm and careful look at your blood pressure today. ";
+
+            if (sys < 90 || dia < 60) {
+              text += "Your reading is on the low side. This can happen if you are dehydrated or tired. ";
+            } else if (sys <= 120 && dia <= 80) {
+              text += "Your blood pressure is in the healthy NHS range. Excellent work. ";
+            } else if (sys <= 139 || dia <= 89) {
+              text += "Your blood pressure is slightly elevated. Try reducing salt and walking daily. ";
+            } else if (sys <= 159 || dia <= 99) {
+              text += "Your blood pressure is high. Focus on reducing salt and processed foods. ";
+            } else if (sys <= 179 || dia <= 119) {
+              text += "Your blood pressure is very high. Consider booking a GP review. ";
+            } else {
+              text += "Your blood pressure is dangerously high. Seek urgent medical help. ";
             }
 
-            function buildLongCholAdvice(ldl, hdl, tri, total) {
-              let text = "Now let’s review your cholesterol profile carefully. ";
-
-              if (ldl < 3.0) {
-                text += "Your LDL is in a healthy range. ";
-              } else if (ldl < 5.0) {
-                text += "Your LDL is elevated. Reduce saturated fats and use olive oil instead of butter. ";
-              } else {
-                text += "Your LDL is very high. A GP review is recommended. ";
-              }
-
-              if (hdl < 1.0) {
-                text += "Your HDL is low. Add nuts, seeds, and regular exercise. ";
-              } else {
-                text += "Your HDL is in a good range. ";
-              }
-
-              if (tri > 2.3) {
-                text += "Your triglycerides are high. Reduce sugary foods and alcohol. ";
-              }
-
-              if (total > 6.2) {
-                text += "Your total cholesterol is very high. A medical review is recommended. ";
-              }
-
-              text +=
-                "Focus on oats, beans, vegetables, olive oil, nuts, seeds, and whole grains. You can absolutely improve these numbers.";
-              return text;
+            if (hr < 60) {
+              text += "Your heart rate is low. If you feel dizzy, speak with a doctor. ";
+            } else if (hr <= 90) {
+              text += "Your heart rate is in a healthy range. ";
+            } else if (hr <= 110) {
+              text += "Your heart rate is slightly elevated. Reduce caffeine and stay hydrated. ";
+            } else {
+              text += "Your heart rate is high. If this continues, seek medical advice. ";
             }
 
-            /* ============================================================
-   SPEAK SUMMARY BUTTON — NHS DOCTOR READING
-============================================================ */
-            function speakHealthSummary() {
-              if (!voiceEnabled) return;
+            text += "Small daily habits make a huge difference. I’m here with you every step.";
+            return text;
+          }
 
-              const sys = lastBP.sys || Number(document.getElementById("sysValue").innerText) || 0;
-              const dia = lastBP.dia || Number(document.getElementById("diaValue").innerText) || 0;
-              const hr = lastBP.hr || Number(document.getElementById("hrValue").innerText) || 0;
+          function buildLongCholAdvice(ldl, hdl, tri, total) {
+            let text = "Now let’s review your cholesterol profile carefully. ";
 
-              const ldl = lastChol.ldl || Number(document.getElementById("ldlValue").innerText) || 0;
-              const hdl = lastChol.hdl || Number(document.getElementById("hdlValue").innerText) || 0;
-              const tri = lastChol.tri || Number(document.getElementById("triValue").innerText) || 0;
-              const total = lastChol.total || Number(document.getElementById("totalValue").innerText) || 0;
-
-              const bpText = buildLongBPAdvice(sys, dia, hr);
-              const cholText = buildLongCholAdvice(ldl, hdl, tri, total);
-
-              speak(bpText + " " + cholText);
+            if (ldl < 3.0) {
+              text += "Your LDL is in a healthy range. ";
+            } else if (ldl < 5.0) {
+              text += "Your LDL is elevated. Reduce saturated fats and use olive oil instead of butter. ";
+            } else {
+              text += "Your LDL is very high. A GP review is recommended. ";
             }
 
-            /* ============================================================
-   TREND RANGE BUTTONS (FIX MISSING FUNCTIONS)
-============================================================ */
-            window.setBPRange = function (days) {
-              rebuildBPTrend(days);
-            };
+            if (hdl < 1.0) {
+              text += "Your HDL is low. Add nuts, seeds, and regular exercise. ";
+            } else {
+              text += "Your HDL is in a good range. ";
+            }
 
-            window.setCholRange = function (days) {
-              rebuildCholTrend(days);
-            };
+            if (tri > 2.3) {
+              text += "Your triglycerides are high. Reduce sugary foods and alcohol. ";
+            }
 
-            /* ============================================================
-   END OF JS + CLOSE WINDOW.LOAD
-============================================================ */
-          }); // end window.load
-        </script>
-        <!-- ============================================================
-     BOTTOM NAVIGATION (same as index)
+            if (total > 6.2) {
+              text += "Your total cholesterol is very high. A medical review is recommended. ";
+            }
+
+            text += "Focus on oats, beans, vegetables, olive oil, nuts, seeds, and whole grains. You can absolutely improve these numbers.";
+            return text;
+          }
+
+          /* ============================================================
+             SPEAK SUMMARY BUTTON — NHS DOCTOR READING
+          ============================================================ */
+          function speakHealthSummary() {
+            if (!voiceEnabled) return;
+
+            const sys   = lastBP.sys || Number(document.getElementById("sysValue").innerText) || 0;
+            const dia   = lastBP.dia || Number(document.getElementById("diaValue").innerText) || 0;
+            const hr    = lastBP.hr  || Number(document.getElementById("hrValue").innerText)  || 0;
+
+            const ldl   = lastChol.ldl   || Number(document.getElementById("ldlValue").innerText)   || 0;
+            const hdl   = lastChol.hdl   || Number(document.getElementById("hdlValue").innerText)   || 0;
+            const tri   = lastChol.tri   || Number(document.getElementById("triValue").innerText)   || 0;
+            const total = lastChol.total || Number(document.getElementById("totalValue").innerText) || 0;
+
+            const bpText   = buildLongBPAdvice(sys, dia, hr);
+            const cholText = buildLongCholAdvice(ldl, hdl, tri, total);
+
+            speak(bpText + " " + cholText);
+          }
+
+          /* ============================================================
+             TREND RANGE BUTTONS
+          ============================================================ */
+          window.setBPRange = function(days) {
+            rebuildBPTrend(days);
+          };
+
+          window.setCholRange = function(days) {
+            rebuildCholTrend(days);
+          };
+
+          /* ============================================================
+             END OF JS + CLOSE WINDOW.LOAD
+          ============================================================ */
+         }); // end window.load
+</script>
+
+<!-- ============================================================
+     BOTTOM NAVIGATION
 ============================================================ -->
-        <nav class="bottom-nav">
-          <button class="nav-btn" onclick="window.location.href = 'index.html#meals'">Meals</button>
-          <button class="nav-btn active">Health</button>
+<nav class="bottom-nav">
+  <button class="nav-btn" onclick="window.location.href='index.html#meals'">Meals</button>
+  <button class="nav-btn active">Health</button>
 
-          <div class="center-wrap">
-            <button class="scan-btn" onclick="window.location.href = 'index.html#scan'">Scan</button>
-          </div>
+  <div class="center-wrap">
+    <button class="scan-btn" onclick="window.location.href='index.html#scan'">Scan</button>
+  </div>
 
-          <button class="nav-btn" onclick="window.location.href = 'index.html#plants'">Plants</button>
-          <button class="nav-btn" onclick="window.location.href = 'index.html#profile'">Profile</button>
-        </nav>
-      </div>
-    </div>
-  </body>
+  <button class="nav-btn" onclick="window.location.href='index.html#plants'">Plants</button>
+  <button class="nav-btn" onclick="window.location.href='index.html#profile'">Profile</button>
+</nav>
+
+</body>
 </html>
+

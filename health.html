@@ -1349,6 +1349,8 @@ function speak(text) {
             localStorage.setItem("cholHDL", hdl);
             localStorage.setItem("cholTRI", tri);
             localStorage.setItem("cholTotal", total);
+localStorage.setItem("auraNeedsUpdate", "true");
+
 
             document.getElementById("ldlValue").innerText = ldl || 0;
             document.getElementById("hdlValue").innerText = hdl || 0;

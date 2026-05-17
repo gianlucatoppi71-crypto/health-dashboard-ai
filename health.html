@@ -562,105 +562,20 @@
     <div class="page-container">
       <!-- TOP ROW -->
       <div class="top-row">
+
         <!-- AVATAR CARD -->
-        <div class="avatar-card card">
-          <h2 class="card-title">Your Avatar</h2>
+       <div class="avatar-card card">
+  <h2 class="card-title">Your Avatar</h2>
 
-          <div class="avatar-wrapper">
-            <svg id="healthAvatar" viewBox="0 0 300 360">
-              <!-- HEART AURA BEHIND AVATAR -->
-              <g id="heartAura" class="avatar-aura-glow">
-                <path
-                  id="heartAuraPath"
-                  d="M150 40
-                   C 110 -10, 20 20, 40 110
-                   C 60 200, 150 260, 150 260
-                   C 150 260, 240 200, 260 110
-                   C 280 20, 190 -10, 150 40 Z"
-                  fill="#ffd6e8"
-                  opacity="0.25"
-                >
-                  <animate attributeName="opacity" values="0.20;0.35;0.20" dur="2s" repeatCount="indefinite"></animate>
-                </path>
-              </g>
+  <div id="avatar-container" class="avatar-wrapper" style="position: relative;">
+    <img id="avatar-base" src="" alt="Avatar Base" style="max-width: 320px; width: 100%;">
 
-              <!-- AVATAR GROUP -->
-              <g id="avatarBody">
-                <!-- HEAD -->
-                <circle id="avatarHead" cx="150" cy="90" r="45" fill="#ffd6e8">
-                  <animate attributeName="cy" values="90;92;90" dur="3s" repeatCount="indefinite"></animate>
-                </circle>
+    <div id="avatar-emotion" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
+    <div id="avatar-aura" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
+    <div id="avatar-breathing" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
+  </div>
+</div>
 
-                <!-- EYES -->
-                <circle id="eyeLeft" cx="135" cy="80" r="6" fill="#222"></circle>
-                <circle id="eyeRight" cx="165" cy="80" r="6" fill="#222"></circle>
-
-                <!-- BLINK -->
-                <rect id="blinkLeft" x="129" y="78" width="12" height="0" fill="#222">
-                  <animate
-                    attributeName="height"
-                    values="0;12;0"
-                    dur="0.18s"
-                    begin="2s; blinkLeft.end+3s"
-                    fill="freeze"
-                  ></animate>
-                </rect>
-
-                <rect id="blinkRight" x="159" y="78" width="12" height="0" fill="#222">
-                  <animate
-                    attributeName="height"
-                    values="0;12;0"
-                    dur="0.18s"
-                    begin="2s; blinkRight.end+3s"
-                    fill="freeze"
-                  ></animate>
-                </rect>
-
-                <!-- MOUTH -->
-                <path id="avatarMouth" d="M135 110 Q150 120 165 110" stroke="#222" stroke-width="4" fill="none"></path>
-
-                <!-- TEARS -->
-                <circle id="tearLeft" cx="135" cy="95" r="6" fill="#66ccff" opacity="0"></circle>
-                <circle id="tearRight" cx="165" cy="95" r="6" fill="#66ccff" opacity="0"></circle>
-
-                <!-- SWEAT -->
-                <ellipse id="sweatDrop" cx="175" cy="70" rx="6" ry="10" fill="#66ccff" opacity="0"></ellipse>
-
-                <!-- BODY -->
-                <ellipse id="avatarChest" cx="150" cy="170" rx="45" ry="38" fill="#ffd6e8"></ellipse>
-
-                <ellipse id="avatarBelly" cx="150" cy="220" rx="50" ry="45" fill="#ffd6e8"></ellipse>
-
-                <!-- ARMS -->
-                <rect id="armLeft" x="95" y="150" width="20" height="60" rx="10" fill="#ffd6e8"></rect>
-                <rect id="armRight" x="185" y="150" width="20" height="60" rx="10" fill="#ffd6e8"></rect>
-
-                <!-- LEGS -->
-                <rect id="legLeft" x="125" y="260" width="30" height="70" rx="12" fill="#ffd6e8"></rect>
-                <rect id="legRight" x="155" y="260" width="30" height="70" rx="12" fill="#ffd6e8"></rect>
-              </g>
-            </svg>
-          </div>
-        </div>
-
-        <!-- HEALTH SCORE CARD -->
-        <div class="health-score-card card">
-          <h2 class="card-title">Health Score</h2>
-
-          <div>
-            <span id="healthScoreValue" class="health-score-value">100</span>
-            <span class="health-score-label">/ 100</span>
-          </div>
-
-          <div class="health-score-bar-container">
-            <div id="healthScoreBar" class="health-score-bar"></div>
-          </div>
-
-          <!-- NEW: Speak Summary Button -->
-          <button class="voice-btn" onclick="speakHealthSummary()">🔊 Speak Health Summary</button>
-        </div>
-      </div>
-      <!-- END TOP ROW -->
 
       <!-- HEALTH COACH BUBBLE -->
       <div id="coachBubble" class="coach-bubble" onclick="toggleCoachPanel()">
@@ -1706,6 +1621,24 @@ window.speakHealthSummary = function() {
   <button class="nav-btn" onclick="window.location.href='index.html#plants'">Plants</button>
   <button class="nav-btn" onclick="window.location.href='index.html#profile'">Profile</button>
 </nav>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const avatarImg = document.getElementById("avatar-base");
+    if (!avatarImg) return;
+
+    const gender = (localStorage.getItem("gender") || "male").toLowerCase();
+
+    // Only two files exist:
+    // /avatars/male.png
+    // /avatars/female.png
+    let fileName = "male.png"; // fallback
+
+    if (gender === "female") fileName = "female.png";
+
+    avatarImg.src = `/avatars/${fileName}`;
+  });
+</script>
 
 </body>
 </html>

@@ -1593,11 +1593,21 @@ function speakHealthSummary() {
 }
 
 /* ============================================================
+   TREND RANGE BUTTONS (FIX MISSING FUNCTIONS)
+============================================================ */
+window.setBPRange = function(days) {
+  rebuildBPTrend(days);
+};
+
+window.setCholRange = function(days) {
+  rebuildCholTrend(days);
+};
+
+/* ============================================================
    END OF JS + CLOSE WINDOW.LOAD
 ============================================================ */
 }); // end window.load
 </script>
-
 <!-- ============================================================
      BOTTOM NAVIGATION (same as index)
 ============================================================ -->

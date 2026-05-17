@@ -950,6 +950,12 @@ function speak(text) {
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
+/* ============================================================
+   ENSURE VOICES LOAD CORRECTLY
+============================================================ */
+speechSynthesis.onvoiceschanged = () => {
+  speechSynthesis.getVoices(); // preload voices
+};
 
 /* ============================================================
    HEALTH SCORE ENGINE
@@ -989,6 +995,34 @@ function updateHealthScore() {
 
   return score;
 }
+/* ============================================================
+   UPDATE AURA FROM SAVED DATA (USED BY INDEX)
+============================================================ */
+window.updateAuraFromData = function () {
+  const sys   = Number(localStorage.getItem("bpSys") || 0);
+  const dia   = Number(localStorage.getItem("bpDia") || 0);
+  const ldl   = Number(localStorage.getItem("cholLDL") || 0);
+  const hdl   = Number(localStorage.getItem("cholHDL") || 0);
+  const total = Number(localStorage.getItem("cholTotal") || 0);
+
+  let score = 100;
+
+  if (sys > 120 || dia > 80) score -= 10;
+  if (sys > 139 || dia > 89) score -= 20;
+  if (sys > 159 || dia > 99) score -= 30;
+
+  if (ldl > 3.0) score -= 10;
+  if (ldl > 5.0) score -= 20;
+
+  if (hdl < 1.0) score -= 10;
+
+  if (total > 5.0) score -= 10;
+  if (total > 6.2) score -= 20;
+
+  score = Math.max(0, Math.min(100, score));
+
+  localStorage.setItem("auraScore", score);
+};
 
 /* ============================================================
    AVATAR LOGIC

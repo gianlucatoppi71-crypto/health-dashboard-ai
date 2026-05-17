@@ -1648,10 +1648,10 @@ function speak(text) {
             return text;
           }
 
-          /* ============================================================
-             SPEAK SUMMARY BUTTON — NHS DOCTOR READING
-          ============================================================ */
-        function speakHealthSummary() {
+         /* ============================================================
+   SPEAK SUMMARY BUTTON — NHS DOCTOR READING
+============================================================ */
+window.speakHealthSummary = function() {
   if (!voiceEnabled) return;
 
   const sys   = Number(lastBP.sys   || document.getElementById("sysValue").innerText   || 0);
@@ -1667,7 +1667,8 @@ function speak(text) {
   const cholText = buildLongCholAdvice(ldl, hdl, tri, total);
 
   speak(bpText + " " + cholText);
-}
+};
+
 
 
           /* ============================================================

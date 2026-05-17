@@ -168,7 +168,7 @@ svg { overflow: visible !important; }
 <div class="app">
 
   <!-- AUDIO TOGGLE -->
-  <div id="audio-toggle" class="audio-btn">🔊</div>
+  
 
   <div class="topbar">
     <div class="brand">HealthHub</div>
@@ -767,6 +767,21 @@ function updateAuraFromData() {
   lastHealth = state;
   updateAura(state);
 }
+/* ---------- AURA AUTO-REFRESH WHEN RETURNING FROM HEALTH PAGE ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("auraNeedsUpdate") === "true") {
+    updateAuraFromData();
+    localStorage.setItem("auraNeedsUpdate", "false");
+  }
+});
+
+/* Also refresh aura whenever the user returns to the tab */
+window.addEventListener("focus", () => {
+  if (localStorage.getItem("auraNeedsUpdate") === "true") {
+    updateAuraFromData();
+    localStorage.setItem("auraNeedsUpdate", "false");
+  }
+});
 
 </script>
 

@@ -649,7 +649,8 @@ function updateAura(state) {
   const bpPath   = document.querySelector(".ring-bp .heart-path");
   const cholPath = document.querySelector(".ring-chol .heart-path");
   const foodPath = document.querySelector(".ring-food .heart-path");
-  const heart    = document.querySelector(".center-heart .heart-fill");
+  const heart = document.querySelector(".center-heart path");
+
   if (!bpPath || !cholPath || !foodPath || !heart) return;
 
   const bpSys = state.bpSys;

@@ -986,7 +986,7 @@
             voiceEnabled = !voiceEnabled;
           };
 
-         /* ============================================================
+   /* ============================================================
    SPEAK FUNCTION — RELIABLE VOICE LOADING
 ============================================================ */
 let voicesLoaded = false;
@@ -1002,6 +1002,9 @@ speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices(); // also try immediately
 
 function speak(text) {
+
+  console.log("voiceEnabled =", voiceEnabled);   // ← THIS SHOWS IF VOICE IS ON/OFF
+
   if (!voiceEnabled) return;
   if (!window.speechSynthesis) return;
 
@@ -1030,6 +1033,7 @@ function speak(text) {
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
+
           /* ============================================================
              HEALTH SCORE ENGINE
           ============================================================ */

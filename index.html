@@ -37,7 +37,7 @@ html,body{
 .tab{display:none;opacity:0;transition:opacity .25s;}
 .tab.active{display:block;opacity:1;}
 
-/* ------------------ AURA HEART RINGS (DYNAMIC, MEDICAL) ------------------ */
+/* ------------------ AURA HEART RINGS ------------------ */
 .aura-wrap-new{
   position:relative;
   width:340px;
@@ -46,7 +46,6 @@ html,body{
   margin-top:10px;
 }
 
-/* Ring scaling */
 .ring-bp  { transform: scale(0.75); }
 .ring-chol{ transform: scale(0.95); }
 .ring-food{ transform: scale(1.20); }
@@ -58,7 +57,6 @@ html,body{
   height:280px;
 }
 
-/* Base stroke (JS will recolor) */
 .heart-path{
   fill:none;
   stroke-width:14px;
@@ -68,7 +66,6 @@ html,body{
           drop-shadow(0 0 24px currentColor);
 }
 
-/* Center heart */
 .center-heart{
   position:absolute;
   top:40px; left:40px;
@@ -82,7 +79,6 @@ html,body{
   animation:heartPulse 1.8s infinite ease-in-out;
 }
 
-/* Pulse animations */
 @keyframes pulseBP{
   0%{stroke-width:14px;}
   50%{stroke-width:18px;}
@@ -133,6 +129,21 @@ html,body{
   border:1px solid #f1f5f9;
 }
 
+/* BMI BADGE (C1 MEDICAL STYLE) */
+.bmi-badge {
+  display:inline-block;
+  padding:6px 12px;
+  margin-top:6px;
+  border-radius:20px;
+  font-weight:700;
+  color:white;
+  background:#28a745; /* default green */
+}
+.bmi-underweight { background:#1e90ff; }
+.bmi-healthy { background:#28a745; }
+.bmi-overweight { background:#ffc107; color:black; }
+.bmi-obese { background:#dc3545; }
+
 /* Bottom navigation */
 .bottom-nav{
   height:86px;padding:10px 18px;display:flex;
@@ -158,7 +169,6 @@ html,body{
 }
 
 .muted{color:var(--muted);}
-
 svg { overflow: visible !important; }
 
 </style>
@@ -166,10 +176,8 @@ svg { overflow: visible !important; }
 
 <body>
 <div class="app">
-
   <!-- AUDIO TOGGLE -->
   
-
   <div class="topbar">
     <div class="brand">HealthHub</div>
     <div class="links">Home • Scan</div>
@@ -282,9 +290,10 @@ svg { overflow: visible !important; }
           </button>
         </div>
 
+        <!-- ⭐ NEW BMI BADGE (replaces old BMI field) -->
         <div class="field">
           <label>BMI</label>
-          <div class="value" id="bmi">26.5</div>
+          <div id="bmiBadge" class="bmi-badge bmi-healthy">BMI: --</div>
         </div>
 
         <div class="field">
@@ -298,7 +307,6 @@ svg { overflow: visible !important; }
       <button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
 
     </section>
-
     <!-- SCAN TAB -->
     <section id="tab-scan" class="tab">
       <div class="section-card">
@@ -329,7 +337,6 @@ svg { overflow: visible !important; }
         <div id="weekly-cal" class="muted">0 kcal</div>
       </div>
     </section>
-
     <!-- HEALTH TAB -->
     <section id="tab-health" class="tab">
       <div class="section-card">
@@ -357,6 +364,7 @@ svg { overflow: visible !important; }
     </section>
 
   </main>
+
   <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
@@ -371,9 +379,8 @@ svg { overflow: visible !important; }
   </nav>
 
 </div> <!-- END .app -->
-
 <script>
-/* ---------- HEALTH REACTION ENGINE ---------- */
+/* ---------- HEALTH REACTION ENGINE (initial state) ---------- */
 let lastHealth = {
   bpSys: Number(localStorage.getItem("bpSys") || 120),
   bpDia: Number(localStorage.getItem("bpDia") || 80),
@@ -381,6 +388,7 @@ let lastHealth = {
   foodQuality: (Number(localStorage.getItem("foodScore") || 60) / 100),
   score: 72
 };
+
 /* ---------- TABS ---------- */
 const tabs = {
   profile: document.getElementById('tab-profile'),
@@ -497,7 +505,6 @@ function autoCalcBodyFat() {
 
   return clean;
 }
-
 /* ---------- HEALTH SCORE ---------- */
 function setHealthScore(score){
   score = Math.max(0, Math.min(100, score));
@@ -518,7 +525,26 @@ function enableEdit() {
   document.getElementById("save-btn").style.display = "block";
 }
 
-/* ---------- SAVE PROFILE ---------- */
+/* ---------- BMI BADGE COLOR LOGIC ---------- */
+function updateBMIBadge(bmi) {
+  const badge = document.getElementById("bmiBadge");
+
+  badge.classList.remove("bmi-underweight", "bmi-healthy", "bmi-overweight", "bmi-obese");
+
+  if (bmi < 18.5) {
+    badge.classList.add("bmi-underweight");
+  } else if (bmi < 25) {
+    badge.classList.add("bmi-healthy");
+  } else if (bmi < 30) {
+    badge.classList.add("bmi-overweight");
+  } else {
+    badge.classList.add("bmi-obese");
+  }
+
+  badge.textContent = "BMI: " + bmi;
+}
+
+/* ---------- SAVE PROFILE (UPDATED) ---------- */
 function saveProfile() {
   const name = document.getElementById("name").value;
   const gender = document.getElementById("gender").value;
@@ -534,12 +560,15 @@ function saveProfile() {
   const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
   localStorage.setItem("profile", JSON.stringify(profile));
 
+  /* BMI */
   const bmi = (weight / ((height/100)**2)).toFixed(1);
-  document.getElementById("bmi").textContent = bmi;
+  updateBMIBadge(bmi);
 
+  /* Ideal weight */
   const ideal = (22 * ((height/100)**2)).toFixed(1);
   document.getElementById("ideal").textContent = ideal + " kg";
 
+  /* Health score */
   const score = Math.max(
     20,
     100
@@ -549,9 +578,10 @@ function saveProfile() {
 
   setHealthScore(score);
 
-
+  /* Update top bar name */
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
+  /* Disable fields */
   document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = true);
 
@@ -563,7 +593,7 @@ function saveProfile() {
   toggleHip();
 }
 
-/* ---------- LOAD PROFILE ---------- */
+/* ---------- LOAD PROFILE (UPDATED) ---------- */
 (function loadProfile() {
   const p = JSON.parse(localStorage.getItem("profile"));
   if (!p) return;
@@ -578,12 +608,15 @@ function saveProfile() {
   document.getElementById("hip").value = p.hip;
   document.getElementById("bodyfat").value = p.bodyfat;
 
+  /* BMI */
   const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
-  document.getElementById("bmi").textContent = bmi;
+  updateBMIBadge(bmi);
 
+  /* Ideal weight */
   const ideal = (22 * ((p.height/100)**2)).toFixed(1);
   document.getElementById("ideal").textContent = ideal + " kg";
 
+  /* Health score */
   const score = Math.max(
     20,
     100
@@ -597,11 +630,9 @@ function saveProfile() {
 
   toggleHip();
 })();
-
 /* ---------- INIT ---------- */
 (function init(){
-  
-  updateAuraFromData();   // IMPORTANT FIX
+  updateAuraFromData();   // IMPORTANT
   switchTab('profile');
   toggleHip();
 })();
@@ -618,12 +649,14 @@ function updateAudioButton() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("audio-toggle");
-  btn.onclick = () => {
-    audioEnabled = !audioEnabled;
-    localStorage.setItem("audioEnabled", JSON.stringify(audioEnabled));
+  if (btn) {
+    btn.onclick = () => {
+      audioEnabled = !audioEnabled;
+      localStorage.setItem("audioEnabled", JSON.stringify(audioEnabled));
+      updateAudioButton();
+    };
     updateAudioButton();
-  };
-  updateAudioButton();
+  }
 });
 
 function speak(text) {
@@ -643,9 +676,7 @@ function speak(text) {
   speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 }
-
 /* ---------- HEALTH REACTION ENGINE ---------- */
-
 
 function updateAura(state) {
   const bpPath   = document.querySelector(".ring-bp .heart-path");
@@ -746,7 +777,7 @@ addPlantPoints = function(n) {
   const foodScore = Math.max(0, Math.min(100, (lastHealth.foodQuality || 0.6) * 100 + n));
   lastHealth.foodQuality = foodScore / 100;
 
-  localStorage.setItem("foodScore", foodScore);  // IMPORTANT FIX
+  localStorage.setItem("foodScore", foodScore);
 
   updateAura(lastHealth);
 };
@@ -770,6 +801,7 @@ function updateAuraFromData() {
   lastHealth = state;
   updateAura(state);
 }
+
 /* ---------- AURA AUTO-REFRESH ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   updateAuraFromData();
@@ -778,8 +810,6 @@ document.addEventListener("DOMContentLoaded", () => {
 window.addEventListener("focus", () => {
   updateAuraFromData();
 });
-
-
 </script>
 
 </body>

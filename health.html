@@ -586,15 +586,16 @@
       </g>
 
       <!-- NEW PNG‑BASED AVATAR BASE IMAGE -->
-      <image
-        id="avatarBase"
-        x="75"
-        y="60"
-        width="150"
-        height="220"
-        href="img/avatar_male.png"
-        preserveAspectRatio="xMidYMid meet"
-      ></image>
+     <image
+  id="avatarBase"
+  x="75"
+  y="60"
+  width="150"
+  height="220"
+  href="/avatars/male.png"
+  preserveAspectRatio="xMidYMid meet"
+></image>
+
 
       <!-- BODY SHAPE GROUP (SCALE APPLIED HERE) -->
       <g id="avatarShapeGroup" transform="translate(150,170) scale(1,1) translate(-150,-170)">
@@ -1122,11 +1123,13 @@ function updateAvatarFromScore(score) {
      GENDER → WHICH PNG TO USE
   ------------------------------ */
   const { gender, bmi } = getProfileInfo();
-  baseImg.setAttribute("href",
+ baseImg.setAttribute("href",
     gender === "female"
-      ? "img/avatar_female.png"
-      : "img/avatar_male.png"
-  );
+      ? "/avatars/female.png"
+      : "/avatars/male.png"
+);
+
+
 
   /* ------------------------------
      BODY SHAPE FROM BMI

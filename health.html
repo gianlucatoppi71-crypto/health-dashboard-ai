@@ -1,1667 +1,785 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Health Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-      .bottom-nav {
-        height: 86px;
-        padding: 10px 18px;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        border-top: 1px solid #f3f6f9;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), #fff);
-      }
-
-      .nav-btn {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: none;
-        border: none;
-        color: #6b7280;
-      }
-
-      .nav-btn.active {
-        color: #42a5f5;
-        font-weight: 700;
-      }
-
-      .center-wrap {
-        flex: 0 0 92px;
-        display: flex;
-        justify-content: center;
-        margin-top: -28px;
-      }
-
-      .scan-btn {
-        width: 84px;
-        height: 84px;
-        border-radius: 50%;
-        background: #42a5f5;
-        color: #fff;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 12px 0 #2b7bb8;
-      }
-
-      .topbar {
-        height: 56px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 16px;
-        border-bottom: 1px solid #f0f3f7;
-        background: #fff;
-      }
-
-      /* GLOBAL */
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background: #ffffff;
-        color: #222;
-        position: relative;
-        overflow-x: hidden;
-        opacity: 0;
-        animation: fadeIn 0.6s ease forwards;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      body::before {
-        content: "";
-        position: fixed;
-        top: -20%;
-        left: -20%;
-        width: 140%;
-        height: 140%;
-        background:
-          radial-gradient(circle at 30% 30%, rgba(0, 200, 255, 0.12), transparent 60%),
-          radial-gradient(circle at 70% 70%, rgba(255, 0, 200, 0.12), transparent 60%);
-        animation: softGlow 12s ease-in-out infinite alternate;
-        z-index: -1;
-      }
-
-      @keyframes softGlow {
-        0% {
-          transform: scale(1);
-          opacity: 0.7;
-        }
-        100% {
-          transform: scale(1.15);
-          opacity: 1;
-        }
-      }
-
-      h1 {
-        text-align: center;
-        margin: 18px 0 10px;
-        font-size: 26px;
-        letter-spacing: -0.5px;
-      }
-
-      .page-container {
-        max-width: 1100px;
-        margin: 0 auto 40px;
-        padding: 0 16px 40px;
-      }
-
-      .top-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-        gap: 16px;
-        margin-bottom: 16px;
-      }
-
-      @media (max-width: 800px) {
-        .top-row {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* CARDS */
-      .card {
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(14px);
-        border-radius: 16px;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-      }
-
-      .card-title {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 18px;
-        font-weight: 700;
-        color: #111;
-      }
-
-      .section-title {
-        font-size: 24px;
-        font-weight: 700;
-        margin: 20px 0 10px;
-        color: #111;
-        letter-spacing: -0.5px;
-      }
-
-      .divider {
-        height: 1px;
-        background: linear-gradient(90deg, transparent, #00eaff, transparent);
-        margin: 20px 0;
-        opacity: 0.4;
-        animation: pulseLine 4s ease-in-out infinite;
-      }
-
-      @keyframes pulseLine {
-        0% {
-          opacity: 0.2;
-        }
-        100% {
-          opacity: 0.5;
-        }
-      }
-
-      /* AVATAR */
-      .avatar-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .avatar-wrapper {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding-top: 8px;
-      }
-
-      #healthAvatar {
-        width: 100%;
-        max-width: 320px;
-      }
-
-      .avatar-aura-glow {
-        filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.6));
-      }
-
-
-
-      /* ------------------------------
-   HEALTH SCORE CARD
------------------------------- */
-
-
-      .health-score-card {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .health-score-value {
-        font-size: 40px;
-        font-weight: 800;
-      }
-
-      .health-score-label {
-        font-size: 16px;
-        color: #666;
-        margin-left: 4px;
-      }
-
-      .health-score-bar-container {
-        width: 100%;
-        height: 12px;
-        border-radius: 999px;
-        background: #f0f0f0;
-        overflow: hidden;
-      }
-
-      .health-score-bar {
-        height: 100%;
-        width: 0%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #ff0066, #ffcc00, #00ff99);
-        transition: width 0.4s ease;
-      }
-
-      .voice-btn {
-        margin-top: 6px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        border: none;
-        background: #f2f2f2;
-        cursor: pointer;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      /* ------------------------------
-   ACCORDION
------------------------------- */
-      .accordion-section {
-        margin-top: 10px;
-      }
-
-      .accordion-header {
-        background: #ffffff;
-        border-radius: 12px;
-        border: 1px solid #e5e5e5;
-        padding: 12px 14px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: #222;
-        margin-bottom: 6px;
-      }
-
-      .accordion-content {
-        margin-top: 4px;
-        display: none;
-      }
-
-      .accordion-content.open {
-        display: block;
-      }
-
-      .chevron {
-        font-size: 18px;
-      }
-
-      /* ------------------------------
-   INPUTS / BUTTONS
------------------------------- */
-      label {
-        display: block;
-        font-size: 14px;
-        margin-top: 8px;
-        margin-bottom: 4px;
-      }
-
-      input[type="number"] {
-        width: 100%;
-        padding: 8px 10px;
-        border-radius: 10px;
-        border: 1px solid #ddd;
-        font-size: 14px;
-      }
-
-      .save-btn {
-        width: 100%;
-        margin-top: 10px;
-        padding: 12px;
-        border-radius: 12px;
-        border: none;
-        background: linear-gradient(135deg, #00eaff, #00b8ff);
-        color: #fff;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 200, 255, 0.25);
-        transition:
-          transform 0.15s ease,
-          box-shadow 0.15s ease;
-      }
-
-      .save-btn:active {
-        transform: scale(0.97);
-        box-shadow: 0 2px 6px rgba(0, 200, 255, 0.2);
-      }
-
-      /* ------------------------------
-   PROGRESS BARS
------------------------------- */
-      .progress-container {
-        width: 100%;
-        height: 16px;
-        border-radius: 999px;
-        background: #f0f0f0;
-        overflow: hidden;
-        margin-top: 6px;
-      }
-
-      .progress-bar {
-        height: 100%;
-        width: 0%;
-        border-radius: 999px;
-        position: relative;
-        transition: width 0.4s ease;
-      }
-
-      .red-bar {
-        background: linear-gradient(90deg, #ff9a9e, #ff0066);
-      }
-      .green-bar {
-        background: linear-gradient(90deg, #a8ff78, #00ff99);
-      }
-      .orange-bar {
-        background: linear-gradient(90deg, #ffd194, #ff7e00);
-      }
-      .blue-bar {
-        background: linear-gradient(90deg, #89f7fe, #00c6ff);
-      }
-
-      .bar-label {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 11px;
-        color: #fff;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
-      .tip-box {
-        margin-top: 6px;
-        font-size: 13px;
-        color: #555;
-      }
-
-      /* ------------------------------
-   GAUGE / CHARTS
------------------------------- */
-      .gauge-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .gauge-labels {
-        display: flex;
-        gap: 10px;
-        margin-top: 8px;
-        font-size: 12px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      .gauge-label .dot {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 4px;
-      }
-
-      .dot.red {
-        background: #ff0066;
-      }
-      .dot.green {
-        background: #00ff99;
-      }
-      .dot.blue {
-        background: #00c6ff;
-      }
-
-      .trend-card canvas,
-      #cholesterolGauge {
-        border-radius: 12px;
-      }
-
-      .neon-soft {
-        filter: drop-shadow(0 0 6px rgba(0, 200, 255, 0.35));
-      }
-
-      .trend-card {
-        min-height: 220px;
-      }
-
-      /* ------------------------------
-   FOOD SWAPS / SUGGESTIONS
------------------------------- */
-      .swap-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-      }
-
-      .swap-table th,
-      .swap-table td {
-        border-bottom: 1px solid #eee;
-        padding: 6px 4px;
-        text-align: left;
-      }
-
-      .suggestion-list {
-        padding-left: 18px;
-        margin: 0;
-        font-size: 13px;
-      }
-
-      /* ------------------------------
-   DAILY ACTION / WEEKLY SUMMARY
------------------------------- */
-      .daily-action-card p {
-        margin: 0;
-        font-size: 14px;
-      }
-
-      .weekly-summary-container {
-        margin-top: 40px;
-      }
-
-      .weekly-card {
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(14px);
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 16px;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-      }
-
-      .weekly-card h3 {
-        margin-top: 0;
-        font-size: 18px;
-        font-weight: 700;
-      }
-
-  /* ------------------------------
-   HEALTH COACH BUBBLE
------------------------------- */
-.coach-bubble {
-  position: fixed;
-  bottom: 180px;   /* ← safely ABOVE bottom menu */
-  right: 26px;
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, #00eaff, #00b8ff);
-  border-radius: 50%;
-  box-shadow: 0 0 18px rgba(0, 200, 255, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  animation: bubblePulse 2.2s infinite ease-in-out;
-  z-index: 9999;
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HealthHub — Dashboard</title>
+
+<style>
+
+:root{
+  --accent:#42a5f5;
+  --accent-dark:#2b7bb8;
+  --bg:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
 }
 
-@keyframes bubblePulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 12px rgba(0, 200, 255, 0.4);
-  }
-  100% {
-    transform: scale(1.08);
-    box-shadow: 0 0 22px rgba(0, 200, 255, 0.6);
-  }
+html,body{
+  height:100%;margin:0;
+  font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+  background:#fff;color:var(--text);
 }
 
-.coach-face {
-  font-size: 32px;
-  color: white;
+.app{
+  display:flex;flex-direction:column;
+  height:100vh;max-width:480px;margin:0 auto;
+  border-left:1px solid #eee;border-right:1px solid #eee;
 }
 
-.coach-panel {
-  position: fixed;
-  bottom: 220px;   /* ← lifted to stay above the bubble */
-  right: 26px;
-  width: 260px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(14px);
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
-  display: none;
-  z-index: 9999;
+.topbar{
+  height:56px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;
+  border-bottom:1px solid #f0f3f7;background:#fff;
 }
 
-.coach-panel h3 {
-  margin-top: 0;
-  font-size: 18px;
-  font-weight: 700;
+.content{flex:1;overflow:auto;padding:18px;}
+.tab{display:none;opacity:0;transition:opacity .25s;}
+.tab.active{display:block;opacity:1;}
+
+/* ------------------ AURA HEART RINGS (DYNAMIC, MEDICAL) ------------------ */
+.aura-wrap-new{
+  position:relative;
+  width:340px;
+  height:320px;
+  margin:0 auto;
+  margin-top:10px;
 }
 
-.coach-close {
-  margin-top: 10px;
-  width: 100%;
-  padding: 10px;
-  border-radius: 12px;
-  border: none;
-  background: #00b8ff;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
+/* Ring scaling */
+.ring-bp  { transform: scale(0.75); }
+.ring-chol{ transform: scale(0.95); }
+.ring-food{ transform: scale(1.20); }
+
+.heart-ring{
+  position:absolute;
+  top:0; left:0;
+  width:300px;
+  height:280px;
 }
 
+/* Base stroke (JS will recolor) */
+.heart-path{
+  fill:none;
+  stroke-width:14px;
+  stroke-linecap:round;
+  stroke:#cccccc;
+  filter: drop-shadow(0 0 12px currentColor)
+          drop-shadow(0 0 24px currentColor);
+}
 
-    </style>
-  </head>
+/* Center heart */
+.center-heart{
+  position:absolute;
+  top:40px; left:40px;
+  width:220px; height:220px;
+}
 
-  <body>
-    <div class="topbar">
-      <div class="brand">HealthHub</div>
-      <div class="links">Home • Scan</div>
-    </div>
+.center-heart .heart-fill{
+  fill:#4ade80;
+  filter: drop-shadow(0 0 10px #4ade80)
+          drop-shadow(0 0 20px #4ade80);
+  animation:heartPulse 1.8s infinite ease-in-out;
+}
 
-    <h1>Health Dashboard</h1>
+/* Pulse animations */
+@keyframes pulseBP{
+  0%{stroke-width:14px;}
+  50%{stroke-width:18px;}
+  100%{stroke-width:14px;}
+}
+@keyframes pulseChol{
+  0%{stroke-width:14px;}
+  50%{stroke-width:17px;}
+  100%{stroke-width:14px;}
+}
+@keyframes pulseFood{
+  0%{stroke-width:14px;}
+  50%{stroke-width:16px;}
+  100%{stroke-width:14px;}
+}
 
-    <div class="page-container">
+.ring-bp   .heart-path{ animation:pulseBP 2s infinite ease-in-out; }
+.ring-chol .heart-path{ animation:pulseChol 2.4s infinite ease-in-out; }
+.ring-food .heart-path{ animation:pulseFood 3s infinite ease-in-out; }
 
-      <!-- TOP ROW -->
-      <div class="top-row">
+/* PROFILE FIELDS */
+.profile-fields{
+  width:100%;padding:12px 6px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+}
 
+.field{
+  background:#fff;border-radius:12px;padding:10px;
+  border:1px solid #f1f5f9;
+}
 
-        <!-- AVATAR CARD -->
-       <div class="avatar-card card">
-  <h2 class="card-title">Your Avatar</h2>
+.field label{font-size:12px;color:var(--muted);}
+.field input,.field select{
+  width:100%;padding:6px;border-radius:8px;
+  border:1px solid #ddd;font-size:15px;
+}
 
-  <div id="avatar-container" class="avatar-wrapper" style="position: relative;">
-    <img id="avatar-base" src="" alt="Avatar Base" style="max-width: 320px; width: 100%;">
+.value{font-weight:700;font-size:16px;}
 
-    <div id="avatar-emotion" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
-    <div id="avatar-aura" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
-    <div id="avatar-breathing" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
-  </div>
-</div>
+.btn-3d{
+  background:var(--accent);color:#fff;padding:12px 18px;
+  border-radius:12px;border:none;font-weight:700;
+  box-shadow:0 8px 0 var(--accent-dark);
+}
 
-<!-- HEALTH SCORE CARD -->
-<div class="card">
-  <h2 class="card-title">Health Score</h2>
+.section-card{
+  background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;
+  border:1px solid #f1f5f9;
+}
 
-  <div class="health-score-card">
+/* Bottom navigation */
+.bottom-nav{
+  height:86px;padding:10px 18px;display:flex;
+  align-items:flex-end;justify-content:space-between;
+  border-top:1px solid #f3f6f9;
+  background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);
+}
 
-    <!-- SCORE NUMBER -->
-    <div id="healthScoreValue" class="health-score-value">0</div>
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;background:none;border:none;
+  color:var(--muted);
+}
 
-    <!-- SCORE BAR -->
-    <div class="health-score-bar-container">
-      <div id="healthScoreBar" class="health-score-bar"></div>
-    </div>
+.nav-btn.active{color:var(--accent);font-weight:700;}
 
+.center-wrap{flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
+.scan-btn{
+  width:84px;height:84px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 12px 0 var(--accent-dark);
+}
+
+.muted{color:var(--muted);}
+
+svg { overflow: visible !important; }
+
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- AUDIO TOGGLE -->
+  
+
+  <div class="topbar">
+    <div class="brand">HealthHub</div>
+    <div class="links">Home • Scan</div>
   </div>
 
-  <!-- VOICE BUTTON -->
-  <button class="voice-btn" onclick="speakHealthSummary()">
-    🔊 Speak Health Summary
-  </button>
-</div>
+  <main class="content">
 
+    <!-- PROFILE TAB -->
+    <section id="tab-profile" class="tab active">
+      <div class="profile-hero">
 
-      <!-- HEALTH COACH BUBBLE -->
-      <div id="coachBubble" class="coach-bubble" onclick="toggleCoachPanel()">
-        <div class="coach-face">😊</div>
-      </div>
+        <!-- AURA -->
+        <div class="aura-wrap-new">
 
-      <!-- HEALTH COACH PANEL -->
-      <div id="coachPanel" class="coach-panel">
-        <h3>Your Health Coach</h3>
-        <p id="coachMessage">Hi! I’m here to help you improve your health every day.</p>
-        <button class="coach-close" onclick="toggleCoachPanel()">Close</button>
-      </div>
+          <!-- FOOD RING -->
+          <svg class="heart-ring ring-food" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
 
-      <!-- BLOOD PRESSURE ACCORDION -->
-      <div class="accordion-section">
-        <div class="accordion-header" onclick="toggleAccordion('bpContent')">
-          <span>Blood Pressure</span>
-          <span class="chevron">⌄</span>
+          <!-- CHOLESTEROL RING -->
+          <svg class="heart-ring ring-chol" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
+          <!-- BLOOD PRESSURE RING -->
+          <svg class="heart-ring ring-bp" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
+          <!-- CENTER HEART -->
+          <svg class="center-heart" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <path class="heart-fill"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
         </div>
 
-        <div id="bpContent" class="accordion-content open">
-          <!-- BP INPUT CARD -->
-          <div class="card input-card">
-            <h3 class="card-title">Update Your Blood Pressure</h3>
-
-            <label>Systolic (SYS)</label>
-            <input id="sysInput" type="number" step="1" placeholder="e.g. 120" />
-
-            <label>Diastolic (DIA)</label>
-            <input id="diaInput" type="number" step="1" placeholder="e.g. 80" />
-
-            <label>Heart Rate (HR)</label>
-            <input id="hrInput" type="number" step="1" placeholder="e.g. 70" />
-
-            <button class="save-btn" onclick="saveBloodPressure()">Save Blood Pressure</button>
+        <div style="text-align:center;">
+          <div id="health-label" style="
+            font-weight:800;
+            font-size:16px;
+            margin-top:28px;
+            position:relative;
+            top:18px;
+            margin-bottom:18px;
+          ">
+            Health Score: <span id="health-score">72</span>
           </div>
-
-          <!-- BP RESULT CARD -->
-          <div class="card result-card">
-            <h3>Blood Pressure Result</h3>
-
-            <p>
-              <span id="sysValue" class="value">0</span>
-              /
-              <span id="diaValue" class="value">0</span>
-              mmHg
-            </p>
-
-            <div class="progress-container">
-              <div id="bpBar" class="progress-bar blue-bar">
-                <span id="bpLabel" class="bar-label"></span>
-              </div>
-            </div>
-
-            <div id="bpTip" class="tip-box"></div>
-          </div>
-
-          <!-- HEART RATE RESULT -->
-          <div class="card result-card">
-            <h3>Heart Rate</h3>
-
-            <p>
-              <span id="hrValue" class="value">0</span>
-              bpm
-            </p>
-
-            <div class="progress-container">
-              <div id="hrBar" class="progress-bar green-bar">
-                <span id="hrLabel" class="bar-label"></span>
-              </div>
-            </div>
-
-            <div id="hrTip" class="tip-box"></div>
-          </div>
-
-          <!-- BP TREND CHART -->
-          <div class="card trend-card">
-            <h3 class="card-title">Blood Pressure Trend</h3>
-
-            <div class="trend-buttons">
-              <button onclick="setBPRange(1)">Day</button>
-              <button onclick="setBPRange(7)">Week</button>
-              <button onclick="setBPRange(30)">Month</button>
-            </div>
-
-            <canvas id="bpTrendChart"></canvas>
-          </div>
-
-          <div class="divider"></div>
-
-          <!-- CHOLESTEROL ACCORDION -->
-          <div class="accordion-section">
-            <div class="accordion-header" onclick="toggleAccordion('cholContent')">
-              <span>Cholesterol</span>
-              <span class="chevron">⌄</span>
-            </div>
-
-            <div id="cholContent" class="accordion-content open">
-              <!-- CHOLESTEROL INPUT CARD -->
-              <div class="card input-card">
-                <h3 class="card-title">Update Your Cholesterol</h3>
-
-                <label>LDL (Bad Cholesterol)</label>
-                <input id="ldlInput" type="number" step="0.1" placeholder="e.g. 3.2" />
-
-                <label>HDL (Good Cholesterol)</label>
-                <input id="hdlInput" type="number" step="0.1" placeholder="e.g. 1.2" />
-
-                <label>Triglycerides</label>
-                <input id="triInput" type="number" step="0.1" placeholder="e.g. 1.5" />
-
-                <label>Total Cholesterol</label>
-                <input id="totalInput" type="number" step="0.1" placeholder="e.g. 5.0" />
-
-                <button class="save-btn" onclick="saveCholesterol()">Save Cholesterol</button>
-              </div>
-
-              <!-- CHOLESTEROL RESULT CARD -->
-              <div class="card result-card">
-                <h3>Cholesterol Result</h3>
-
-                <p>
-                  LDL:
-                  <span id="ldlValue" class="value">0</span>
-                  mmol/L
-                  <br />
-                  HDL:
-                  <span id="hdlValue" class="value">0</span>
-                  mmol/L
-                  <br />
-                  TRI:
-                  <span id="triValue" class="value">0</span>
-                  mmol/L
-                  <br />
-                  Total:
-                  <span id="totalValue" class="value">0</span>
-                  mmol/L
-                </p>
-
-                <!-- LDL BAR -->
-                <label>LDL</label>
-                <div class="progress-container">
-                  <div id="ldlBar" class="progress-bar red-bar">
-                    <span id="ldlLabel" class="bar-label"></span>
-                  </div>
-                </div>
-
-                <!-- HDL BAR -->
-                <label>HDL</label>
-                <div class="progress-container">
-                  <div id="hdlBar" class="progress-bar green-bar">
-                    <span id="hdlLabel" class="bar-label"></span>
-                  </div>
-                </div>
-
-                <!-- TRI BAR -->
-                <label>Triglycerides</label>
-                <div class="progress-container">
-                  <div id="triBar" class="progress-bar orange-bar">
-                    <span id="triLabel" class="bar-label"></span>
-                  </div>
-                </div>
-
-                <!-- TOTAL BAR -->
-                <label>Total Cholesterol</label>
-                <div class="progress-container">
-                  <div id="totalBar" class="progress-bar blue-bar">
-                    <span id="totalLabel" class="bar-label"></span>
-                  </div>
-                </div>
-
-                <div id="cholTip" class="tip-box"></div>
-              </div>
-
-              <!-- MINI GAUGE -->
-              <div class="card gauge-wrapper">
-                <h3 class="card-title">Cholesterol Gauge</h3>
-                <canvas id="cholesterolGauge" width="260" height="160" class="neon-soft"></canvas>
-
-                <div class="gauge-labels">
-                  <span class="gauge-label">
-                    <span class="dot red"></span>
-                    LDL
-                  </span>
-                  <span class="gauge-label">
-                    <span class="dot green"></span>
-                    HDL
-                  </span>
-                  <span class="gauge-label">
-                    <span class="dot blue"></span>
-                    Total
-                  </span>
-                </div>
-              </div>
-
-              <h3 class="card-title">Cholesterol Trend</h3>
-
-              <div class="trend-buttons">
-                <button onclick="setCholRange(1)">Day</button>
-                <button onclick="setCholRange(7)">Week</button>
-                <button onclick="setCholRange(30)">Month</button>
-              </div>
-
-              <canvas id="cholTrendChart"></canvas>
-
-              <!-- FOOD SWAPS -->
-              <div class="card">
-                <h3 class="card-title">Healthy Food Swaps</h3>
-
-                <table class="swap-table">
-                  <tbody>
-                    <tr>
-                      <th>Instead of…</th>
-                      <th>Try…</th>
-                    </tr>
-                    <tr>
-                      <td>Butter</td>
-                      <td>Olive oil</td>
-                    </tr>
-                    <tr>
-                      <td>Fried foods</td>
-                      <td>Air‑fried or grilled</td>
-                    </tr>
-                    <tr>
-                      <td>White bread</td>
-                      <td>Whole grain</td>
-                    </tr>
-                    <tr>
-                      <td>Cheese snacks</td>
-                      <td>Nuts &amp; seeds</td>
-                    </tr>
-                    <tr>
-                      <td>Processed meats</td>
-                      <td>Lean chicken / beans</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- PROFESSIONAL SUGGESTIONS -->
-              <div class="card">
-                <h3 class="card-title">Professional Suggestions</h3>
-
-                <ul class="suggestion-list">
-                  <li>Increase soluble fibre (oats, beans, apples).</li>
-                  <li>Use olive oil instead of butter.</li>
-                  <li>Eat more plant‑based meals.</li>
-                  <li>Reduce processed meats.</li>
-                  <li>Walk 20–30 minutes daily.</li>
-                </ul>
-              </div>
-
-              <!-- DAILY ACTION -->
-              <div class="card daily-action-card">
-                <h3 class="card-title">Daily Action</h3>
-                <p id="dailyActionText">Your daily action will appear here.</p>
-              </div>
-            </div>
-            <!-- END cholContent -->
-          </div>
-          <!-- END accordion-section -->
+          <div class="muted">Aura indicates overall health</div>
         </div>
-        <!-- END page-container -->
+      </div>
 
-        <div class="divider"></div>
-        <script>
-          window.addEventListener("load", function () {
+      <!-- PROFILE FIELDS -->
+      <div class="profile-fields">
 
-          /* ============================================================
-             LOAD SAVED VALUES
-          ============================================================ */
-          const savedSys = localStorage.getItem("bpSys");
-          const savedDia = localStorage.getItem("bpDia");
-          const savedHR  = localStorage.getItem("bpHR");
+        <div class="field">
+          <label>Name</label>
+          <input id="name" type="text" value="User" disabled>
+        </div>
 
-          if (savedSys) document.getElementById("sysInput").value = savedSys;
-          if (savedDia) document.getElementById("diaInput").value = savedDia;
-          if (savedHR)  document.getElementById("hrInput").value  = savedHR;
+        <div class="field">
+          <label>Gender</label>
+          <select id="gender" disabled onchange="toggleHip()">
+            <option value="male" selected>Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
 
-          const savedLDL   = localStorage.getItem("cholLDL");
-          const savedHDL   = localStorage.getItem("cholHDL");
-          const savedTRI   = localStorage.getItem("cholTRI");
-          const savedTotal = localStorage.getItem("cholTotal");
+        <div class="field">
+          <label>Age</label>
+          <input id="age" type="number" value="45" disabled>
+        </div>
 
-          if (savedLDL)   document.getElementById("ldlInput").value = savedLDL;
-          if (savedHDL)   document.getElementById("hdlInput").value = savedHDL;
-          if (savedTRI)   document.getElementById("triInput").value = savedTRI;
-          if (savedTotal) document.getElementById("totalInput").value = savedTotal;
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input id="weight" type="number" value="82" disabled>
+        </div>
 
-          /* ============================================================
-             GLOBAL STATE
-          ============================================================ */
-          let voiceEnabled = true;
+        <div class="field">
+          <label>Height (cm)</label>
+          <input id="height" type="number" value="176" disabled>
+        </div>
 
-          let lastBP = { sys: 0, dia: 0, hr: 0 };
-          let lastChol = { ldl: 0, hdl: 0, tri: 0, total: 0 };
-          let lastPlantPoints = 0;
+        <div class="field">
+          <label>Waist (cm)</label>
+          <input id="waist" type="number" value="92" disabled>
+        </div>
 
-          let weeklyData = {
-            bp: [],
-            hr: [],
-            ldl: [],
-            hdl: [],
-            tri: [],
-            total: [],
-            plants: [],
-            score: []
-          };
+        <div class="field">
+          <label>Neck (cm)</label>
+          <input id="neck" type="number" value="38" disabled>
+        </div>
 
-          let bpHistory   = JSON.parse(localStorage.getItem("bpHistory")   || "[]");
-          let cholHistory = JSON.parse(localStorage.getItem("cholHistory") || "[]");
+        <div class="field" id="hip-field">
+          <label>Hip (cm) — women only</label>
+          <input id="hip" type="number" value="95" disabled>
+        </div>
 
-          /* ============================================================
-             ACCORDION
-          ============================================================ */
-          window.toggleAccordion = function(id) {
-            const el = document.getElementById(id);
-            el.classList.toggle("open");
-          };
+        <div class="field">
+          <label>Body Fat %</label>
+          <input id="bodyfat" type="number" value="22" disabled>
+        </div>
 
-          /* ============================================================
-             VOICE TOGGLE (MASTER MUTE)
-          ============================================================ */
-          window.toggleVoice = function() {
-            voiceEnabled = !voiceEnabled;
-          };
+        <div class="field">
+          <button id="calc-fat-btn" class="btn-3d" disabled onclick="autoCalcBodyFat()">
+            Calculate automatically
+          </button>
+        </div>
 
-   /* ============================================================
-   SPEAK FUNCTION — RELIABLE VOICE LOADING
-============================================================ */
-let voicesLoaded = false;
+        <div class="field">
+          <label>BMI</label>
+          <div class="value" id="bmi">26.5</div>
+        </div>
 
-function loadVoices() {
-  const voices = speechSynthesis.getVoices();
-  if (voices.length > 0) {
-    voicesLoaded = true;
+        <div class="field">
+          <label>Ideal weight</label>
+          <div class="value" id="ideal">75 kg</div>
+        </div>
+
+      </div>
+
+      <button id="edit-btn" class="btn-3d" onclick="enableEdit()">Edit Profile</button>
+      <button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
+
+    </section>
+
+    <!-- SCAN TAB -->
+    <section id="tab-scan" class="tab">
+      <div class="section-card">
+        <h3>Scan Food</h3>
+        <p class="muted">Use the camera to scan food or barcode.</p>
+        <div style="margin-top:12px;display:flex;gap:10px;">
+          <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
+          <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>Last scanned</h4>
+        <div id="last-scan" style="background:#fff;border-radius:12px;padding:12px;border:1px solid #f1f5f9;">
+          <em>No scans yet</em>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEALS TAB -->
+    <section id="tab-meals" class="tab">
+      <div class="section-card">
+        <h3>Today's Meals</h3>
+        <div id="meals-list" class="muted">No meals logged</div>
+      </div>
+      <div class="section-card">
+        <h4>Weekly calories</h4>
+        <div id="weekly-cal" class="muted">0 kcal</div>
+      </div>
+    </section>
+
+    <!-- HEALTH TAB -->
+    <section id="tab-health" class="tab">
+      <div class="section-card">
+        <h3>Health Overview</h3>
+        <p class="muted">Cholesterol, blood pressure, plant points.</p>
+        <div style="margin-top:12px;">
+          <div class="muted">Cholesterol: <strong id="chol-status">OK</strong></div>
+          <div class="muted">Blood pressure: <strong id="bp-status">120/78</strong></div>
+          <div class="muted">Plant points: <strong id="plant-points">+12</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANTS TAB -->
+    <section id="tab-plants" class="tab">
+      <div class="section-card">
+        <h3>Plant Points</h3>
+        <p class="muted">Add fruits/veg to gain points.</p>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn-3d" onclick="addPlantPoints(5)">Add Fruit +5</button>
+          <button class="btn-3d" onclick="addPlantPoints(-4)">Add Junk -4</button>
+        </div>
+        <div style="margin-top:12px;" class="muted">Daily points: <strong id="daily-points">0</strong></div>
+      </div>
+    </section>
+
+  </main>
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
+    <button class="nav-btn" id="nav-health" onclick="window.location.href='health.html'">Health</button>
+
+    <div class="center-wrap">
+      <button class="scan-btn" id="nav-scan" onclick="centerScanClick()">Scan</button>
+    </div>
+
+    <button class="nav-btn" id="nav-plants" onclick="switchTab('plants')">Plants</button>
+    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">Profile</button>
+  </nav>
+
+</div> <!-- END .app -->
+
+<script>
+/* ---------- HEALTH REACTION ENGINE ---------- */
+let lastHealth = {
+  bpSys: Number(localStorage.getItem("bpSys") || 120),
+  bpDia: Number(localStorage.getItem("bpDia") || 80),
+  cholTotal: Number(localStorage.getItem("cholTotal") || 5.0),
+  foodQuality: (Number(localStorage.getItem("foodScore") || 60) / 100),
+  score: 72
+};
+/* ---------- TABS ---------- */
+const tabs = {
+  profile: document.getElementById('tab-profile'),
+  scan: document.getElementById('tab-scan'),
+  meals: document.getElementById('tab-meals'),
+  health: document.getElementById('tab-health'),
+  plants: document.getElementById('tab-plants')
+};
+let currentTab = 'profile';
+function switchTab(name){
+  tabs[currentTab].classList.remove('active');
+  tabs[name].classList.add('active');
+  currentTab = name;
+}
+
+/* ---------- SHOW/HIDE HIP FIELD ---------- */
+function toggleHip(){
+  const gender = document.getElementById("gender").value;
+  document.getElementById("hip-field").style.display =
+    (gender === "female") ? "block" : "none";
+}
+
+/* ---------- FOOD SCANNER ---------- */
+function openFoodScanner() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.capture = "environment";
+
+  input.onchange = () => {
+    if (input.files && input.files[0]) {
+      handleFoodImage(input.files[0]);
+      switchTab('scan');
+    }
+  };
+
+  input.click();
+}
+
+function handleFoodImage(file) {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64 = reader.result.split(",")[1];
+    analyzeFood(base64);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeFood(imageBase64) {
+  try {
+    const res = await fetch("https://food-ai-backend.vercel.app/api/scan-food", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageBase64 })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("last-scan").innerHTML = `
+      <strong>Food:</strong> ${data.name || "Unknown"}<br>
+      <strong>Calories:</strong> ${data.calories || "?"}<br>
+      <strong>Protein:</strong> ${data.protein || "?"} g<br>
+      <strong>Carbs:</strong> ${data.carbs || "?"} g<br>
+      <strong>Fat:</strong> ${data.fat || "?"} g<br>
+      <strong>Description:</strong> ${data.description || "No description"}
+    `;
+
+    onFoodScanned(data);
+
+  } catch (err) {
+    document.getElementById("last-scan").innerText = "Scan failed";
   }
 }
 
-speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices(); // also try immediately
+function centerScanClick(){ openFoodScanner(); }
+function onBarcode(){ document.getElementById('last-scan').textContent = 'Barcode scan started...'; }
 
-function speak(text) {
+/* ---------- PLANT POINTS ---------- */
+let dailyPoints = 0;
+function addPlantPoints(n){
+  dailyPoints += n;
+  document.getElementById('daily-points').textContent = dailyPoints;
+}
 
-  console.log("voiceEnabled =", voiceEnabled);   // ← THIS SHOWS IF VOICE IS ON/OFF
+/* ---------- BODY FAT FORMULA ---------- */
+function autoCalcBodyFat() {
+  const gender = document.getElementById("gender").value;
+  const waist = Number(document.getElementById("waist").value);
+  const neck = Number(document.getElementById("neck").value);
+  const height = Number(document.getElementById("height").value);
+  const hip = Number(document.getElementById("hip").value);
 
-  if (!voiceEnabled) return;
-  if (!window.speechSynthesis) return;
-
-  // Wait until voices are loaded
-  if (!voicesLoaded) {
-    setTimeout(() => speak(text), 150);
+  if (!waist || !neck || !height) {
+    alert("Enter waist, neck and height first");
     return;
   }
 
-  const u = new SpeechSynthesisUtterance(text);
+  let bf;
 
-  u.lang = "en-GB";
-  u.rate = 0.88;
-  u.pitch = 0.92;
-  u.volume = 1.0;
+  if (gender === "male") {
+    bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck)
+                + 0.15456 * Math.log10(height)) - 450;
+  } else {
+    if (!hip) {
+      alert("Enter hip measurement for female calculation");
+      return;
+    }
+    bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck)
+                + 0.22100 * Math.log10(height)) - 450;
+  }
 
-  const voices = speechSynthesis.getVoices();
-  const preferred = voices.find(v =>
-    v.name.toLowerCase().includes("male") ||
-    v.name.toLowerCase().includes("uk") ||
-    v.name.toLowerCase().includes("english")
-  );
+  const clean = Math.max(5, Math.min(60, bf.toFixed(1)));
+  document.getElementById("bodyfat").value = clean;
 
-  if (preferred) u.voice = preferred;
-
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
+  return clean;
 }
 
-          /* ============================================================
-             HEALTH SCORE ENGINE
-          ============================================================ */
-          function updateHealthScore() {
-            const { sys, dia, hr } = lastBP;
-            const { ldl, hdl, tri, total } = lastChol;
-
-            let score = 100;
-
-            if (sys > 120 || dia > 80) score -= 10;
-            if (sys > 139 || dia > 89) score -= 20;
-            if (sys > 159 || dia > 99) score -= 30;
-
-            if (ldl > 3.0) score -= 10;
-            if (ldl > 5.0) score -= 20;
-
-            if (hdl < 1.0) score -= 10;
-
-            if (total > 5.0) score -= 10;
-            if (total > 6.2) score -= 20;
-
-            if (hr > 90) score -= 5;
-            if (hr > 110) score -= 10;
-
-            score = Math.max(0, Math.min(100, score));
-
-            document.getElementById("healthScoreValue").innerText = score;
-            document.getElementById("healthScoreBar").style.width = score + "%";
-
-            updateAvatarFromScore(score);
-            updateAuraFromScore(score);
-            updateCoachFromScore(score);
-
-            weeklyData.score.push(score);
-            updateWeeklySummary();
-
-            return score;
-          }
-          /* ============================================================
-             UPDATE AURA FROM SAVED DATA (USED BY INDEX)
-          ============================================================ */
-          window.updateAuraFromData = function () {
-            const sys   = Number(localStorage.getItem("bpSys") || 0);
-            const dia   = Number(localStorage.getItem("bpDia") || 0);
-            const ldl   = Number(localStorage.getItem("cholLDL") || 0);
-            const hdl   = Number(localStorage.getItem("cholHDL") || 0);
-            const total = Number(localStorage.getItem("cholTotal") || 0);
-
-            let score = 100;
-
-            if (sys > 120 || dia > 80) score -= 10;
-            if (sys > 139 || dia > 89) score -= 20;
-            if (sys > 159 || dia > 99) score -= 30;
-
-            if (ldl > 3.0) score -= 10;
-            if (ldl > 5.0) score -= 20;
-
-            if (hdl < 1.0) score -= 10;
-
-            if (total > 5.0) score -= 10;
-            if (total > 6.2) score -= 20;
-
-            score = Math.max(0, Math.min(100, score));
-
-            localStorage.setItem("auraScore", score);
-          };
-
-          /* ============================================================
-             AVATAR LOGIC
-          ============================================================ */
-          function updateAvatarFromScore(score) {
-            const head = document.getElementById("avatarHead");
-            const chest = document.getElementById("avatarChest");
-            const belly = document.getElementById("avatarBelly");
-
-            const mouth = document.getElementById("avatarMouth");
-            const tearL = document.getElementById("tearLeft");
-            const tearR = document.getElementById("tearRight");
-            const sweat = document.getElementById("sweatDrop");
-
-            let skinColor = "#ffd6e8";
-
-            if (score >= 80) skinColor = "#ffd6e8";
-            else if (score >= 60) skinColor = "#ffe0d6";
-            else if (score >= 40) skinColor = "#d9ffd9";
-            else skinColor = "#c8ffcc";
-
-            [head, chest, belly,
-             document.getElementById("armLeft"),
-             document.getElementById("armRight"),
-             document.getElementById("legLeft"),
-             document.getElementById("legRight")
-            ].forEach(p => p && p.setAttribute("fill", skinColor));
-
-            if (score >= 80) {
-              mouth.setAttribute("d", "M135 110 Q150 125 165 110");
-              tearL.setAttribute("opacity", 0);
-              tearR.setAttribute("opacity", 0);
-              sweat.setAttribute("opacity", 0);
-            } else if (score >= 60) {
-              mouth.setAttribute("d", "M135 110 Q150 118 165 110");
-              tearL.setAttribute("opacity", 0);
-              tearR.setAttribute("opacity", 0);
-              sweat.setAttribute("opacity", 0);
-            } else if (score >= 40) {
-              mouth.setAttribute("d", "M135 115 Q150 108 165 115");
-              tearL.setAttribute("opacity", 0);
-              tearR.setAttribute("opacity", 0);
-              sweat.setAttribute("opacity", 1);
-            } else {
-              mouth.setAttribute("d", "M135 120 Q150 105 165 120");
-              tearL.setAttribute("opacity", 1);
-              tearR.setAttribute("opacity", 1);
-              sweat.setAttribute("opacity", 0);
-            }
-
-            const bmi = 24;
-            const bellySize = Math.min(70, 45 + (bmi - 20) * 2);
-            belly.setAttribute("rx", bellySize);
-          }
-
-          /* ============================================================
-             AURA COLOR
-          ============================================================ */
-          function updateAuraFromScore(score) {
-            const aura = document.getElementById("heartAuraPath");
-            if (!aura) return;
-
-            if (score >= 80) aura.setAttribute("fill", "#00ff99");
-            else if (score >= 60) aura.setAttribute("fill", "#ffee66");
-            else if (score >= 40) aura.setAttribute("fill", "#ff9900");
-            else aura.setAttribute("fill", "#ff3366");
-          }
-
-          /* ============================================================
-             COACH BUBBLE (SILENT)
-          ============================================================ */
-          window.toggleCoachPanel = function() {
-            const panel = document.getElementById("coachPanel");
-            panel.style.display = panel.style.display === "block" ? "none" : "block";
-          };
-
-          function coachSay(text) {
-            document.getElementById("coachMessage").innerText = text;
-            // silent — no speak()
-          }
-
-          function updateCoachFromScore(score) {
-            const bubble = document.getElementById("coachBubble");
-            if (!bubble) return;
-
-            if (score >= 80) {
-              bubble.style.background = "linear-gradient(135deg, #00ff99, #00cc66)";
-              coachSay("Amazing work! Your health score is fantastic.");
-            } else if (score >= 60) {
-              bubble.style.background = "linear-gradient(135deg, #00eaff, #00b8ff)";
-              coachSay("Good job! A few small improvements will boost your score.");
-            } else if (score >= 40) {
-              bubble.style.background = "linear-gradient(135deg, #ffcc00, #ff9900)";
-              coachSay("Let’s focus on improving your numbers.");
-            } else {
-              bubble.style.background = "linear-gradient(135deg, #ff3366, #ff0033)";
-              coachSay("Your health needs attention. Let’s fix this together.");
-            }
-          }
-
-          /* ============================================================
-             BLOOD PRESSURE SAVE
-          ============================================================ */
-          window.saveBloodPressure = function() {
-            const sys = Number(document.getElementById("sysInput").value);
-            const dia = Number(document.getElementById("diaInput").value);
-            const hr  = Number(document.getElementById("hrInput").value);
-
-            lastBP = { sys, dia, hr };
-
-            localStorage.setItem("bpSys", sys);
-            localStorage.setItem("bpDia", dia);
-            localStorage.setItem("bpHR", hr);
-            localStorage.setItem("auraNeedsUpdate", "true");
-
-            document.getElementById("sysValue").innerText = sys || 0;
-            document.getElementById("diaValue").innerText = dia || 0;
-            document.getElementById("hrValue").innerText  = hr  || 0;
-
-            if (sys && dia) updateBPBars(sys, dia);
-            if (hr) updateHRBar(hr);
-
-            addWeeklyEntry();
-            updateHealthScore();
-          };
-
-          /* ============================================================
-             BP UI UPDATE
-          ============================================================ */
-          function updateBPBars(sys, dia) {
-            const bpBar = document.getElementById("bpBar");
-            const bpLabel = document.getElementById("bpLabel");
-            const bpTip = document.getElementById("bpTip");
-
-            const avg = (sys + dia) / 2;
-            const percent = Math.min(100, avg);
-            bpBar.style.width = percent + "%";
-            bpLabel.innerText = `${sys}/${dia}`;
-
-            if (sys < 90 || dia < 60) {
-              bpBar.className = "progress-bar blue-bar";
-              bpTip.innerText = "Low blood pressure (NHS).";
-            }
-            else if (sys <= 120 && dia <= 80) {
-              bpBar.className = "progress-bar green-bar";
-              bpTip.innerText = "Normal blood pressure (NHS).";
-            }
-            else if (sys <= 139 || dia <= 89) {
-              bpBar.className = "progress-bar orange-bar";
-              bpTip.innerText = "Pre‑high blood pressure (NHS).";
-            }
-            else if (sys <= 159 || dia <= 99) {
-              bpBar.className = "progress-bar red-bar";
-              bpTip.innerText = "High blood pressure – Stage 1 (NHS).";
-            }
-            else if (sys <= 179 || dia <= 119) {
-              bpBar.className = "progress-bar red-bar";
-              bpTip.innerText = "High blood pressure – Stage 2 (NHS).";
-            }
-            else {
-              bpBar.className = "progress-bar red-bar";
-              bpTip.innerText = "Hypertensive crisis – seek medical help (NHS).";
-            }
-
-            updateBPTrend(avg);
-          }
-
-          /* ============================================================
-             HEART RATE UI UPDATE
-          ============================================================ */
-          function updateHRBar(hr) {
-            const bar = document.getElementById("hrBar");
-            const label = document.getElementById("hrLabel");
-            const tip = document.getElementById("hrTip");
-
-            bar.style.width = Math.min(100, hr) + "%";
-            label.innerText = hr;
-
-            if (hr < 60) {
-              bar.className = "progress-bar blue-bar";
-              tip.innerText = "Low heart rate.";
-            } else if (hr <= 90) {
-              bar.className = "progress-bar green-bar";
-              tip.innerText = "Healthy heart rate.";
-            } else {
-              bar.className = "progress-bar red-bar";
-              tip.innerText = "High heart rate.";
-            }
-          }
-          /* ============================================================
-             BP TREND CHART
-          ============================================================ */
-          let bpTrendChart = null;
-          const bpCanvas = document.getElementById("bpTrendChart");
-          if (bpCanvas && window.Chart) {
-            bpTrendChart = new Chart(
-              bpCanvas,
-              {
-                type: "line",
-                data: {
-                  labels: [],
-                  datasets: [{
-                    label: "BP Avg",
-                    data: [],
-                    borderColor: "#00c6ff",
-                    backgroundColor: "rgba(0,200,255,0.15)",
-                    tension: 0.45,
-                    borderWidth: 3,
-                    pointRadius: 0
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  scales: {
-                    x: { grid: { display: false } },
-                    y: { grid: { color: "rgba(0,0,0,0.05)" } }
-                  }
-                }
-              }
-            );
-          }
-
-          function updateBPTrend(value) {
-            const entry = { t: Date.now(), v: value };
-            bpHistory.push(entry);
-            localStorage.setItem("bpHistory", JSON.stringify(bpHistory));
-
-            if (!bpTrendChart) return;
-
-            bpTrendChart.data.labels.push(formatDateLabel(entry.t));
-            bpTrendChart.data.datasets[0].data.push(entry.v);
-            bpTrendChart.update();
-          }
-
-          /* ============================================================
-             CHOLESTEROL SAVE
-          ============================================================ */
-          window.saveCholesterol = function() {
-            const ldl = Number(document.getElementById("ldlInput").value);
-            const hdl = Number(document.getElementById("hdlInput").value);
-            const tri = Number(document.getElementById("triInput").value);
-            const total = Number(document.getElementById("totalInput").value);
-
-            lastChol = { ldl, hdl, tri, total };
-
-            localStorage.setItem("cholLDL", ldl);
-            localStorage.setItem("cholHDL", hdl);
-            localStorage.setItem("cholTRI", tri);
-            localStorage.setItem("cholTotal", total);
-localStorage.setItem("auraNeedsUpdate", "true");
-
-
-            document.getElementById("ldlValue").innerText = ldl || 0;
-            document.getElementById("hdlValue").innerText = hdl || 0;
-            document.getElementById("triValue").innerText = tri || 0;
-            document.getElementById("totalValue").innerText = total || 0;
-
-            updateCholBars(ldl, hdl, tri, total);
-            updateCholGauge(ldl, hdl, total);
-            updateCholTrend(total);
-
-            generateDailyAction();
-            addWeeklyEntry();
-            updateHealthScore();
-          };
-
-          function updateCholBars(ldl, hdl, tri, total) {
-            if (ldl < 3.0) {
-              setBar("ldlBar", "ldlLabel", ldl, 6);
-              document.getElementById("ldlBar").className = "progress-bar green-bar";
-            } else if (ldl < 5.0) {
-              setBar("ldlBar", "ldlLabel", ldl, 6);
-              document.getElementById("ldlBar").className = "progress-bar orange-bar";
-            } else {
-              setBar("ldlBar", "ldlLabel", ldl, 6);
-              document.getElementById("ldlBar").className = "progress-bar red-bar";
-            }
-
-            if (hdl < 1.0) {
-              setBar("hdlBar", "hdlLabel", hdl, 3);
-              document.getElementById("hdlBar").className = "progress-bar red-bar";
-            } else if (hdl <= 1.5) {
-              setBar("hdlBar", "hdlLabel", hdl, 3);
-              document.getElementById("hdlBar").className = "progress-bar orange-bar";
-            } else {
-              setBar("hdlBar", "hdlLabel", hdl, 3);
-              document.getElementById("hdlBar").className = "progress-bar green-bar";
-            }
-
-            if (tri < 1.7) {
-              setBar("triBar", "triLabel", tri, 6);
-              document.getElementById("triBar").className = "progress-bar green-bar";
-            } else if (tri < 2.3) {
-              setBar("triBar", "triLabel", tri, 6);
-              document.getElementById("triBar").className = "progress-bar orange-bar";
-            } else {
-              setBar("triBar", "triLabel", tri, 6);
-              document.getElementById("triBar").className = "progress-bar red-bar";
-            }
-
-            if (total < 5.0) {
-              setBar("totalBar", "totalLabel", total, 8);
-              document.getElementById("totalBar").className = "progress-bar green-bar";
-            } else if (total < 6.2) {
-              setBar("totalBar", "totalLabel", total, 8);
-              document.getElementById("totalBar").className = "progress-bar orange-bar";
-            } else {
-              setBar("totalBar", "totalLabel", total, 8);
-              document.getElementById("totalBar").className = "progress-bar red-bar";
-            }
-          }
-
-          function setBar(barId, labelId, value, max) {
-            const bar = document.getElementById(barId);
-            const label = document.getElementById(labelId);
-            if (!bar || !label || value === null || isNaN(value)) return;
-
-            const percent = Math.min(100, (value / max) * 100);
-            bar.style.width = percent + "%";
-            label.innerText = value.toFixed(1);
-          }
-
-          /* ============================================================
-             CHOLESTEROL GAUGE
-          ============================================================ */
-          let gaugeCtx = null;
-          const gaugeCanvas = document.getElementById("cholesterolGauge");
-          if (gaugeCanvas) {
-            gaugeCtx = gaugeCanvas.getContext("2d");
-          }
-
-          function updateCholGauge(ldl, hdl, total) {
-            if (!gaugeCtx) return;
-            gaugeCtx.clearRect(0, 0, gaugeCanvas.width, gaugeCanvas.height);
-
-            gaugeCtx.fillStyle = "#ff0066";
-            gaugeCtx.fillRect(20, 120 - ldl * 20, 40, ldl * 20);
-
-            gaugeCtx.fillStyle = "#00ff99";
-            gaugeCtx.fillRect(110, 120 - hdl * 40, 40, hdl * 40);
-
-            gaugeCtx.fillStyle = "#00c6ff";
-            gaugeCtx.fillRect(200, 120 - total * 15, 40, total * 15);
-          }
-
-          /* ============================================================
-             CHOLESTEROL TREND
-          ============================================================ */
-          let cholTrendChart = null;
-          const cholCanvas = document.getElementById("cholTrendChart");
-          if (cholCanvas && window.Chart) {
-            cholTrendChart = new Chart(
-              cholCanvas,
-              {
-                type: "line",
-                data: {
-                  labels: [],
-                  datasets: [{
-                    label: "Total Cholesterol",
-                    data: [],
-                    borderColor: "#ff0066",
-                    backgroundColor: "rgba(255,0,102,0.2)",
-                    tension: 0.3
-                  }]
-                },
-                options: { responsive: true }
-              }
-            );
-          }
-
-          function updateCholTrend(value) {
-            const entry = { t: Date.now(), v: value };
-            cholHistory.push(entry);
-            localStorage.setItem("cholHistory", JSON.stringify(cholHistory));
-
-            if (!cholTrendChart) return;
-
-            cholTrendChart.data.labels.push(formatDateLabel(entry.t));
-            cholTrendChart.data.datasets[0].data.push(entry.v);
-            cholTrendChart.update();
-          }
-
-          /* ============================================================
-             DATE LABEL FORMATTER
-          ============================================================ */
-          function formatDateLabel(timestamp) {
-            const d = new Date(timestamp);
-            const day = d.getDate();
-            const month = d.toLocaleString("en-GB", { month: "short" });
-            return `${day} ${month}`;
-          }
-          /* ============================================================
-             REBUILD TREND CHARTS (DAY / WEEK / MONTH)
-          ============================================================ */
-          function rebuildBPTrend(days = 1) {
-            if (!bpTrendChart) return;
-
-            const now = Date.now();
-            const cutoff = now - days * 24 * 60 * 60 * 1000;
-
-            const filtered = bpHistory.filter(e => e.t >= cutoff);
-
-            bpTrendChart.data.labels = filtered.map(e => formatDateLabel(e.t));
-            bpTrendChart.data.datasets[0].data = filtered.map(e => e.v);
-            bpTrendChart.update();
-          }
-
-          function rebuildCholTrend(days = 1) {
-            if (!cholTrendChart) return;
-
-            const now = Date.now();
-            const cutoff = now - days * 24 * 60 * 60 * 1000;
-
-            const filtered = cholHistory.filter(e => e.t >= cutoff);
-
-            cholTrendChart.data.labels = filtered.map(e => formatDateLabel(e.t));
-            cholTrendChart.data.datasets[0].data = filtered.map(e => e.v);
-            cholTrendChart.update();
-          }
-
-          /* INITIAL LOAD — show last 1 day */
-          rebuildBPTrend(1);
-          rebuildCholTrend(1);
-
-          /* ============================================================
-             DAILY ACTION
-          ============================================================ */
-          function generateDailyAction() {
-            const actions = [
-              "Walk 20 minutes today.",
-              "Replace butter with olive oil.",
-              "Eat one piece of fruit.",
-              "Drink two extra glasses of water.",
-              "Add one plant-based meal today.",
-              "Avoid fried foods today.",
-              "Add 10 minutes of stretching."
-            ];
-
-            const pick = actions[Math.floor(Math.random() * actions.length)];
-            const el = document.getElementById("dailyActionText");
-            if (el) el.innerText = pick;
-          }
-
-          /* ============================================================
-             WEEKLY SUMMARY
-          ============================================================ */
-          function addWeeklyEntry() {
-            const { sys, dia, hr } = lastBP;
-            const { ldl, hdl, tri, total } = lastChol;
-
-            if (sys && dia) weeklyData.bp.push((sys + dia) / 2);
-            if (hr) weeklyData.hr.push(hr);
-            if (ldl) weeklyData.ldl.push(ldl);
-            if (hdl) weeklyData.hdl.push(hdl);
-            if (tri) weeklyData.tri.push(tri);
-            if (total) weeklyData.total.push(total);
-
-            weeklyData.plants.push(lastPlantPoints);
-
-            updateWeeklySummary();
-          }
-
-          function avg(arr) {
-            if (!arr.length) return "–";
-            return (arr.reduce((a,b)=>a+b,0) / arr.length).toFixed(1);
-          }
-
-          function updateWeeklySummary() {
-            const bpEl = document.getElementById("weeklyBP");
-            const hrEl = document.getElementById("weeklyHR");
-            const cholEl = document.getElementById("weeklyChol");
-            const plantsEl = document.getElementById("weeklyPlants");
-            const scoreEl = document.getElementById("weeklyScore");
-
-            if (bpEl) bpEl.innerText = avg(weeklyData.bp);
-            if (hrEl) hrEl.innerText = avg(weeklyData.hr);
-            if (cholEl) cholEl.innerText =
-              `LDL ${avg(weeklyData.ldl)}, HDL ${avg(weeklyData.hdl)}, TRI ${avg(weeklyData.tri)}, Total ${avg(weeklyData.total)}`;
-            if (plantsEl) plantsEl.innerText = avg(weeklyData.plants);
-            if (scoreEl) scoreEl.innerText = avg(weeklyData.score);
-          }
-
-          /* ============================================================
-             INITIAL HEALTH SCORE
-          ============================================================ */
-          updateHealthScore();
-
-          /* ============================================================
-             LONG DOCTOR COMMENTARY (BP + CHOL)
-          ============================================================ */
-          function buildLongBPAdvice(sys, dia, hr) {
-            let text = "Alright, let’s take a calm and careful look at your blood pressure today. ";
-
-            if (sys < 90 || dia < 60) {
-              text += "Your reading is on the low side. This can happen if you are dehydrated or tired. ";
-            } else if (sys <= 120 && dia <= 80) {
-              text += "Your blood pressure is in the healthy NHS range. Excellent work. ";
-            } else if (sys <= 139 || dia <= 89) {
-              text += "Your blood pressure is slightly elevated. Try reducing salt and walking daily. ";
-            } else if (sys <= 159 || dia <= 99) {
-              text += "Your blood pressure is high. Focus on reducing salt and processed foods. ";
-            } else if (sys <= 179 || dia <= 119) {
-              text += "Your blood pressure is very high. Consider booking a GP review. ";
-            } else {
-              text += "Your blood pressure is dangerously high. Seek urgent medical help. ";
-            }
-
-            if (hr < 60) {
-              text += "Your heart rate is low. If you feel dizzy, speak with a doctor. ";
-            } else if (hr <= 90) {
-              text += "Your heart rate is in a healthy range. ";
-            } else if (hr <= 110) {
-              text += "Your heart rate is slightly elevated. Reduce caffeine and stay hydrated. ";
-            } else {
-              text += "Your heart rate is high. If this continues, seek medical advice. ";
-            }
-
-            text += "Small daily habits make a huge difference. I’m here with you every step.";
-            return text;
-          }
-
-          function buildLongCholAdvice(ldl, hdl, tri, total) {
-            let text = "Now let’s review your cholesterol profile carefully. ";
-
-            if (ldl < 3.0) {
-              text += "Your LDL is in a healthy range. ";
-            } else if (ldl < 5.0) {
-              text += "Your LDL is elevated. Reduce saturated fats and use olive oil instead of butter. ";
-            } else {
-              text += "Your LDL is very high. A GP review is recommended. ";
-            }
-
-            if (hdl < 1.0) {
-              text += "Your HDL is low. Add nuts, seeds, and regular exercise. ";
-            } else {
-              text += "Your HDL is in a good range. ";
-            }
-
-            if (tri > 2.3) {
-              text += "Your triglycerides are high. Reduce sugary foods and alcohol. ";
-            }
-
-            if (total > 6.2) {
-              text += "Your total cholesterol is very high. A medical review is recommended. ";
-            }
-
-            text += "Focus on oats, beans, vegetables, olive oil, nuts, seeds, and whole grains. You can absolutely improve these numbers.";
-            return text;
-          }
-
-         /* ============================================================
-   SPEAK SUMMARY BUTTON — NHS DOCTOR READING
-============================================================ */
-window.speakHealthSummary = function() {
-  if (!voiceEnabled) return;
-
-  const sys   = Number(lastBP.sys   || document.getElementById("sysValue").innerText   || 0);
-  const dia   = Number(lastBP.dia   || document.getElementById("diaValue").innerText   || 0);
-  const hr    = Number(lastBP.hr    || document.getElementById("hrValue").innerText    || 0);
-
-  const ldl   = Number(lastChol.ldl || document.getElementById("ldlValue").innerText   || 0);
-  const hdl   = Number(lastChol.hdl || document.getElementById("hdlValue").innerText   || 0);
-  const tri   = Number(lastChol.tri || document.getElementById("triValue").innerText   || 0);
-  const total = Number(lastChol.total || document.getElementById("totalValue").innerText || 0);
-
-  const bpText   = buildLongBPAdvice(sys, dia, hr);
-  const cholText = buildLongCholAdvice(ldl, hdl, tri, total);
-
-  speak(bpText + " " + cholText);
+/* ---------- HEALTH SCORE ---------- */
+function setHealthScore(score){
+  score = Math.max(0, Math.min(100, score));
+  document.getElementById('health-score').textContent = score;
+
+  lastHealth.score = score;
+  updateAura(lastHealth);
+}
+
+/* ---------- ENABLE EDIT MODE ---------- */
+function enableEdit() {
+  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
+    .forEach(el => el.disabled = false);
+
+  document.getElementById("calc-fat-btn").disabled = false;
+
+  document.getElementById("edit-btn").style.display = "none";
+  document.getElementById("save-btn").style.display = "block";
+}
+
+/* ---------- SAVE PROFILE ---------- */
+function saveProfile() {
+  const name = document.getElementById("name").value;
+  const gender = document.getElementById("gender").value;
+  const age = Number(document.getElementById("age").value);
+  const weight = Number(document.getElementById("weight").value);
+  const height = Number(document.getElementById("height").value);
+  const waist = Number(document.getElementById("waist").value);
+  const neck = Number(document.getElementById("neck").value);
+  const hip = Number(document.getElementById("hip").value);
+
+  const bodyfat = autoCalcBodyFat();
+
+  const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
+  localStorage.setItem("profile", JSON.stringify(profile));
+
+  const bmi = (weight / ((height/100)**2)).toFixed(1);
+  document.getElementById("bmi").textContent = bmi;
+
+  const ideal = (22 * ((height/100)**2)).toFixed(1);
+  document.getElementById("ideal").textContent = ideal + " kg";
+
+  const score = Math.max(
+    20,
+    100
+    - Math.abs(bmi - 22) * 2
+    - Math.abs(bodyfat - 18) * 1.2
+  );
+
+  setHealthScore(score);
+
+
+  document.querySelector(".brand").textContent = name + "'s Dashboard";
+
+  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
+    .forEach(el => el.disabled = true);
+
+  document.getElementById("calc-fat-btn").disabled = true;
+
+  document.getElementById("edit-btn").style.display = "block";
+  document.getElementById("save-btn").style.display = "none";
+
+  toggleHip();
+}
+
+/* ---------- LOAD PROFILE ---------- */
+(function loadProfile() {
+  const p = JSON.parse(localStorage.getItem("profile"));
+  if (!p) return;
+
+  document.getElementById("name").value = p.name;
+  document.getElementById("gender").value = p.gender;
+  document.getElementById("age").value = p.age;
+  document.getElementById("weight").value = p.weight;
+  document.getElementById("height").value = p.height;
+  document.getElementById("waist").value = p.waist;
+  document.getElementById("neck").value = p.neck;
+  document.getElementById("hip").value = p.hip;
+  document.getElementById("bodyfat").value = p.bodyfat;
+
+  const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
+  document.getElementById("bmi").textContent = bmi;
+
+  const ideal = (22 * ((p.height/100)**2)).toFixed(1);
+  document.getElementById("ideal").textContent = ideal + " kg";
+
+  const score = Math.max(
+    20,
+    100
+    - Math.abs(bmi - 22) * 2
+    - Math.abs(p.bodyfat - 18) * 1.2
+  );
+
+  setHealthScore(score);
+
+  document.querySelector(".brand").textContent = p.name + "'s Dashboard";
+
+  toggleHip();
+})();
+
+/* ---------- INIT ---------- */
+(function init(){
+  
+  updateAuraFromData();   // IMPORTANT FIX
+  switchTab('profile');
+  toggleHip();
+})();
+
+/* ---------- AUDIO ENGINE ---------- */
+let audioEnabled = JSON.parse(localStorage.getItem("audioEnabled") || "true");
+
+function updateAudioButton() {
+  const btn = document.getElementById("audio-toggle");
+  if (!btn) return;
+  btn.textContent = audioEnabled ? "🔊" : "🔇";
+  btn.classList.toggle("muted", !audioEnabled);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("audio-toggle");
+  btn.onclick = () => {
+    audioEnabled = !audioEnabled;
+    localStorage.setItem("audioEnabled", JSON.stringify(audioEnabled));
+    updateAudioButton();
+  };
+  updateAudioButton();
+});
+
+function speak(text) {
+  if (!audioEnabled) return;
+
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "en-US";
+  msg.rate = 0.95;
+  msg.pitch = 1.0;
+  msg.volume = 1;
+
+  const voices = speechSynthesis.getVoices();
+  const english = voices.find(v => v.lang.startsWith("en"));
+
+  if (english) msg.voice = english;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
+}
+
+/* ---------- HEALTH REACTION ENGINE ---------- */
+
+
+function updateAura(state) {
+  const bpPath   = document.querySelector(".ring-bp .heart-path");
+  const cholPath = document.querySelector(".ring-chol .heart-path");
+  const foodPath = document.querySelector(".ring-food .heart-path");
+  const heart = document.querySelector(".center-heart path");
+
+  if (!bpPath || !cholPath || !foodPath || !heart) return;
+
+  const bpSys = state.bpSys;
+  const bpDia = state.bpDia;
+  const cholTotal = state.cholTotal;
+  const foodScore = (state.foodQuality || 0.6) * 100;
+  const score = state.score;
+
+  /* BP COLOR */
+  let bpColor = "#22c55e";
+  if (bpSys >= 160 || bpDia >= 100)      bpColor = "#ef4444";
+  else if (bpSys >= 140 || bpDia >= 90)  bpColor = "#f97316";
+  else if (bpSys >= 120 || bpDia >= 80)  bpColor = "#eab308";
+
+  /* CHOLESTEROL COLOR */
+  let cholColor = "#22c55e";
+  if (cholTotal > 6.2)       cholColor = "#ef4444";
+  else if (cholTotal >= 5.0) cholColor = "#f97316";
+  else if (cholTotal >= 3.0) cholColor = "#eab308";
+
+  /* FOOD COLOR */
+  let foodColor = "#22c55e";
+  if (foodScore <= 2)        foodColor = "#ef4444";
+  else if (foodScore <= 4)   foodColor = "#f97316";
+  else if (foodScore <= 7)   foodColor = "#eab308";
+
+  /* HEART COLOR */
+  let heartColor = "#22c55e";
+  if (score < 40)       heartColor = "#ef4444";
+  else if (score < 60)  heartColor = "#f97316";
+  else if (score < 80)  heartColor = "#eab308";
+
+  bpPath.style.stroke   = bpColor;
+  cholPath.style.stroke = cholColor;
+  foodPath.style.stroke = foodColor;
+
+  bpPath.style.filter   = `drop-shadow(0 0 12px ${bpColor}) drop-shadow(0 0 24px ${bpColor})`;
+  cholPath.style.filter = `drop-shadow(0 0 12px ${cholColor}) drop-shadow(0 0 24px ${cholColor})`;
+  foodPath.style.filter = `drop-shadow(0 0 12px ${foodColor}) drop-shadow(0 0 24px ${foodColor})`;
+
+  heart.setAttribute("fill", heartColor);
+  heart.style.filter = `drop-shadow(0 0 10px ${heartColor}) drop-shadow(0 0 20px ${heartColor})`;
+}
+
+function updateHealth(bpSys, bpDia, cholTotal, foodQuality, score) {
+  const newHealth = { bpSys, bpDia, cholTotal, foodQuality, score };
+
+  updateAura(newHealth);
+
+  if (newHealth.bpSys > lastHealth.bpSys + 10) {
+    speak("Your blood pressure is rising. Let's keep an eye on salt and stress today.");
+  }
+  if (newHealth.cholTotal > lastHealth.cholTotal + 0.5) {
+    speak("Your cholesterol is slightly higher. Try adding more fiber and vegetables.");
+  }
+  if (newHealth.foodQuality > lastHealth.foodQuality + 0.1) {
+    speak("Great choice! Your food quality is improving.");
+  }
+  if (newHealth.score > lastHealth.score + 5) {
+    speak("Your overall health score is improving. Well done.");
+  }
+  if (newHealth.score < lastHealth.score - 5) {
+    speak("Your health score dropped a bit. No worries, we can improve this together.");
+  }
+
+  lastHealth = newHealth;
+}
+
+/* ---------- FOOD SCAN REACTION ---------- */
+function onFoodScanned(data) {
+  if (!data || !data.name) {
+    speak("I couldn't recognize this food. Try again.");
+    return;
+  }
+
+  if (data.calories < 200) {
+    speak("This food looks healthy and supports your goals.");
+  } else {
+    speak("This food is a bit heavy. Try to balance it with lighter meals.");
+  }
+}
+
+/* ---------- PLANT POINTS REACTION (FIXED) ---------- */
+const oldAddPlantPoints = addPlantPoints;
+addPlantPoints = function(n) {
+  oldAddPlantPoints(n);
+
+  if (n > 0) speak("Nice! Plant points added. Great choice.");
+  if (n < 0) speak("Careful. This food reduces your plant score.");
+
+  const foodScore = Math.max(0, Math.min(100, (lastHealth.foodQuality || 0.6) * 100 + n));
+  lastHealth.foodQuality = foodScore / 100;
+
+  localStorage.setItem("foodScore", foodScore);  // IMPORTANT FIX
+
+  updateAura(lastHealth);
 };
 
+/* ---------- AURA WRAPPER ---------- */
+function updateAuraFromData() {
+  const bpSys = Number(localStorage.getItem("bpSys") || 120);
+  const bpDia = Number(localStorage.getItem("bpDia") || 80);
+  const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
+  const foodScore = Number(localStorage.getItem("foodScore") || 60);
+  const score = Number(document.getElementById("health-score").textContent || 72);
+
+  const state = {
+    bpSys,
+    bpDia,
+    cholTotal,
+    foodQuality: foodScore / 100,
+    score
+  };
+
+  lastHealth = state;
+  updateAura(state);
+}
+/* ---------- AURA AUTO-REFRESH ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  updateAuraFromData();
+});
+
+window.addEventListener("focus", () => {
+  updateAuraFromData();
+});
 
 
-          /* ============================================================
-             TREND RANGE BUTTONS
-          ============================================================ */
-          window.setBPRange = function(days) {
-            rebuildBPTrend(days);
-          };
-
-          window.setCholRange = function(days) {
-            rebuildCholTrend(days);
-          };
-
-          /* ============================================================
-             END OF JS + CLOSE WINDOW.LOAD
-          ============================================================ */
-         
-</script>
-
-<!-- ============================================================
-     BOTTOM NAVIGATION
-============================================================ -->
-<nav class="bottom-nav">
-  <button class="nav-btn" onclick="window.location.href='index.html#meals'">Meals</button>
-  <button class="nav-btn active">Health</button>
-
-  <div class="center-wrap">
-    <button class="scan-btn" onclick="window.location.href='index.html#scan'">Scan</button>
-  </div>
-
-  <button class="nav-btn" onclick="window.location.href='index.html#plants'">Plants</button>
-  <button class="nav-btn" onclick="window.location.href='index.html#profile'">Profile</button>
-</nav>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const avatarImg = document.getElementById("avatar-base");
-    if (!avatarImg) return;
-
-    const gender = (localStorage.getItem("gender") || "male").toLowerCase();
-
-    let fileName = "male.png";
-    if (gender === "female") fileName = "female.png";
-
-    avatarImg.src = `/avatars/${fileName}`;
-  });
 </script>
 
 </body>

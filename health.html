@@ -564,84 +564,69 @@
       <div class="top-row">
         <!-- AVATAR CARD -->
         <div class="avatar-card card">
-          <h2 class="card-title">Your Avatar</h2>
+  <h2 class="card-title">Your Avatar</h2>
 
-          <div class="avatar-wrapper">
-            <svg id="healthAvatar" viewBox="0 0 300 360">
-              <!-- HEART AURA BEHIND AVATAR -->
-              <g id="heartAura" class="avatar-aura-glow">
-                <path
-                  id="heartAuraPath"
-                  d="M150 40
-                   C 110 -10, 20 20, 40 110
-                   C 60 200, 150 260, 150 260
-                   C 150 260, 240 200, 260 110
-                   C 280 20, 190 -10, 150 40 Z"
-                  fill="#ffd6e8"
-                  opacity="0.25"
-                >
-                  <animate attributeName="opacity" values="0.20;0.35;0.20" dur="2s" repeatCount="indefinite"></animate>
-                </path>
-              </g>
+  <div class="avatar-wrapper">
+    <svg id="healthAvatar" viewBox="0 0 300 360">
+      
+      <!-- HEART AURA BEHIND AVATAR (UNCHANGED) -->
+      <g id="heartAura" class="avatar-aura-glow">
+        <path
+          id="heartAuraPath"
+          d="M150 40
+             C 110 -10, 20 20, 40 110
+             C 60 200, 150 260, 150 260
+             C 150 260, 240 200, 260 110
+             C 280 20, 190 -10, 150 40 Z"
+          fill="#ffd6e8"
+          opacity="0.25"
+        >
+          <animate attributeName="opacity" values="0.20;0.35;0.20" dur="2s" repeatCount="indefinite"></animate>
+        </path>
+      </g>
 
-              <!-- AVATAR GROUP -->
-              <g id="avatarBody">
-                <!-- HEAD -->
-                <circle id="avatarHead" cx="150" cy="90" r="45" fill="#ffd6e8">
-                  <animate attributeName="cy" values="90;92;90" dur="3s" repeatCount="indefinite"></animate>
-                </circle>
+      <!-- NEW PNG‑BASED AVATAR BASE IMAGE -->
+      <image
+        id="avatarBase"
+        x="75"
+        y="60"
+        width="150"
+        height="220"
+        href="img/avatar_male.png"
+        preserveAspectRatio="xMidYMid meet"
+      ></image>
 
-                <!-- EYES -->
-                <circle id="eyeLeft" cx="135" cy="80" r="6" fill="#222"></circle>
-                <circle id="eyeRight" cx="165" cy="80" r="6" fill="#222"></circle>
+      <!-- BODY SHAPE GROUP (SCALE APPLIED HERE) -->
+      <g id="avatarShapeGroup" transform="translate(150,170) scale(1,1) translate(-150,-170)">
+      </g>
 
-                <!-- BLINK -->
-                <rect id="blinkLeft" x="129" y="78" width="12" height="0" fill="#222">
-                  <animate
-                    attributeName="height"
-                    values="0;12;0"
-                    dur="0.18s"
-                    begin="2s; blinkLeft.end+3s"
-                    fill="freeze"
-                  ></animate>
-                </rect>
+      <!-- EMOTION OVERLAYS (SVG DRAWN ON TOP OF PNG) -->
 
-                <rect id="blinkRight" x="159" y="78" width="12" height="0" fill="#222">
-                  <animate
-                    attributeName="height"
-                    values="0;12;0"
-                    dur="0.18s"
-                    begin="2s; blinkRight.end+3s"
-                    fill="freeze"
-                  ></animate>
-                </rect>
+      <!-- MOUTH -->
+      <path
+        id="avatarMouth"
+        d="M125 135 Q150 145 175 135"
+        stroke="#222"
+        stroke-width="4"
+        fill="none"
+        stroke-linecap="round"
+      ></path>
 
-                <!-- MOUTH -->
-                <path id="avatarMouth" d="M135 110 Q150 120 165 110" stroke="#222" stroke-width="4" fill="none"></path>
+      <!-- TEARS -->
+      <circle id="tearLeft"  cx="130" cy="120" r="6" fill="#66ccff" opacity="0"></circle>
+      <circle id="tearRight" cx="170" cy="120" r="6" fill="#66ccff" opacity="0"></circle>
 
-                <!-- TEARS -->
-                <circle id="tearLeft" cx="135" cy="95" r="6" fill="#66ccff" opacity="0"></circle>
-                <circle id="tearRight" cx="165" cy="95" r="6" fill="#66ccff" opacity="0"></circle>
+      <!-- SWEAT DROP -->
+      <ellipse id="sweatDrop" cx="190" cy="105" rx="6" ry="10" fill="#66ccff" opacity="0"></ellipse>
 
-                <!-- SWEAT -->
-                <ellipse id="sweatDrop" cx="175" cy="70" rx="6" ry="10" fill="#66ccff" opacity="0"></ellipse>
+      <!-- EYEBROWS -->
+      <path id="browLeft"  d="M125 105 Q140 100 150 103" stroke="#222" stroke-width="3" fill="none"></path>
+      <path id="browRight" d="M150 103 Q160 100 175 105" stroke="#222" stroke-width="3" fill="none"></path>
 
-                <!-- BODY -->
-                <ellipse id="avatarChest" cx="150" cy="170" rx="45" ry="38" fill="#ffd6e8"></ellipse>
+    </svg>
+  </div>
+</div>
 
-                <ellipse id="avatarBelly" cx="150" cy="220" rx="50" ry="45" fill="#ffd6e8"></ellipse>
-
-                <!-- ARMS -->
-                <rect id="armLeft" x="95" y="150" width="20" height="60" rx="10" fill="#ffd6e8"></rect>
-                <rect id="armRight" x="185" y="150" width="20" height="60" rx="10" fill="#ffd6e8"></rect>
-
-                <!-- LEGS -->
-                <rect id="legLeft" x="125" y="260" width="30" height="70" rx="12" fill="#ffd6e8"></rect>
-                <rect id="legRight" x="155" y="260" width="30" height="70" rx="12" fill="#ffd6e8"></rect>
-              </g>
-            </svg>
-          </div>
-        </div>
 
         <!-- HEALTH SCORE CARD -->
         <div class="health-score-card card">
@@ -1103,59 +1088,128 @@ function speak(text) {
             localStorage.setItem("auraScore", score);
           };
 
-          /* ============================================================
-             AVATAR LOGIC
-          ============================================================ */
-          function updateAvatarFromScore(score) {
-            const head = document.getElementById("avatarHead");
-            const chest = document.getElementById("avatarChest");
-            const belly = document.getElementById("avatarBelly");
+         /* ============================================================
+   AVATAR LOGIC — PNG + SVG EMOTIONS + BODY SHAPE
+============================================================ */
 
-            const mouth = document.getElementById("avatarMouth");
-            const tearL = document.getElementById("tearLeft");
-            const tearR = document.getElementById("tearRight");
-            const sweat = document.getElementById("sweatDrop");
+function getProfileInfo() {
+  const gender = (localStorage.getItem("profileGender") || "male").toLowerCase();
+  const height = Number(localStorage.getItem("profileHeight") || 0);
+  const weight = Number(localStorage.getItem("profileWeight") || 0);
 
-            let skinColor = "#ffd6e8";
+  let bmi = Number(localStorage.getItem("profileBMI") || 0);
+  if (!bmi && height && weight) {
+    const hM = height / 100;
+    bmi = weight / (hM * hM);
+  }
 
-            if (score >= 80) skinColor = "#ffd6e8";
-            else if (score >= 60) skinColor = "#ffe0d6";
-            else if (score >= 40) skinColor = "#d9ffd9";
-            else skinColor = "#c8ffcc";
+  return { gender, bmi };
+}
 
-            [head, chest, belly,
-             document.getElementById("armLeft"),
-             document.getElementById("armRight"),
-             document.getElementById("legLeft"),
-             document.getElementById("legRight")
-            ].forEach(p => p && p.setAttribute("fill", skinColor));
+function updateAvatarFromScore(score) {
+  const baseImg   = document.getElementById("avatarBase");
+  const mouth     = document.getElementById("avatarMouth");
+  const tearL     = document.getElementById("tearLeft");
+  const tearR     = document.getElementById("tearRight");
+  const sweat     = document.getElementById("sweatDrop");
+  const browLeft  = document.getElementById("browLeft");
+  const browRight = document.getElementById("browRight");
+  const shapeGrp  = document.getElementById("avatarShapeGroup");
 
-            if (score >= 80) {
-              mouth.setAttribute("d", "M135 110 Q150 125 165 110");
-              tearL.setAttribute("opacity", 0);
-              tearR.setAttribute("opacity", 0);
-              sweat.setAttribute("opacity", 0);
-            } else if (score >= 60) {
-              mouth.setAttribute("d", "M135 110 Q150 118 165 110");
-              tearL.setAttribute("opacity", 0);
-              tearR.setAttribute("opacity", 0);
-              sweat.setAttribute("opacity", 0);
-            } else if (score >= 40) {
-              mouth.setAttribute("d", "M135 115 Q150 108 165 115");
-              tearL.setAttribute("opacity", 0);
-              tearR.setAttribute("opacity", 0);
-              sweat.setAttribute("opacity", 1);
-            } else {
-              mouth.setAttribute("d", "M135 120 Q150 105 165 120");
-              tearL.setAttribute("opacity", 1);
-              tearR.setAttribute("opacity", 1);
-              sweat.setAttribute("opacity", 0);
-            }
+  if (!baseImg) return;
 
-            const bmi = 24;
-            const bellySize = Math.min(70, 45 + (bmi - 20) * 2);
-            belly.setAttribute("rx", bellySize);
-          }
+  /* ------------------------------
+     GENDER → WHICH PNG TO USE
+  ------------------------------ */
+  const { gender, bmi } = getProfileInfo();
+  baseImg.setAttribute("href",
+    gender === "female"
+      ? "img/avatar_female.png"
+      : "img/avatar_male.png"
+  );
+
+  /* ------------------------------
+     BODY SHAPE FROM BMI
+  ------------------------------ */
+  let scaleX = 1.0;
+  let scaleY = 1.0;
+
+  if (bmi) {
+    if (bmi < 20) {
+      scaleX = 0.92; scaleY = 1.05;   // skinny
+    } else if (bmi <= 27) {
+      scaleX = 1.0; scaleY = 1.0;     // normal
+    } else if (bmi <= 32) {
+      scaleX = 1.08; scaleY = 0.98;   // slightly overweight
+    } else {
+      scaleX = 1.16; scaleY = 0.96;   // obese
+    }
+  }
+
+  shapeGrp.setAttribute(
+    "transform",
+    `translate(150,170) scale(${scaleX},${scaleY}) translate(-150,-170)`
+  );
+
+  /* ------------------------------
+     EMOTION FROM HEALTH SCORE
+  ------------------------------ */
+
+  // Reset overlays
+  tearL.setAttribute("opacity", 0);
+  tearR.setAttribute("opacity", 0);
+  sweat.setAttribute("opacity", 0);
+
+  let mouthPath = "M125 135 Q150 140 175 135";
+  let browLeftPath  = "M125 105 Q140 100 150 103";
+  let browRightPath = "M150 103 Q160 100 175 105";
+
+  if (score >= 80) {
+    // Happy
+    mouthPath = "M125 135 Q150 150 175 135";
+
+  } else if (score >= 60) {
+    // Soft smile
+    mouthPath = "M125 135 Q150 145 175 135";
+
+  } else if (score >= 40) {
+    // Worried + sweat
+    mouthPath = "M125 138 Q150 132 175 138";
+    sweat.setAttribute("opacity", 1);
+    browLeftPath  = "M125 108 Q140 112 150 107";
+    browRightPath = "M150 107 Q160 112 175 108";
+
+  } else {
+    // Crying
+    mouthPath = "M125 142 Q150 130 175 142";
+    tearL.setAttribute("opacity", 1);
+    tearR.setAttribute("opacity", 1);
+    browLeftPath  = "M125 110 Q140 118 150 112";
+    browRightPath = "M150 112 Q160 118 175 110";
+  }
+
+  mouth.setAttribute("d", mouthPath);
+  browLeft.setAttribute("d", browLeftPath);
+  browRight.setAttribute("d", browRightPath);
+
+  /* ------------------------------
+     COLOR FILTER BASED ON SCORE
+  ------------------------------ */
+  let filter = "none";
+
+  if (score >= 80) {
+    filter = "saturate(1.1) brightness(1.05)";
+  } else if (score >= 60) {
+    filter = "saturate(1.0) brightness(1.0)";
+  } else if (score >= 40) {
+    filter = "saturate(0.9) brightness(0.97)";
+  } else {
+    filter = "saturate(0.8) brightness(0.93)";
+  }
+
+  baseImg.style.filter = filter;
+}
+
 
           /* ============================================================
              AURA COLOR

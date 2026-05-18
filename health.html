@@ -1630,26 +1630,35 @@ window.speakHealthSummary = function() {
             rebuildCholTrend(days);
           };
 
-     /* ============================================================
-   END OF JS + CLOSE WINDOW.LOAD
-============================================================ */
-}); // end window.load
+          /* ============================================================
+             END OF JS + CLOSE WINDOW.LOAD
+          ============================================================ */
+         
 </script>
 
 <!-- ============================================================
      BOTTOM NAVIGATION
 ============================================================ -->
 <nav class="bottom-nav">
-  ...
-</nav>
+  <button class="nav-btn" onclick="window.location.href='index.html#meals'">Meals</button>
+  <button class="nav-btn active">Health</button>
 
+  <div class="center-wrap">
+    <button class="scan-btn" onclick="window.location.href='index.html#scan'">Scan</button>
+  </div>
+
+  <button class="nav-btn" onclick="window.location.href='index.html#plants'">Plants</button>
+  <button class="nav-btn" onclick="window.location.href='index.html#profile'">Profile</button>
+</nav>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const avatarImg = document.getElementById("avatar-base");
     if (!avatarImg) return;
 
     const gender = (localStorage.getItem("gender") || "male").toLowerCase();
-    let fileName = gender === "female" ? "female.png" : "male.png";
+
+    let fileName = "male.png";
+    if (gender === "female") fileName = "female.png";
 
     avatarImg.src = `/avatars/${fileName}`;
   });
@@ -1657,4 +1666,3 @@ window.speakHealthSummary = function() {
 
 </body>
 </html>
-

@@ -1123,6 +1123,8 @@ function updateAvatarFromScore(score) {
      GENDER → WHICH PNG TO USE
   ------------------------------ */
   const { gender, bmi } = getProfileInfo();
+console.log("Gender is:", gender);
+
  baseImg.setAttribute("href",
     gender === "female"
       ? "/avatars/female.png"

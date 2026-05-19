@@ -1745,11 +1745,20 @@ window.speakHealthSummary = function() {
             rebuildCholTrend(days);
           };
 
-          /* ============================================================
-             END OF JS + CLOSE WINDOW.LOAD
-          ============================================================ */
-         }); // end window.load
+ /* ============================================================
+   RUN AVATAR + AURA + COACH ON PAGE LOAD
+============================================================ */
+const auraScore = Number(localStorage.getItem("auraScore") || 100);
+updateAvatarFromScore(auraScore);
+updateAuraFromScore(auraScore);
+updateCoachFromScore(auraScore);
+
+/* ============================================================
+   END OF JS + CLOSE WINDOW.LOAD
+============================================================ */
+}); // end window.load
 </script>
+
 
 <!-- ============================================================
      BOTTOM NAVIGATION

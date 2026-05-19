@@ -520,6 +520,7 @@ function enableEdit() {
 
 /* ---------- SAVE PROFILE ---------- */
 function saveProfile() {
+
   const name = document.getElementById("name").value;
   const gender = document.getElementById("gender").value;
   const age = Number(document.getElementById("age").value);
@@ -533,6 +534,9 @@ function saveProfile() {
 
   const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
   localStorage.setItem("profile", JSON.stringify(profile));
+
+  // ⭐ Correct place to save gender
+  localStorage.setItem("profileGender", gender);
 
   const bmi = (weight / ((height/100)**2)).toFixed(1);
   document.getElementById("bmi").textContent = bmi;
@@ -548,7 +552,6 @@ function saveProfile() {
   );
 
   setHealthScore(score);
-
 
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
@@ -567,6 +570,9 @@ function saveProfile() {
 (function loadProfile() {
   const p = JSON.parse(localStorage.getItem("profile"));
   if (!p) return;
+
+  // ⭐ Save gender for the avatar system
+  localStorage.setItem("profileGender", p.gender);
 
   document.getElementById("name").value = p.name;
   document.getElementById("gender").value = p.gender;

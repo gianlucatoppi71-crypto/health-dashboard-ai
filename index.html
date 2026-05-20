@@ -520,7 +520,6 @@ function enableEdit() {
 
 /* ---------- SAVE PROFILE ---------- */
 function saveProfile() {
-
   const name = document.getElementById("name").value;
   const gender = document.getElementById("gender").value;
   const age = Number(document.getElementById("age").value);
@@ -534,9 +533,6 @@ function saveProfile() {
 
   const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
   localStorage.setItem("profile", JSON.stringify(profile));
-
-  // ⭐ Correct place to save gender
-  localStorage.setItem("profileGender", gender);
 
   const bmi = (weight / ((height/100)**2)).toFixed(1);
   document.getElementById("bmi").textContent = bmi;
@@ -552,6 +548,7 @@ function saveProfile() {
   );
 
   setHealthScore(score);
+
 
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
@@ -571,7 +568,7 @@ function saveProfile() {
   const p = JSON.parse(localStorage.getItem("profile"));
   if (!p) return;
 
-  // ⭐ Save gender for the avatar system
+  // ⭐ Save gender for the avatar system (NOW p EXISTS)
   localStorage.setItem("profileGender", p.gender);
 
   document.getElementById("name").value = p.name;
@@ -1168,8 +1165,6 @@ function setHealthScore(score){
 
 /* ---------- ENABLE EDIT MODE ---------- */
 function enableEdit() {
-document.getElementById("gender").disabled = false;
-
   document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = false);
 
@@ -1197,11 +1192,8 @@ function updateBMIBadge(bmi) {
 
   badge.textContent = "BMI: " + bmi;
 }
-
-/* ---------- SAVE PROFILE (UPDATED) ---------- */
+/* ---------- SAVE PROFILE ---------- */
 function saveProfile() {
-const gender = document.getElementById("gender").value;
-localStorage.setItem("profileGender", gender);
 
   const name = document.getElementById("name").value;
   const gender = document.getElementById("gender").value;
@@ -1217,15 +1209,15 @@ localStorage.setItem("profileGender", gender);
   const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
   localStorage.setItem("profile", JSON.stringify(profile));
 
-  /* BMI */
-  const bmi = (weight / ((height/100)**2)).toFixed(1);
-  updateBMIBadge(bmi);
+  // ⭐ Correct gender save
+  localStorage.setItem("profileGender", gender);
 
-  /* Ideal weight */
+  const bmi = (weight / ((height/100)**2)).toFixed(1);
+  document.getElementById("bmi").textContent = bmi;
+
   const ideal = (22 * ((height/100)**2)).toFixed(1);
   document.getElementById("ideal").textContent = ideal + " kg";
 
-  /* Health score */
   const score = Math.max(
     20,
     100
@@ -1235,10 +1227,8 @@ localStorage.setItem("profileGender", gender);
 
   setHealthScore(score);
 
-  /* Update top bar name */
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
-  /* Disable fields */
   document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = true);
 
@@ -1249,6 +1239,7 @@ localStorage.setItem("profileGender", gender);
 
   toggleHip();
 }
+
 
 /* ---------- LOAD PROFILE (UPDATED) ---------- */
 (function loadProfile() {

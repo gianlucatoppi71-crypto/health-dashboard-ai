@@ -520,6 +520,7 @@ function enableEdit() {
 
 /* ---------- SAVE PROFILE ---------- */
 function saveProfile() {
+
   const name = document.getElementById("name").value;
   const gender = document.getElementById("gender").value;
   const age = Number(document.getElementById("age").value);
@@ -534,8 +535,12 @@ function saveProfile() {
   const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
   localStorage.setItem("profile", JSON.stringify(profile));
 
-  const bmi = (weight / ((height/100)**2)).toFixed(1);
-  document.getElementById("bmi").textContent = bmi;
+  // ⭐ Correct gender save
+  localStorage.setItem("profileGender", gender);
+
+  // ✅ use the badge instead of #bmi
+  const bmi = weight / ((height/100)**2);
+  updateBMIBadge(bmi);
 
   const ideal = (22 * ((height/100)**2)).toFixed(1);
   document.getElementById("ideal").textContent = ideal + " kg";
@@ -549,7 +554,6 @@ function saveProfile() {
 
   setHealthScore(score);
 
-
   document.querySelector(".brand").textContent = name + "'s Dashboard";
 
   document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
@@ -562,6 +566,7 @@ function saveProfile() {
 
   toggleHip();
 }
+
 
 /* ---------- LOAD PROFILE ---------- */
 (function loadProfile() {
@@ -1177,6 +1182,7 @@ function enableEdit() {
 /* ---------- BMI BADGE COLOR LOGIC ---------- */
 function updateBMIBadge(bmi) {
   const badge = document.getElementById("bmiBadge");
+  if (!badge) return;
 
   badge.classList.remove("bmi-underweight", "bmi-healthy", "bmi-overweight", "bmi-obese");
 
@@ -1190,8 +1196,9 @@ function updateBMIBadge(bmi) {
     badge.classList.add("bmi-obese");
   }
 
-  badge.textContent = "BMI: " + bmi;
+  badge.textContent = "BMI: " + bmi.toFixed(1);
 }
+
 /* ---------- SAVE PROFILE ---------- */
 function saveProfile() {
 

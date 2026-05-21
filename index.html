@@ -530,6 +530,20 @@ function updateBMIBadge(bmi) {
 
   badge.textContent = "BMI: " + bmi.toFixed(1);
 }
+
+  /* -------------------------------------------
+   ENABLE EDIT MODE
+------------------------------------------- */
+function enableEdit() {
+  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
+    .forEach(el => el.disabled = false);
+
+  document.getElementById("calc-fat-btn").disabled = false;
+
+  document.getElementById("edit-btn").style.display = "none";
+  document.getElementById("save-btn").style.display = "block";
+}
+
 /* -------------------------------------------
    HEALTH SCORE + AURA COLOR ENGINE
 ------------------------------------------- */

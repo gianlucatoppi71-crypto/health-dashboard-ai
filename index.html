@@ -1207,57 +1207,6 @@ function updateBMIBadge(bmi) {
   badge.textContent = "BMI: " + bmi;
 }
 
-/* ---------- SAVE PROFILE (UPDATED) ---------- */
-function saveProfile() {
-const gender = document.getElementById("gender").value;
-localStorage.setItem("profileGender", gender);
-
-  const name = document.getElementById("name").value;
-  const gender = document.getElementById("gender").value;
-  const age = Number(document.getElementById("age").value);
-  const weight = Number(document.getElementById("weight").value);
-  const height = Number(document.getElementById("height").value);
-  const waist = Number(document.getElementById("waist").value);
-  const neck = Number(document.getElementById("neck").value);
-  const hip = Number(document.getElementById("hip").value);
-
-  const bodyfat = autoCalcBodyFat();
-
-  const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
-  localStorage.setItem("profile", JSON.stringify(profile));
-
-  /* BMI */
-  const bmi = (weight / ((height/100)**2)).toFixed(1);
-  updateBMIBadge(bmi);
-
-  /* Ideal weight */
-  const ideal = (22 * ((height/100)**2)).toFixed(1);
-  document.getElementById("ideal").textContent = ideal + " kg";
-
-  /* Health score */
-  const score = Math.max(
-    20,
-    100
-    - Math.abs(bmi - 22) * 2
-    - Math.abs(bodyfat - 18) * 1.2
-  );
-
-  setHealthScore(score);
-
-  /* Update top bar name */
-  document.querySelector(".brand").textContent = name + "'s Dashboard";
-
-  /* Disable fields */
-  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
-    .forEach(el => el.disabled = true);
-
-  document.getElementById("calc-fat-btn").disabled = true;
-
-  document.getElementById("edit-btn").style.display = "block";
-  document.getElementById("save-btn").style.display = "none";
-
-  toggleHip();
-}
 
 /* ---------- LOAD PROFILE (UPDATED) ---------- */
 (function loadProfile() {

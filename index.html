@@ -6,668 +6,6 @@
 <title>HealthHub — Dashboard</title>
 
 <style>
-
-:root{
-  --accent:#42a5f5;
-  --accent-dark:#2b7bb8;
-  --bg:#ffffff;
-  --text:#1f2937;
-  --muted:#6b7280;
-}
-
-html,body{
-  height:100%;margin:0;
-  font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-  background:#fff;color:var(--text);
-}
-
-.app{
-  display:flex;flex-direction:column;
-  height:100vh;max-width:480px;margin:0 auto;
-  border-left:1px solid #eee;border-right:1px solid #eee;
-}
-
-.topbar{
-  height:56px;display:flex;align-items:center;
-  justify-content:space-between;padding:0 16px;
-  border-bottom:1px solid #f0f3f7;background:#fff;
-}
-
-.content{flex:1;overflow:auto;padding:18px;}
-.tab{display:none;opacity:0;transition:opacity .25s;}
-.tab.active{display:block;opacity:1;}
-
-/* ------------------ AURA HEART RINGS (DYNAMIC, MEDICAL) ------------------ */
-.aura-wrap-new{
-  position:relative;
-  width:340px;
-  height:320px;
-  margin:0 auto;
-  margin-top:10px;
-}
-
-/* Ring scaling */
-.ring-bp  { transform: scale(0.75); }
-.ring-chol{ transform: scale(0.95); }
-.ring-food{ transform: scale(1.20); }
-
-.heart-ring{
-  position:absolute;
-  top:0; left:0;
-  width:300px;
-  height:280px;
-}
-
-/* Base stroke (JS will recolor) */
-.heart-path{
-  fill:none;
-  stroke-width:14px;
-  stroke-linecap:round;
-  stroke:#cccccc;
-  filter: drop-shadow(0 0 12px currentColor)
-          drop-shadow(0 0 24px currentColor);
-}
-
-/* Center heart */
-.center-heart{
-  position:absolute;
-  top:40px; left:40px;
-  width:220px; height:220px;
-}
-
-.center-heart .heart-fill{
-  fill:#4ade80;
-  filter: drop-shadow(0 0 10px #4ade80)
-          drop-shadow(0 0 20px #4ade80);
-  animation:heartPulse 1.8s infinite ease-in-out;
-}
-
-/* Pulse animations */
-@keyframes pulseBP{
-  0%{stroke-width:14px;}
-  50%{stroke-width:18px;}
-  100%{stroke-width:14px;}
-}
-@keyframes pulseChol{
-  0%{stroke-width:14px;}
-  50%{stroke-width:17px;}
-  100%{stroke-width:14px;}
-}
-@keyframes pulseFood{
-  0%{stroke-width:14px;}
-  50%{stroke-width:16px;}
-  100%{stroke-width:14px;}
-}
-
-.ring-bp   .heart-path{ animation:pulseBP 2s infinite ease-in-out; }
-.ring-chol .heart-path{ animation:pulseChol 2.4s infinite ease-in-out; }
-.ring-food .heart-path{ animation:pulseFood 3s infinite ease-in-out; }
-
-/* PROFILE FIELDS */
-.profile-fields{
-  width:100%;padding:12px 6px;
-  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
-}
-
-.field{
-  background:#fff;border-radius:12px;padding:10px;
-  border:1px solid #f1f5f9;
-}
-
-.field label{font-size:12px;color:var(--muted);}
-.field input,.field select{
-  width:100%;padding:6px;border-radius:8px;
-  border:1px solid #ddd;font-size:15px;
-}
-
-.value{font-weight:700;font-size:16px;}
-
-.btn-3d{
-  background:var(--accent);color:#fff;padding:12px 18px;
-  border-radius:12px;border:none;font-weight:700;
-  box-shadow:0 8px 0 var(--accent-dark);
-}
-
-.section-card{
-  background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;
-  border:1px solid #f1f5f9;
-}
-
-/* Bottom navigation */
-.bottom-nav{
-  height:86px;padding:10px 18px;display:flex;
-  align-items:flex-end;justify-content:space-between;
-  border-top:1px solid #f3f6f9;
-  background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);
-}
-
-.nav-btn{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;background:none;border:none;
-  color:var(--muted);
-}
-
-.nav-btn.active{color:var(--accent);font-weight:700;}
-
-.center-wrap{flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
-.scan-btn{
-  width:84px;height:84px;border-radius:50%;
-  background:var(--accent);color:#fff;border:none;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 12px 0 var(--accent-dark);
-}
-
-.muted{color:var(--muted);}
-
-svg { overflow: visible !important; }
-
-</style>
-</head>
-
-<body>
-<div class="app">
-
-  <!-- AUDIO TOGGLE -->
-  
-
-  <div class="topbar">
-    <div class="brand">HealthHub</div>
-    <div class="links">Home • Scan</div>
-  </div>
-
-  <main class="content">
-
-    <!-- PROFILE TAB -->
-    <section id="tab-profile" class="tab active">
-      <div class="profile-hero">
-
-        <!-- AURA -->
-        <div class="aura-wrap-new">
-
-          <!-- FOOD RING -->
-          <svg class="heart-ring ring-food" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-            <path class="heart-path"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
-
-          <!-- CHOLESTEROL RING -->
-          <svg class="heart-ring ring-chol" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-            <path class="heart-path"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
-
-          <!-- BLOOD PRESSURE RING -->
-          <svg class="heart-ring ring-bp" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-            <path class="heart-path"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
-
-          <!-- CENTER HEART -->
-          <svg class="center-heart" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-            <path class="heart-fill"
-              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
-          </svg>
-
-        </div>
-
-        <div style="text-align:center;">
-          <div id="health-label" style="
-            font-weight:800;
-            font-size:16px;
-            margin-top:28px;
-            position:relative;
-            top:18px;
-            margin-bottom:18px;
-          ">
-            Health Score: <span id="health-score">72</span>
-          </div>
-          <div class="muted">Aura indicates overall health</div>
-        </div>
-      </div>
-
-      <!-- PROFILE FIELDS -->
-      <div class="profile-fields">
-
-        <div class="field">
-          <label>Name</label>
-          <input id="name" type="text" value="User" disabled>
-        </div>
-
-        <div class="field">
-          <label>Gender</label>
-          <select id="gender" disabled onchange="toggleHip()">
-            <option value="male" selected>Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Age</label>
-          <input id="age" type="number" value="45" disabled>
-        </div>
-
-        <div class="field">
-          <label>Weight (kg)</label>
-          <input id="weight" type="number" value="82" disabled>
-        </div>
-
-        <div class="field">
-          <label>Height (cm)</label>
-          <input id="height" type="number" value="176" disabled>
-        </div>
-
-        <div class="field">
-          <label>Waist (cm)</label>
-          <input id="waist" type="number" value="92" disabled>
-        </div>
-
-        <div class="field">
-          <label>Neck (cm)</label>
-          <input id="neck" type="number" value="38" disabled>
-        </div>
-
-        <div class="field" id="hip-field">
-          <label>Hip (cm) — women only</label>
-          <input id="hip" type="number" value="95" disabled>
-        </div>
-
-        <div class="field">
-          <label>Body Fat %</label>
-          <input id="bodyfat" type="number" value="22" disabled>
-        </div>
-
-        <div class="field">
-          <button id="calc-fat-btn" class="btn-3d" disabled onclick="autoCalcBodyFat()">
-            Calculate automatically
-          </button>
-        </div>
-
-        <div class="field">
-          <label>BMI</label>
-          <div class="value" id="bmi">26.5</div>
-        </div>
-
-        <div class="field">
-          <label>Ideal weight</label>
-          <div class="value" id="ideal">75 kg</div>
-        </div>
-
-      </div>
-
-      <button id="edit-btn" class="btn-3d" onclick="enableEdit()">Edit Profile</button>
-      <button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
-
-    </section>
-
-    <!-- SCAN TAB -->
-    <section id="tab-scan" class="tab">
-      <div class="section-card">
-        <h3>Scan Food</h3>
-        <p class="muted">Use the camera to scan food or barcode.</p>
-        <div style="margin-top:12px;display:flex;gap:10px;">
-          <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
-          <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <h4>Last scanned</h4>
-        <div id="last-scan" style="background:#fff;border-radius:12px;padding:12px;border:1px solid #f1f5f9;">
-          <em>No scans yet</em>
-        </div>
-      </div>
-    </section>
-
-    <!-- MEALS TAB -->
-    <section id="tab-meals" class="tab">
-      <div class="section-card">
-        <h3>Today's Meals</h3>
-        <div id="meals-list" class="muted">No meals logged</div>
-      </div>
-      <div class="section-card">
-        <h4>Weekly calories</h4>
-        <div id="weekly-cal" class="muted">0 kcal</div>
-      </div>
-    </section>
-
-    <!-- HEALTH TAB -->
-    <section id="tab-health" class="tab">
-      <div class="section-card">
-        <h3>Health Overview</h3>
-        <p class="muted">Cholesterol, blood pressure, plant points.</p>
-        <div style="margin-top:12px;">
-          <div class="muted">Cholesterol: <strong id="chol-status">OK</strong></div>
-          <div class="muted">Blood pressure: <strong id="bp-status">120/78</strong></div>
-          <div class="muted">Plant points: <strong id="plant-points">+12</strong></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PLANTS TAB -->
-    <section id="tab-plants" class="tab">
-      <div class="section-card">
-        <h3>Plant Points</h3>
-        <p class="muted">Add fruits/veg to gain points.</p>
-        <div style="margin-top:12px;display:flex;gap:8px;">
-          <button class="btn-3d" onclick="addPlantPoints(5)">Add Fruit +5</button>
-          <button class="btn-3d" onclick="addPlantPoints(-4)">Add Junk -4</button>
-        </div>
-        <div style="margin-top:12px;" class="muted">Daily points: <strong id="daily-points">0</strong></div>
-      </div>
-    </section>
-
-  </main>
-  <!-- BOTTOM NAVIGATION -->
-  <nav class="bottom-nav">
-    <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
-    <button class="nav-btn" id="nav-health" onclick="window.location.href='health.html'">Health</button>
-
-    <div class="center-wrap">
-      <button class="scan-btn" id="nav-scan" onclick="centerScanClick()">Scan</button>
-    </div>
-
-    <button class="nav-btn" id="nav-plants" onclick="switchTab('plants')">Plants</button>
-    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">Profile</button>
-  </nav>
-
-</div> <!-- END .app -->
-
-<script>
-/* ---------- HEALTH REACTION ENGINE ---------- */
-let lastHealth = {
-  bpSys: Number(localStorage.getItem("bpSys") || 120),
-  bpDia: Number(localStorage.getItem("bpDia") || 80),
-  cholTotal: Number(localStorage.getItem("cholTotal") || 5.0),
-  foodQuality: (Number(localStorage.getItem("foodScore") || 60) / 100),
-  score: 72
-};
-/* ---------- TABS ---------- */
-const tabs = {
-  profile: document.getElementById('tab-profile'),
-  scan: document.getElementById('tab-scan'),
-  meals: document.getElementById('tab-meals'),
-  health: document.getElementById('tab-health'),
-  plants: document.getElementById('tab-plants')
-};
-let currentTab = 'profile';
-function switchTab(name){
-  tabs[currentTab].classList.remove('active');
-  tabs[name].classList.add('active');
-  currentTab = name;
-}
-
-/* ---------- SHOW/HIDE HIP FIELD ---------- */
-function toggleHip(){
-  const gender = document.getElementById("gender").value;
-  document.getElementById("hip-field").style.display =
-    (gender === "female") ? "block" : "none";
-}
-
-/* ---------- FOOD SCANNER ---------- */
-function openFoodScanner() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.capture = "environment";
-
-  input.onchange = () => {
-    if (input.files && input.files[0]) {
-      handleFoodImage(input.files[0]);
-      switchTab('scan');
-    }
-  };
-
-  input.click();
-}
-
-function handleFoodImage(file) {
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const base64 = reader.result.split(",")[1];
-    analyzeFood(base64);
-  };
-  reader.readAsDataURL(file);
-}
-
-async function analyzeFood(imageBase64) {
-  try {
-    const res = await fetch("https://food-ai-backend.vercel.app/api/scan-food", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageBase64 })
-    });
-
-    const data = await res.json();
-
-    document.getElementById("last-scan").innerHTML = `
-      <strong>Food:</strong> ${data.name || "Unknown"}<br>
-      <strong>Calories:</strong> ${data.calories || "?"}<br>
-      <strong>Protein:</strong> ${data.protein || "?"} g<br>
-      <strong>Carbs:</strong> ${data.carbs || "?"} g<br>
-      <strong>Fat:</strong> ${data.fat || "?"} g<br>
-      <strong>Description:</strong> ${data.description || "No description"}
-    `;
-
-    onFoodScanned(data);
-
-  } catch (err) {
-    document.getElementById("last-scan").innerText = "Scan failed";
-  }
-}
-
-function centerScanClick(){ openFoodScanner(); }
-function onBarcode(){ document.getElementById('last-scan').textContent = 'Barcode scan started...'; }
-
-/* ---------- PLANT POINTS ---------- */
-let dailyPoints = 0;
-function addPlantPoints(n){
-  dailyPoints += n;
-  document.getElementById('daily-points').textContent = dailyPoints;
-}
-
-/* ---------- BODY FAT FORMULA ---------- */
-function autoCalcBodyFat() {
-  const gender = document.getElementById("gender").value;
-  const waist = Number(document.getElementById("waist").value);
-  const neck = Number(document.getElementById("neck").value);
-  const height = Number(document.getElementById("height").value);
-  const hip = Number(document.getElementById("hip").value);
-
-  if (!waist || !neck || !height) {
-    alert("Enter waist, neck and height first");
-    return;
-  }
-
-  let bf;
-
-  if (gender === "male") {
-    bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck)
-                + 0.15456 * Math.log10(height)) - 450;
-  } else {
-    if (!hip) {
-      alert("Enter hip measurement for female calculation");
-      return;
-    }
-    bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck)
-                + 0.22100 * Math.log10(height)) - 450;
-  }
-
-  const clean = Math.max(5, Math.min(60, bf.toFixed(1)));
-  document.getElementById("bodyfat").value = clean;
-
-  return clean;
-}
-
-/* ---------- HEALTH SCORE ---------- */
-function setHealthScore(score){
-  score = Math.max(0, Math.min(100, score));
-  document.getElementById('health-score').textContent = score;
-
-  lastHealth.score = score;
-  updateAura(lastHealth);
-}
-
-/* ---------- ENABLE EDIT MODE ---------- */
-function enableEdit() {
-  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
-    .forEach(el => el.disabled = false);
-
-  document.getElementById("calc-fat-btn").disabled = false;
-
-  document.getElementById("edit-btn").style.display = "none";
-  document.getElementById("save-btn").style.display = "block";
-}
-
-function saveProfile() {
-  const name   = document.getElementById("name").value;
-  const gender = document.getElementById("gender").value;
-  const age    = Number(document.getElementById("age").value);
-  const weight = Number(document.getElementById("weight").value);
-  const height = Number(document.getElementById("height").value);
-  const waist  = Number(document.getElementById("waist").value);
-  const neck   = Number(document.getElementById("neck").value);
-  const hip    = Number(document.getElementById("hip").value);
-
-  const bodyfat = autoCalcBodyFat();
-
-  const profile = { name, gender, age, weight, height, waist, neck, hip, bodyfat };
-  localStorage.setItem("profile", JSON.stringify(profile));
-
-  // store for avatar on health.html
-  localStorage.setItem("profileGender", gender);
-  localStorage.setItem("profileHeight", height);
-  localStorage.setItem("profileWeight", weight);
-
-  // BMI
-  const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
-  localStorage.setItem("profileBMI", bmi);
-  updateBMIBadge(bmi);
-
-  // Ideal weight
-  const ideal = (22 * ((height / 100) ** 2)).toFixed(1);
-  document.getElementById("ideal").textContent = ideal + " kg";
-
-  // Health score
-  const score = Math.max(
-    20,
-    100
-    - Math.abs(bmi - 22) * 2
-    - Math.abs(bodyfat - 18) * 1.2
-  );
-  setHealthScore(score);
-
-  // Top bar name
-  document.querySelector(".brand").textContent = name + "'s Dashboard";
-
-  // Lock fields again
-  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
-    .forEach(el => el.disabled = true);
-
-  document.getElementById("calc-fat-btn").disabled = true;
-  document.getElementById("edit-btn").style.display = "block";
-  document.getElementById("save-btn").style.display = "none";
-
-  toggleHip();
-}
-
-
-/* ---------- LOAD PROFILE ---------- */
-(function loadProfile() {
-  const p = JSON.parse(localStorage.getItem("profile"));
-  if (!p) return;
-
-  // Avatar gender
-  localStorage.setItem("profileGender", p.gender);
-
-  document.getElementById("name").value = p.name;
-  document.getElementById("gender").value = p.gender;
-  document.getElementById("age").value = p.age;
-  document.getElementById("weight").value = p.weight;
-  document.getElementById("height").value = p.height;
-  document.getElementById("waist").value = p.waist;
-  document.getElementById("neck").value = p.neck;
-  document.getElementById("hip").value = p.hip;
-  document.getElementById("bodyfat").value = p.bodyfat;
-
-  /* BMI */
-  const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
-  updateBMIBadge(bmi);   // ⭐ correct element
-
-  /* Ideal weight */
-  const ideal = (22 * ((p.height/100)**2)).toFixed(1);
-  document.getElementById("ideal").textContent = ideal + " kg";
-
-  /* Health score */
-  const score = Math.max(
-    20,
-    100
-    - Math.abs(bmi - 22) * 2
-    - Math.abs(p.bodyfat - 18) * 1.2
-  );
-
-  setHealthScore(score);
-
-  document.querySelector(".brand").textContent = p.name + "'s Dashboard";
-
-  toggleHip();
-  updateAuraFromData();   // ⭐ correct place
-})();
-
-/* ---------- INIT ---------- */
-(function init(){
-  
-  updateAuraFromData();   // IMPORTANT FIX
-  switchTab('profile');
-  toggleHip();
-})();
-
-/* ---------- AUDIO ENGINE ---------- */
-let audioEnabled = JSON.parse(localStorage.getItem("audioEnabled") || "true");
-
-function updateAudioButton() {
-  const btn = document.getElementById("audio-toggle");
-  if (!btn) return;
-  btn.textContent = audioEnabled ? "🔊" : "🔇";
-  btn.classList.toggle("muted", !audioEnabled);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("audio-toggle");
-  btn.onclick = () => {
-    audioEnabled = !audioEnabled;
-    localStorage.setItem("audioEnabled", JSON.stringify(audioEnabled));
-    updateAudioButton();
-  };
-  updateAudioButton();
-});
-
-function speak(text) {
-  if (!audioEnabled) return;
-
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "en-US";
-  msg.rate = 0.95;
-  msg.pitch = 1.0;
-  msg.volume = 1;
-
-  const voices = speechSynthesis.getVoices();
-  const english = voices.find(v => v.lang.startsWith("en"));
-
-  if (english) msg.voice = english;
-
-  speechSynthesis.cancel();
-  speechSynthesis.speak(msg);
-}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>HealthHub — Dashboard</title>
-
-<style>
-
 :root{
   --accent:#42a5f5;
   --accent-dark:#2b7bb8;
@@ -790,7 +128,7 @@ html,body{
   border:1px solid #f1f5f9;
 }
 
-/* BMI BADGE (C1 MEDICAL STYLE) */
+/* BMI BADGE */
 .bmi-badge {
   display:inline-block;
   padding:6px 12px;
@@ -798,7 +136,7 @@ html,body{
   border-radius:20px;
   font-weight:700;
   color:white;
-  background:#28a745; /* default green */
+  background:#28a745;
 }
 .bmi-underweight { background:#1e90ff; }
 .bmi-healthy { background:#28a745; }
@@ -831,14 +169,11 @@ html,body{
 
 .muted{color:var(--muted);}
 svg { overflow: visible !important; }
-
 </style>
 </head>
-
 <body>
 <div class="app">
-  <!-- AUDIO TOGGLE -->
-  
+
   <div class="topbar">
     <div class="brand">HealthHub</div>
     <div class="links">Home • Scan</div>
@@ -854,25 +189,25 @@ svg { overflow: visible !important; }
         <div class="aura-wrap-new">
 
           <!-- FOOD RING -->
-          <svg class="heart-ring ring-food" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+          <svg class="heart-ring ring-food" viewBox="0 0 200 180">
             <path class="heart-path"
               d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
           </svg>
 
           <!-- CHOLESTEROL RING -->
-          <svg class="heart-ring ring-chol" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+          <svg class="heart-ring ring-chol" viewBox="0 0 200 180">
             <path class="heart-path"
               d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
           </svg>
 
           <!-- BLOOD PRESSURE RING -->
-          <svg class="heart-ring ring-bp" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+          <svg class="heart-ring ring-bp" viewBox="0 0 200 180">
             <path class="heart-path"
               d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
           </svg>
 
           <!-- CENTER HEART -->
-          <svg class="center-heart" viewBox="0 0 200 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+          <svg class="center-heart" viewBox="0 0 200 180">
             <path class="heart-fill"
               d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
           </svg>
@@ -880,14 +215,7 @@ svg { overflow: visible !important; }
         </div>
 
         <div style="text-align:center;">
-          <div id="health-label" style="
-            font-weight:800;
-            font-size:16px;
-            margin-top:28px;
-            position:relative;
-            top:18px;
-            margin-bottom:18px;
-          ">
+          <div id="health-label" style="font-weight:800;font-size:16px;margin-top:28px;position:relative;top:18px;margin-bottom:18px;">
             Health Score: <span id="health-score">72</span>
           </div>
           <div class="muted">Aura indicates overall health</div>
@@ -951,7 +279,6 @@ svg { overflow: visible !important; }
           </button>
         </div>
 
-        <!-- ⭐ NEW BMI BADGE (replaces old BMI field) -->
         <div class="field">
           <label>BMI</label>
           <div id="bmiBadge" class="bmi-badge bmi-healthy">BMI: --</div>
@@ -968,6 +295,7 @@ svg { overflow: visible !important; }
       <button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
 
     </section>
+
     <!-- SCAN TAB -->
     <section id="tab-scan" class="tab">
       <div class="section-card">
@@ -998,6 +326,7 @@ svg { overflow: visible !important; }
         <div id="weekly-cal" class="muted">0 kcal</div>
       </div>
     </section>
+
     <!-- HEALTH TAB -->
     <section id="tab-health" class="tab">
       <div class="section-card">
@@ -1039,7 +368,7 @@ svg { overflow: visible !important; }
     <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">Profile</button>
   </nav>
 
-</div> <!-- END .app -->
+</div>
 <script>
 /* ---------- HEALTH REACTION ENGINE (initial state) ---------- */
 let lastHealth = {
@@ -1059,6 +388,7 @@ const tabs = {
   plants: document.getElementById('tab-plants')
 };
 let currentTab = 'profile';
+
 function switchTab(name){
   tabs[currentTab].classList.remove('active');
   tabs[name].classList.add('active');
@@ -1127,7 +457,7 @@ async function analyzeFood(imageBase64) {
 function centerScanClick(){ openFoodScanner(); }
 function onBarcode(){ document.getElementById('last-scan').textContent = 'Barcode scan started...'; }
 
-/* ---------- PLANT POINTS ---------- */
+/* ---------- PLANT POINTS (BASE FUNCTION) ---------- */
 let dailyPoints = 0;
 function addPlantPoints(n){
   dailyPoints += n;
@@ -1166,6 +496,7 @@ function autoCalcBodyFat() {
 
   return clean;
 }
+
 /* ---------- HEALTH SCORE ---------- */
 function setHealthScore(score){
   score = Math.max(0, Math.min(100, score));
@@ -1177,8 +508,6 @@ function setHealthScore(score){
 
 /* ---------- ENABLE EDIT MODE ---------- */
 function enableEdit() {
-document.getElementById("gender").disabled = false;
-
   document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
     .forEach(el => el.disabled = false);
 
@@ -1206,9 +535,7 @@ function updateBMIBadge(bmi) {
 
   badge.textContent = "BMI: " + bmi;
 }
-
-
-/* ---------- LOAD PROFILE (UPDATED) ---------- */
+/* ---------- LOAD PROFILE ---------- */
 (function loadProfile() {
   const p = JSON.parse(localStorage.getItem("profile"));
   if (!p) return;
@@ -1223,15 +550,12 @@ function updateBMIBadge(bmi) {
   document.getElementById("hip").value = p.hip;
   document.getElementById("bodyfat").value = p.bodyfat;
 
-  /* BMI */
   const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
   updateBMIBadge(bmi);
 
-  /* Ideal weight */
   const ideal = (22 * ((p.height/100)**2)).toFixed(1);
   document.getElementById("ideal").textContent = ideal + " kg";
 
-  /* Health score */
   const score = Math.max(
     20,
     100
@@ -1245,9 +569,10 @@ function updateBMIBadge(bmi) {
 
   toggleHip();
 })();
+
 /* ---------- INIT ---------- */
 (function init(){
-  updateAuraFromData();   // IMPORTANT
+  updateAuraFromData();
   switchTab('profile');
   toggleHip();
 })();
@@ -1285,14 +610,13 @@ function speak(text) {
 
   const voices = speechSynthesis.getVoices();
   const english = voices.find(v => v.lang.startsWith("en"));
-
   if (english) msg.voice = english;
 
   speechSynthesis.cancel();
   speechSynthesis.speak(msg);
 }
-/* ---------- HEALTH REACTION ENGINE ---------- */
 
+/* ---------- AURA ENGINE ---------- */
 function updateAura(state) {
   const bpPath   = document.querySelector(".ring-bp .heart-path");
   const cholPath = document.querySelector(".ring-chol .heart-path");
@@ -1307,25 +631,21 @@ function updateAura(state) {
   const foodScore = (state.foodQuality || 0.6) * 100;
   const score = state.score;
 
-  /* BP COLOR */
   let bpColor = "#22c55e";
   if (bpSys >= 160 || bpDia >= 100)      bpColor = "#ef4444";
   else if (bpSys >= 140 || bpDia >= 90)  bpColor = "#f97316";
   else if (bpSys >= 120 || bpDia >= 80)  bpColor = "#eab308";
 
-  /* CHOLESTEROL COLOR */
   let cholColor = "#22c55e";
   if (cholTotal > 6.2)       cholColor = "#ef4444";
   else if (cholTotal >= 5.0) cholColor = "#f97316";
   else if (cholTotal >= 3.0) cholColor = "#eab308";
 
-  /* FOOD COLOR */
   let foodColor = "#22c55e";
   if (foodScore <= 2)        foodColor = "#ef4444";
   else if (foodScore <= 4)   foodColor = "#f97316";
   else if (foodScore <= 7)   foodColor = "#eab308";
 
-  /* HEART COLOR */
   let heartColor = "#22c55e";
   if (score < 40)       heartColor = "#ef4444";
   else if (score < 60)  heartColor = "#f97316";
@@ -1343,6 +663,7 @@ function updateAura(state) {
   heart.style.filter = `drop-shadow(0 0 10px ${heartColor}) drop-shadow(0 0 20px ${heartColor})`;
 }
 
+/* ---------- HEALTH CHANGE REACTIONS ---------- */
 function updateHealth(bpSys, bpDia, cholTotal, foodQuality, score) {
   const newHealth = { bpSys, bpDia, cholTotal, foodQuality, score };
 
@@ -1381,7 +702,7 @@ function onFoodScanned(data) {
   }
 }
 
-/* ---------- PLANT POINTS REACTION (FIXED) ---------- */
+/* ---------- PLANT POINTS REACTION ---------- */
 const oldAddPlantPoints = addPlantPoints;
 addPlantPoints = function(n) {
   oldAddPlantPoints(n);
@@ -1417,7 +738,7 @@ function updateAuraFromData() {
   updateAura(state);
 }
 
-/* ---------- AURA AUTO-REFRESH ---------- */
+/* ---------- AUTO REFRESH AURA ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   updateAuraFromData();
 });

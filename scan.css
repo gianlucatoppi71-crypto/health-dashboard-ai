@@ -1,0 +1,32 @@
+#cameraFeed {
+  border-radius: 16px;
+  background: #000;
+}
+
+#captureBtn:active,
+#barcodeBtn:active,
+#scanAgainBtn:active {
+  transform: scale(0.95);
+  transition: 0.1s ease;
+}
+
+#plantPointBox {
+  animation: popIn 0.4s ease forwards;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+#weeklyChart {
+  margin-top: 10px;
+}
+
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+body::-webkit-scrollbar {
+  display: none;
+}

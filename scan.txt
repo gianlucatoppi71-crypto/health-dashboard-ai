@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Food Scanner</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- TensorFlow.js (for on-device AI) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+
+  <!-- Chart.js (for weekly calories chart) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom CSS (Part 2 will add small tweaks) -->
+  <link rel="stylesheet" href="scan.css" />
+</head>
+
+<body class="bg-gray-100">
+
+  <!-- PAGE HEADER -->
+  <header class="p-4 bg-white shadow-md">
+    <h1 class="text-2xl font-bold text-blue-600">AI Food Scanner</h1>
+    <p class="text-gray-600 text-sm">Scan food or barcode for full nutrition & health verdict</p>
+  </header>
+
+  <!-- CAMERA SECTION -->
+  <section class="p-4">
+    <div class="bg-black rounded-xl overflow-hidden shadow-md">
+      <video id="cameraFeed" autoplay playsinline class="w-full h-72 object-cover"></video>
+    </div>
+
+    <div class="flex justify-center mt-4">
+      <button id="captureBtn"
+        class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold shadow-md">
+        Capture
+      </button>
+    </div>
+  </section>
+
+  <!-- SCAN RESULT SECTION -->
+  <section id="resultSection" class="p-4 hidden">
+    <h2 class="text-xl font-bold text-gray-800 mb-2">Scan Result</h2>
+
+    <!-- FOOD NAME -->
+    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+      <h3 class="text-lg font-semibold text-blue-600" id="foodName">Food Name</h3>
+      <p class="text-gray-600 text-sm" id="foodConfidence"></p>
+    </div>
+
+    <!-- NUTRITION CARD -->
+    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Nutrition</h3>
+      <div id="nutritionCard" class="text-gray-700 text-sm space-y-1">
+        <!-- JS will fill this -->
+      </div>
+    </div>
+
+    <!-- HEALTH VERDICT -->
+    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Health Verdict</h3>
+      <p id="verdictText" class="text-gray-700"></p>
+    </div>
+
+    <!-- ALTERNATIVE SUGGESTION -->
+    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Better Alternative</h3>
+      <p id="alternativeText" class="text-gray-700"></p>
+    </div>
+
+    <!-- PLANT POINT -->
+    <div class="bg-green-100 p-4 rounded-xl shadow-md mb-4 hidden" id="plantPointBox">
+      <p class="text-green-800 font-semibold">🌱 Healthy choice! You earned a plant point.</p>
+    </div>
+  </section>
+
+  <!-- WEEKLY CALORIES SECTION -->
+  <section class="p-4">
+    <h2 class="text-xl font-bold text-gray-800 mb-2">Weekly Calories</h2>
+
+    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+      <canvas id="weeklyChart" height="200"></canvas>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow-md">
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Calorie Goal</h3>
+      <input id="calorieGoalInput" type="number" placeholder="Set daily calorie goal"
+        class="w-full p-2 border rounded-lg mb-2" />
+      <button id="saveGoalBtn"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold w-full">
+        Save Goal
+      </button>
+    </div>
+  </section>
+
+  <!-- JS LOGIC (Part 3 will fill this) -->
+  <script src="scan.js"></script>
+
+</body>
+</html>

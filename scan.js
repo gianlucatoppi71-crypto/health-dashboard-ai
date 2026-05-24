@@ -1,35 +1,80 @@
 /* ============================================================
-   CAMERA SETUP — AUTO OPEN
+   GLOBAL ELEMENTS
 ============================================================ */
 const video = document.getElementById("cameraFeed");
 const captureBtn = document.getElementById("captureBtn");
 const barcodeBtn = document.getElementById("barcodeBtn");
+const resultSection = document.getElementById("resultSection");
 const loadingBox = document.getElementById("loadingBox");
 const scanAgainBtn = document.getElementById("scanAgainBtn");
-const resultSection = document.getElementById("resultSection");
 
+/* ============================================================
+   START CAMERA
+============================================================ */
 async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" }
+      video: { facingMode: "environment" },
+      audio: false
     });
     video.srcObject = stream;
   } catch (err) {
-    alert("Camera access blocked. Please enable camera permissions.");
+    console.error("Camera error:", err);
   }
 }
 
 startCamera();
 
 /* ============================================================
-   CAPTURE IMAGE (FOOD AI)
+   LOAD MOBILENET MODEL (FREE)
+============================================================ */
+let model;
+
+async function loadModel() {
+  model = await tf.loadGraphModel(
+    "https://tfhub.dev/google/imagenet/mobilenet_v2_140_224/classification/5",
+    { fromTFHub: true }
+  );
+}
+
+loadModel();
+
+/* ============================================================
+   LOAD IMAGENET LABELS (FREE, 1000 CLASSES)
+============================================================ */
+let imagenetLabels = [];
+
+async function loadLabels() {
+  try {
+    const res = await fetch(
+      "https://storage.googleapis.com/download.tensorflow.org/data/imagenet_class_names.json"
+    );
+    imagenetLabels = await res.json();
+  } catch (e) {
+    console.error("Error loading labels", e);
+  }
+}
+
+loadLabels();
+
+/* ============================================================
+   YOUR FREE NUTRITION DATABASE
+============================================================ */
+const FOOD_NUTRITION_DB = {
+  apple: { calories: 95, fat: 0.3, sugar: 19, protein: 0.5 },
+  banana: { calories: 105, fat: 0.4, sugar: 14, protein: 1.3 },
+  pasta: { calories: 221, fat: 1.3, sugar: 2.5, protein: 8 },
+  salad: { calories: 33, fat: 0.2, sugar: 2, protein: 2 },
+  yogurt: { calories: 59, fat: 0.4, sugar: 7, protein: 10 },
+  bread: { calories: 79, fat: 1, sugar: 1.4, protein: 3.5 },
+  cheese: { calories: 113, fat: 9.3, sugar: 0.2, protein: 7 },
+  chicken: { calories: 165, fat: 3.6, sugar: 0, protein: 31 }
+};
+
+/* ============================================================
+   CAPTURE IMAGE FROM CAMERA
 ============================================================ */
 captureBtn.addEventListener("click", () => {
-  if (!video.videoWidth || !video.videoHeight) {
-    alert("Camera not ready yet. Please wait a moment.");
-    return;
-  }
-
   const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -42,22 +87,7 @@ captureBtn.addEventListener("click", () => {
 });
 
 /* ============================================================
-   LOAD TENSORFLOW MODEL (FOOD AI)
-============================================================ */
-let model;
-async function loadModel() {
-  try {
-    model = await tf.loadGraphModel(
-      "https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224/model.json"
-    );
-  } catch (e) {
-    console.error("Error loading model", e);
-  }
-}
-loadModel();
-
-/* ============================================================
-   PROCESS IMAGE — AI FOOD RECOGNITION
+   PROCESS IMAGE WITH FREE AI MODEL
 ============================================================ */
 async function processImage(imageDataURL) {
   resultSection.classList.remove("hidden");
@@ -74,7 +104,7 @@ async function processImage(imageDataURL) {
         .toFloat()
         .expandDims();
 
-      if (!model) {
+      if (!model || !imagenetLabels.length) {
         loadingBox.innerText = "AI model not ready yet.";
         return;
       }
@@ -82,17 +112,26 @@ async function processImage(imageDataURL) {
       const prediction = await model.predict(tensor).data();
       const topIndex = prediction.indexOf(Math.max(...prediction));
 
-      const foodName = FOOD_LABELS[topIndex] || "Unknown Food";
+      const rawLabel = imagenetLabels[topIndex] || "Unknown";
       const confidence = Math.max(...prediction) * 100;
 
-      document.getElementById("foodName").innerText = foodName;
+      document.getElementById("foodName").innerText = rawLabel;
       document.getElementById("foodConfidence").innerText =
         "Confidence: " + confidence.toFixed(1) + "%";
 
-      const nutrition =
-        FOOD_NUTRITION_DB[foodName.toLowerCase()] || null;
+      // Try to match to your nutrition DB
+      const lower = rawLabel.toLowerCase();
+      let matchedKey = null;
 
-      if (nutrition) {
+      for (const key of Object.keys(FOOD_NUTRITION_DB)) {
+        if (lower.includes(key)) {
+          matchedKey = key;
+          break;
+        }
+      }
+
+      if (matchedKey) {
+        const nutrition = FOOD_NUTRITION_DB[matchedKey];
         renderNutrition(nutrition);
         renderVerdict(nutrition);
         renderAlternative(nutrition);
@@ -112,342 +151,112 @@ async function processImage(imageDataURL) {
 }
 
 /* ============================================================
-   BARCODE SCANNING (QUAGGA + OPENFOODFACTS)
+   BARCODE SCANNING (FREE)
 ============================================================ */
-let quaggaRunning = false;
-
 barcodeBtn.addEventListener("click", () => {
-  if (quaggaRunning) return;
-  startBarcodeScanner();
-});
-
-scanAgainBtn.addEventListener("click", () => {
-  location.reload();
-});
-
-function startBarcodeScanner() {
   loadingBox.classList.remove("hidden");
-  loadingBox.innerText = "Point the camera at the barcode…";
-  resultSection.classList.remove("hidden");
+  loadingBox.innerText = "Scanning barcode…";
 
   Quagga.init(
     {
       inputStream: {
         name: "Live",
         type: "LiveStream",
-        target: video,
-        constraints: {
-          facingMode: "environment"
-        }
+        target: video
       },
       decoder: {
-        readers: ["ean_reader", "ean_8_reader", "upc_reader"]
+        readers: ["ean_reader", "ean_8_reader", "code_128_reader"]
       }
     },
-    err => {
+    function (err) {
       if (err) {
         console.error(err);
-        alert("Barcode scanner error: " + err);
-        loadingBox.classList.add("hidden");
+        loadingBox.innerText = "Barcode scanner error.";
         return;
       }
       Quagga.start();
-      quaggaRunning = true;
     }
   );
 
-  Quagga.onDetected(async data => {
-    if (!data || !data.codeResult || !data.codeResult.code) return;
-
+  Quagga.onDetected(async function (data) {
     const code = data.codeResult.code;
+    Quagga.stop();
+
     loadingBox.innerText = "Barcode detected: " + code;
 
-    Quagga.stop();
-    quaggaRunning = false;
-
-    await fetchOpenFoodFacts(code);
+    fetchOpenFoodFacts(code);
   });
-}
-
-/* ============================================================
-   OPENFOODFACTS LOOKUP
-============================================================ */
-async function fetchOpenFoodFacts(barcode) {
-  loadingBox.innerText = "Fetching nutrition…";
-
-  try {
-    const res = await fetch(
-      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
-    );
-    const json = await res.json();
-
-    if (!json.product) {
-      loadingBox.innerText = "Product not found.";
-      return;
-    }
-
-    const p = json.product.nutriments || {};
-
-    const nutrition = {
-      calories: p["energy-kcal_100g"] || 0,
-      fat: p.fat_100g || 0,
-      satFat: p["saturated-fat_100g"] || 0,
-      carbs: p.carbohydrates_100g || 0,
-      sugar: p.sugars_100g || 0,
-      protein: p.proteins_100g || 0,
-      sodium: (p.sodium_100g || 0) * 1000
-    };
-
-    document.getElementById("foodName").innerText =
-      json.product.product_name || "Unknown Product";
-    document.getElementById("foodConfidence").innerText =
-      "Barcode: " + barcode;
-
-    renderNutrition(nutrition);
-    renderVerdict(nutrition);
-    renderAlternative(nutrition);
-    updateWeeklyCalories(nutrition.calories);
-
-    loadingBox.classList.add("hidden");
-    scanAgainBtn.classList.remove("hidden");
-  } catch (err) {
-    console.error(err);
-    loadingBox.innerText = "Error fetching product.";
-  }
-}
-
-/* ============================================================
-   NUTRITION CARD RENDER
-============================================================ */
-function renderNutrition(n) {
-  document.getElementById("nutritionCard").innerHTML = `
-    <p><strong>Calories:</strong> ${n.calories}</p>
-    <p><strong>Fat:</strong> ${n.fat} g</p>
-    <p><strong>Saturated Fat:</strong> ${n.satFat} g</p>
-    <p><strong>Carbs:</strong> ${n.carbs} g</p>
-    <p><strong>Sugar:</strong> ${n.sugar} g</p>
-    <p><strong>Protein:</strong> ${n.protein} g</p>
-    <p><strong>Sodium:</strong> ${n.sodium} mg</p>
-  `;
-}
-
-/* ============================================================
-   HEALTH VERDICT (Cholesterol + BP)
-============================================================ */
-function renderVerdict(n) {
-  let verdict = "";
-  let healthy = true;
-
-  if (n.satFat > 5) {
-    verdict += "⚠️ High saturated fat — not ideal for cholesterol.<br>";
-    healthy = false;
-  } else if (n.satFat > 2) {
-    verdict += "⚠️ Moderate saturated fat — caution.<br>";
-  } else {
-    verdict += "👍 Good for cholesterol.<br>";
-  }
-
-  if (n.sodium > 800) {
-    verdict += "⚠️ High sodium — not ideal for blood pressure.";
-    healthy = false;
-  } else if (n.sodium > 400) {
-    verdict += "⚠️ Moderate sodium — caution.";
-  } else {
-    verdict += "👍 Good for blood pressure.";
-  }
-
-  document.getElementById("verdictText").innerHTML = verdict;
-
-  const spoken = verdict.replace(/<br>/g, ". ");
-  if (typeof speak === "function") {
-    speak(spoken);
-  }
-
-  if (healthy) {
-    document.getElementById("plantPointBox").classList.remove("hidden");
-    addPlantPoint();
-  } else {
-    document.getElementById("plantPointBox").classList.add("hidden");
-  }
-}
-
-/* ============================================================
-   ALTERNATIVE SUGGESTIONS
-============================================================ */
-function renderAlternative(n) {
-  let alt = "";
-
-  if (n.sodium > 800) {
-    alt = "Try low-sodium options like beans, lentils, or fresh chicken.";
-  } else if (n.satFat > 5) {
-    alt = "Try low-fat yogurt, cottage cheese, or lean meats.";
-  } else if (n.sugar > 20) {
-    alt = "Try fruit, yogurt, or nuts instead.";
-  } else {
-    alt = "This is already a healthy choice!";
-  }
-
-  document.getElementById("alternativeText").innerText = alt;
-}
-
-/* ============================================================
-   PLANT POINTS
-============================================================ */
-function addPlantPoint() {
-  let points = Number(localStorage.getItem("plantPoints") || 0);
-  points++;
-  localStorage.setItem("plantPoints", points);
-}
-
-/* ============================================================
-   WEEKLY CALORIES TRACKER
-============================================================ */
-let weeklyData =
-  JSON.parse(localStorage.getItem("weeklyCalories")) || {
-    days: [0, 0, 0, 0, 0, 0, 0]
-  };
-
-function updateWeeklyCalories(calories) {
-  const today = new Date().getDay();
-  weeklyData.days[today] += calories;
-  localStorage.setItem("weeklyCalories", JSON.stringify(weeklyData));
-  updateChart();
-}
-
-/* ============================================================
-   CALORIE GOAL
-============================================================ */
-const goalInput = document.getElementById("calorieGoalInput");
-const savedGoal = localStorage.getItem("calorieGoal");
-if (savedGoal) goalInput.value = savedGoal;
-
-document.getElementById("saveGoalBtn").addEventListener("click", () => {
-  const goal = Number(goalInput.value);
-  localStorage.setItem("calorieGoal", goal);
-  alert("Calorie goal saved!");
 });
 
 /* ============================================================
-   WEEKLY CHART (Chart.js)
+   OPENFOODFACTS (FREE BARCODE NUTRITION)
 ============================================================ */
-let chart;
+async function fetchOpenFoodFacts(code) {
+  try {
+    const res = await fetch(
+      `https://world.openfoodfacts.org/api/v0/product/${code}.json`
+    );
+    const data = await res.json();
 
-function updateChart() {
-  const ctx = document.getElementById("weeklyChart").getContext("2d");
-
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      datasets: [
-        {
-          label: "Calories",
-          data: weeklyData.days,
-          borderColor: "#0078ff",
-          backgroundColor: "rgba(0,120,255,0.2)",
-          borderWidth: 3,
-          tension: 0.3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true }
-      }
+    if (!data.product) {
+      document.getElementById("nutritionCard").innerHTML =
+        "<p>No product found.</p>";
+      return;
     }
-  });
+
+    const product = data.product;
+
+    document.getElementById("foodName").innerText = product.product_name || "Unknown Product";
+
+    document.getElementById("nutritionCard").innerHTML = `
+      <p>Calories: ${product.nutriments["energy-kcal"] || "?"}</p>
+      <p>Sugar: ${product.nutriments.sugars || "?"} g</p>
+      <p>Fat: ${product.nutriments.fat || "?"} g</p>
+      <p>Protein: ${product.nutriments.proteins || "?"} g</p>
+    `;
+
+    loadingBox.classList.add("hidden");
+  } catch (err) {
+    console.error(err);
+    loadingBox.innerText = "Error loading product.";
+  }
 }
 
-updateChart();
+/* ============================================================
+   RENDER FUNCTIONS
+============================================================ */
+function renderNutrition(n) {
+  document.getElementById("nutritionCard").innerHTML = `
+    <p>Calories: ${n.calories}</p>
+    <p>Fat: ${n.fat} g</p>
+    <p>Sugar: ${n.sugar} g</p>
+    <p>Protein: ${n.protein} g</p>
+  `;
+}
+
+function renderVerdict(n) {
+  let verdict = "Balanced choice.";
+
+  if (n.sugar > 15) verdict = "High sugar — eat in moderation.";
+  if (n.fat > 10) verdict = "High fat — be careful.";
+
+  document.getElementById("verdictText").innerText = verdict;
+}
+
+function renderAlternative(n) {
+  document.getElementById("alternativeText").innerText =
+    "Try a lower‑sugar or lower‑fat option.";
+}
+
+function updateWeeklyCalories(cal) {
+  console.log("Calories added:", cal);
+}
 
 /* ============================================================
-   FOOD LABELS + SIMPLE NUTRITION DB
+   SCAN AGAIN
 ============================================================ */
-const FOOD_LABELS = [
-  "apple",
-  "banana",
-  "bread",
-  "cheese",
-  "chicken",
-  "pasta",
-  "salad",
-  "yogurt"
-];
-
-const FOOD_NUTRITION_DB = {
-  "apple": {
-    calories: 95,
-    fat: 0.3,
-    satFat: 0,
-    carbs: 25,
-    sugar: 19,
-    protein: 0.5,
-    sodium: 2
-  },
-  "banana": {
-    calories: 105,
-    fat: 0.4,
-    satFat: 0.1,
-    carbs: 27,
-    sugar: 14,
-    protein: 1.3,
-    sodium: 1
-  },
-  "bread": {
-    calories: 80,
-    fat: 1,
-    satFat: 0.2,
-    carbs: 15,
-    sugar: 2,
-    protein: 3,
-    sodium: 150
-  },
-  "cheese": {
-    calories: 113,
-    fat: 9,
-    satFat: 6,
-    carbs: 1,
-    sugar: 0,
-    protein: 7,
-    sodium: 180
-  },
-  "chicken": {
-    calories: 165,
-    fat: 3.6,
-    satFat: 1,
-    carbs: 0,
-    sugar: 0,
-    protein: 31,
-    sodium: 75
-  },
-  "pasta": {
-    calories: 200,
-    fat: 1.2,
-    satFat: 0.2,
-    carbs: 42,
-    sugar: 2,
-    protein: 7,
-    sodium: 1
-  },
-  "salad": {
-    calories: 33,
-    fat: 0.4,
-    satFat: 0.1,
-    carbs: 6,
-    sugar: 2,
-    protein: 2,
-    sodium: 20
-  },
-  "yogurt": {
-    calories: 59,
-    fat: 0.4,
-    satFat: 0.2,
-    carbs: 3.6,
-    sugar: 3.2,
-    protein: 10,
-    sodium: 36
-  }
-};
+scanAgainBtn.addEventListener("click", () => {
+  resultSection.classList.add("hidden");
+  scanAgainBtn.classList.add("hidden");
+  loadingBox.classList.add("hidden");
+});

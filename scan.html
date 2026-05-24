@@ -8,17 +8,17 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- TensorFlow.js (for on-device AI) -->
+  <!-- TensorFlow.js -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
 
-  <!-- Chart.js (for weekly calories chart) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Custom CSS (Part 2 will add small tweaks) -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="scan.css" />
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gray-100 pb-24">
 
   <!-- PAGE HEADER -->
   <header class="p-4 bg-white shadow-md">
@@ -32,12 +32,19 @@
       <video id="cameraFeed" autoplay playsinline class="w-full h-72 object-cover"></video>
     </div>
 
-    <div class="flex justify-center mt-4">
+    <div class="flex justify-center mt-4 space-x-4">
       <button id="captureBtn"
         class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold shadow-md">
         Capture
       </button>
+
+      <button id="barcodeBtn"
+        class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold shadow-md">
+        Barcode
+      </button>
     </div>
+
+    <p id="loadingBox" class="text-center text-gray-700 mt-3 hidden"></p>
   </section>
 
   <!-- SCAN RESULT SECTION -->
@@ -53,9 +60,7 @@
     <!-- NUTRITION CARD -->
     <div class="bg-white p-4 rounded-xl shadow-md mb-4">
       <h3 class="text-lg font-semibold text-gray-800 mb-2">Nutrition</h3>
-      <div id="nutritionCard" class="text-gray-700 text-sm space-y-1">
-        <!-- JS will fill this -->
-      </div>
+      <div id="nutritionCard" class="text-gray-700 text-sm space-y-1"></div>
     </div>
 
     <!-- HEALTH VERDICT -->
@@ -74,6 +79,11 @@
     <div class="bg-green-100 p-4 rounded-xl shadow-md mb-4 hidden" id="plantPointBox">
       <p class="text-green-800 font-semibold">🌱 Healthy choice! You earned a plant point.</p>
     </div>
+
+    <button id="scanAgainBtn"
+      class="bg-gray-800 text-white px-6 py-3 rounded-full font-semibold shadow-md w-full hidden">
+      Scan Again
+    </button>
   </section>
 
   <!-- WEEKLY CALORIES SECTION -->
@@ -95,7 +105,36 @@
     </div>
   </section>
 
-  <!-- JS LOGIC (Part 3 will fill this) -->
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav fixed bottom-0 left-0 w-full bg-white shadow-lg flex justify-around items-center py-3">
+
+    <button class="nav-btn text-gray-700 font-semibold" onclick="window.location.href='index.html'">
+      Meals
+    </button>
+
+    <button class="nav-btn text-gray-700 font-semibold" onclick="window.location.href='health.html'">
+      Health
+    </button>
+
+    <div class="center-wrap">
+      <a href="scan.html">
+        <button class="scan-btn bg-blue-600 text-white px-6 py-3 rounded-full shadow-md">
+          Scan
+        </button>
+      </a>
+    </div>
+
+    <button class="nav-btn text-gray-700 font-semibold" onclick="window.location.href='plants.html'">
+      Plants
+    </button>
+
+    <button class="nav-btn text-gray-700 font-semibold" onclick="window.location.href='profile.html'">
+      Profile
+    </button>
+
+  </nav>
+
+  <!-- JS LOGIC -->
   <script src="scan.js"></script>
 
 </body>

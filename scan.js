@@ -26,21 +26,21 @@ async function startCamera() {
 startCamera();
 
 /* ============================================================
-   LOAD MOBILENET MODEL (FREE)
+   LOAD MOBILENET MODEL (FREE + WORKING ON VERCEL)
 ============================================================ */
 let model;
 
 async function loadModel() {
   model = await tf.loadGraphModel(
-    "https://tfhub.dev/google/imagenet/mobilenet_v2_140_224/classification/5",
-    { fromTFHub: true }
+    "https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224/model.json"
   );
+  console.log("Model loaded!");
 }
 
 loadModel();
 
 /* ============================================================
-   LOAD IMAGENET LABELS (FREE, 1000 CLASSES)
+   LOAD IMAGENET LABELS (FREE)
 ============================================================ */
 let imagenetLabels = [];
 
@@ -50,6 +50,7 @@ async function loadLabels() {
       "https://storage.googleapis.com/download.tensorflow.org/data/imagenet_class_names.json"
     );
     imagenetLabels = await res.json();
+    console.log("Labels loaded!");
   } catch (e) {
     console.error("Error loading labels", e);
   }
@@ -99,15 +100,16 @@ async function processImage(imageDataURL) {
 
   img.onload = async () => {
     try {
-      const tensor = tf.browser.fromPixels(img)
-        .resizeNearestNeighbor([224, 224])
-        .toFloat()
-        .expandDims();
-
       if (!model || !imagenetLabels.length) {
         loadingBox.innerText = "AI model not ready yet.";
         return;
       }
+
+      const tensor = tf.browser.fromPixels(img)
+        .resizeNearestNeighbor([224, 224])
+        .toFloat()
+        .div(255.0)
+        .expandDims();
 
       const prediction = await model.predict(tensor).data();
       const topIndex = prediction.indexOf(Math.max(...prediction));

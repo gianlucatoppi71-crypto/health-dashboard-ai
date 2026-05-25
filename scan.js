@@ -26,13 +26,13 @@ async function startCamera() {
 startCamera();
 
 /* ============================================================
-   LOAD MOBILENET MODEL (FREE + WORKING ON VERCEL)
+   LOAD MOBILENET MODEL (jsDelivr — WORKS EVERYWHERE)
 ============================================================ */
 let model;
 
 async function loadModel() {
   model = await tf.loadGraphModel(
-    "https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224/model.json"
+    "https://cdn.jsdelivr.net/gh/tensorflow/tfjs-models@master/mobilenet_v2_1.0_224/model.json"
   );
   console.log("Model loaded!");
 }
@@ -40,14 +40,14 @@ async function loadModel() {
 loadModel();
 
 /* ============================================================
-   LOAD IMAGENET LABELS (FREE)
+   LOAD IMAGENET LABELS (jsDelivr — WORKS EVERYWHERE)
 ============================================================ */
 let imagenetLabels = [];
 
 async function loadLabels() {
   try {
     const res = await fetch(
-      "https://storage.googleapis.com/download.tensorflow.org/data/imagenet_class_names.json"
+      "https://cdn.jsdelivr.net/gh/tensorflow/tfjs-models@master/mobilenet_v2_1.0_224/imagenet_class_names.json"
     );
     imagenetLabels = await res.json();
     console.log("Labels loaded!");
@@ -208,47 +208,4 @@ async function fetchOpenFoodFacts(code) {
 
     document.getElementById("nutritionCard").innerHTML = `
       <p>Calories: ${p.nutriments["energy-kcal"] || "?"}</p>
-      <p>Sugar: ${p.nutriments.sugars || "?"} g</p>
-      <p>Fat: ${p.nutriments.fat || "?"} g</p>
-      <p>Protein: ${p.nutriments.proteins || "?"} g</p>
-    `;
-
-    loadingBox.classList.add("hidden");
-  } catch (err) {
-    console.error(err);
-    loadingBox.innerText = "Error loading product.";
-  }
-}
-
-/* ============================================================
-   RENDER FUNCTIONS
-============================================================ */
-function renderNutrition(n) {
-  document.getElementById("nutritionCard").innerHTML = `
-    <p>Calories: ${n.calories}</p>
-    <p>Fat: ${n.fat} g</p>
-    <p>Sugar: ${n.sugar} g</p>
-    <p>Protein: ${n.protein} g</p>
-  `;
-}
-
-function renderVerdict(n) {
-  let verdict = "Balanced choice.";
-  if (n.sugar > 15) verdict = "High sugar — eat in moderation.";
-  if (n.fat > 10) verdict = "High fat — be careful.";
-  document.getElementById("verdictText").innerText = verdict;
-}
-
-function renderAlternative(n) {
-  document.getElementById("alternativeText").innerText =
-    "Try a lower‑sugar or lower‑fat option.";
-}
-
-/* ============================================================
-   SCAN AGAIN
-============================================================ */
-scanAgainBtn.addEventListener("click", () => {
-  resultSection.classList.add("hidden");
-  scanAgainBtn.classList.add("hidden");
-  loadingBox.classList.add("hidden");
-});
+      <p>Sugar:

@@ -59,7 +59,7 @@ async function loadLabels() {
 loadLabels();
 
 /* ============================================================
-   YOUR FREE NUTRITION DATABASE
+   NUTRITION DATABASE
 ============================================================ */
 const FOOD_NUTRITION_DB = {
   apple: { calories: 95, fat: 0.3, sugar: 19, protein: 0.5 },
@@ -73,7 +73,7 @@ const FOOD_NUTRITION_DB = {
 };
 
 /* ============================================================
-   CAPTURE IMAGE FROM CAMERA
+   CAPTURE IMAGE
 ============================================================ */
 captureBtn.addEventListener("click", () => {
   const canvas = document.createElement("canvas");
@@ -88,7 +88,7 @@ captureBtn.addEventListener("click", () => {
 });
 
 /* ============================================================
-   PROCESS IMAGE WITH FREE AI MODEL
+   PROCESS IMAGE WITH AI
 ============================================================ */
 async function processImage(imageDataURL) {
   resultSection.classList.remove("hidden");
@@ -121,23 +121,18 @@ async function processImage(imageDataURL) {
       document.getElementById("foodConfidence").innerText =
         "Confidence: " + confidence.toFixed(1) + "%";
 
-      // Try to match to your nutrition DB
       const lower = rawLabel.toLowerCase();
       let matchedKey = null;
 
       for (const key of Object.keys(FOOD_NUTRITION_DB)) {
-        if (lower.includes(key)) {
-          matchedKey = key;
-          break;
-        }
+        if (lower.includes(key)) matchedKey = key;
       }
 
       if (matchedKey) {
-        const nutrition = FOOD_NUTRITION_DB[matchedKey];
-        renderNutrition(nutrition);
-        renderVerdict(nutrition);
-        renderAlternative(nutrition);
-        updateWeeklyCalories(nutrition.calories);
+        const n = FOOD_NUTRITION_DB[matchedKey];
+        renderNutrition(n);
+        renderVerdict(n);
+        renderAlternative(n);
       } else {
         document.getElementById("nutritionCard").innerHTML =
           "<p>No nutrition data available for this food.</p>";
@@ -145,6 +140,7 @@ async function processImage(imageDataURL) {
 
       loadingBox.classList.add("hidden");
       scanAgainBtn.classList.remove("hidden");
+
     } catch (e) {
       console.error(e);
       loadingBox.innerText = "Error analyzing image.";
@@ -153,7 +149,7 @@ async function processImage(imageDataURL) {
 }
 
 /* ============================================================
-   BARCODE SCANNING (FREE)
+   BARCODE SCANNING
 ============================================================ */
 barcodeBtn.addEventListener("click", () => {
   loadingBox.classList.remove("hidden");
@@ -191,7 +187,7 @@ barcodeBtn.addEventListener("click", () => {
 });
 
 /* ============================================================
-   OPENFOODFACTS (FREE BARCODE NUTRITION)
+   OPENFOODFACTS API
 ============================================================ */
 async function fetchOpenFoodFacts(code) {
   try {
@@ -206,15 +202,15 @@ async function fetchOpenFoodFacts(code) {
       return;
     }
 
-    const product = data.product;
+    const p = data.product;
 
-    document.getElementById("foodName").innerText = product.product_name || "Unknown Product";
+    document.getElementById("foodName").innerText = p.product_name || "Unknown Product";
 
     document.getElementById("nutritionCard").innerHTML = `
-      <p>Calories: ${product.nutriments["energy-kcal"] || "?"}</p>
-      <p>Sugar: ${product.nutriments.sugars || "?"} g</p>
-      <p>Fat: ${product.nutriments.fat || "?"} g</p>
-      <p>Protein: ${product.nutriments.proteins || "?"} g</p>
+      <p>Calories: ${p.nutriments["energy-kcal"] || "?"}</p>
+      <p>Sugar: ${p.nutriments.sugars || "?"} g</p>
+      <p>Fat: ${p.nutriments.fat || "?"} g</p>
+      <p>Protein: ${p.nutriments.proteins || "?"} g</p>
     `;
 
     loadingBox.classList.add("hidden");
@@ -238,20 +234,14 @@ function renderNutrition(n) {
 
 function renderVerdict(n) {
   let verdict = "Balanced choice.";
-
   if (n.sugar > 15) verdict = "High sugar — eat in moderation.";
   if (n.fat > 10) verdict = "High fat — be careful.";
-
   document.getElementById("verdictText").innerText = verdict;
 }
 
 function renderAlternative(n) {
   document.getElementById("alternativeText").innerText =
     "Try a lower‑sugar or lower‑fat option.";
-}
-
-function updateWeeklyCalories(cal) {
-  console.log("Calories added:", cal);
 }
 
 /* ============================================================

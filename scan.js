@@ -23,19 +23,21 @@ startCamera();
 let model;
 async function loadModel() {
   model = await tf.loadGraphModel(
-    "https://cdn.jsdelivr.net/gh/tensorflow/tfjs-models@master/mobilenet_v2_1.0_224/model.json"
+    "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet/dist/mobilenet_v2_1.0_224/model.json"
   );
-  console.log("Model loaded");
+  console.log("Model loaded!");
 }
+
 loadModel();
 
 // ===== LABELS (jsDelivr) =====
 let imagenetLabels = [];
 async function loadLabels() {
   try {
-    const res = await fetch(
-      "https://cdn.jsdelivr.net/gh/tensorflow/tfjs-models@master/mobilenet_v2_1.0_224/imagenet_class_names.json"
-    );
+   const res = await fetch(
+  "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet/dist/imagenet_class_names.json"
+);
+
     imagenetLabels = await res.json();
     console.log("Labels loaded");
   } catch (e) {

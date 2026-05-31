@@ -1,89 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Food Scanner</title>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- TensorFlow.js MUST LOAD BEFORE scan.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-
-  <!-- QuaggaJS (FREE barcode scanner) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="scan.css" />
+    <meta charset="UTF-8" />
+    <title>Scan – Health Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="scan.css" />
 </head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="top-bar">
+            <h1>Scan</h1>
+            <p class="top-subtitle">Food & barcode health analysis</p>
+        </header>
 
-<body class="bg-gray-100 pb-24">
+        <!-- SCAN MODE TOGGLE -->
+        <div class="scan-mode-toggle">
+            <button id="cameraModeBtn" class="mode-btn active">Camera</button>
+            <button id="barcodeModeBtn" class="mode-btn">Barcode</button>
+        </div>
 
-  <header class="p-4 bg-white shadow-md">
-    <h1 class="text-2xl font-bold text-blue-600">AI Food Scanner</h1>
-    <p class="text-gray-600 text-sm">Scan food or barcode for full nutrition & health verdict</p>
-  </header>
+        <!-- CAMERA AREA -->
+        <section id="cameraSection" class="scan-section active">
+            <div class="camera-wrapper">
+                <video id="cameraPreview" autoplay playsinline></video>
+                <button id="captureBtn" class="capture-btn">Scan Food</button>
+            </div>
+        </section>
 
-  <section class="p-4">
-    <div class="bg-black rounded-xl overflow-hidden shadow-md">
-      <video id="cameraFeed" autoplay playsinline class="w-full h-72 object-cover"></video>
+        <!-- BARCODE AREA -->
+        <section id="barcodeSection" class="scan-section">
+            <div class="camera-wrapper">
+                <video id="barcodePreview" autoplay playsinline></video>
+                <button id="startBarcodeBtn" class="capture-btn">Start Barcode Scan</button>
+            </div>
+        </section>
+
+        <!-- LOADING -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p>Analysing food…</p>
+        </div>
+
+        <!-- RESULTS CAROUSEL -->
+        <section id="resultsSection" class="results-section hidden">
+            <div class="carousel">
+                <div class="carousel-track" id="carouselTrack">
+                    <!-- Card 1 – Food Identification -->
+                    <article class="card full-card" data-card="food">
+                        <h2>Food identification</h2>
+                        <p><span class="label">Food:</span> <span id="foodName">–</span></p>
+                        <p><span class="label">Confidence:</span> <span id="foodConfidence">–</span></p>
+                        <p><span class="label">Category:</span> <span id="foodCategory">–</span></p>
+                        <p><span class="label">Portion:</span> <span id="foodPortion">–</span></p>
+                    </article>
+
+                    <!-- Card 2 – Calories & Goal -->
+                    <article class="card full-card" data-card="calories">
+                        <h2>Calories & goal</h2>
+                        <p><span class="label">This food:</span> <span id="foodCalories">–</span> kcal</p>
+                        <p><span class="label">Today:</span> <span id="todayCalories">0</span> / <span id="calorieGoal">–</span> kcal</p>
+                        <div class="progress-bar">
+                            <div id="calorieProgressFill" class="progress-fill"></div>
+                        </div>
+                        <p id="calorieStatusText" class="status-text">Waiting for scan…</p>
+                    </article>
+
+                    <!-- Card 3 – Macronutrients -->
+                    <article class="card full-card" data-card="macros">
+                        <h2>Macronutrients</h2>
+                        <p><span class="label">Protein:</span> <span id="protein">–</span> g</p>
+                        <p><span class="label">Carbohydrates:</span> <span id="carbs">–</span> g</p>
+                        <p><span class="label">Sugar:</span> <span id="sugar">–</span> g</p>
+                        <p><span class="label">Fat:</span> <span id="fat">–</span> g</p>
+                        <p><span class="label">Fibre:</span> <span id="fibre">–</span> g</p>
+                        <p><span class="label">Salt:</span> <span id="salt">–</span> g</p>
+                    </article>
+
+                    <!-- Card 4 – Blood Pressure Impact -->
+                    <article class="card full-card" data-card="bp">
+                        <h2>Blood pressure impact</h2>
+                        <p id="bpImpactText">Waiting for scan…</p>
+                    </article>
+
+                    <!-- Card 5 – Cholesterol Impact -->
+                    <article class="card full-card" data-card="chol">
+                        <h2>Cholesterol impact</h2>
+                        <p id="cholImpactText">Waiting for scan…</p>
+                    </article>
+
+                    <!-- Card 6 – Cardiovascular Risk -->
+                    <article class="card full-card" data-card="cv">
+                        <h2>Cardiovascular risk</h2>
+                        <p id="cvRiskText">Shown when food increases long‑term risk.</p>
+                    </article>
+
+                    <!-- Card 7 – Why Limit This Food -->
+                    <article class="card full-card" data-card="limit">
+                        <h2>Why limit this food</h2>
+                        <p id="limitText">Shown when food is not heart‑friendly.</p>
+                    </article>
+
+                    <!-- Card 8 – Healthier Alternatives -->
+                    <article class="card full-card" data-card="alternatives">
+                        <h2>Healthier alternatives</h2>
+                        <ul id="alternativesList"></ul>
+                    </article>
+
+                    <!-- Card 9 – AI Doctor Summary -->
+                    <article class="card full-card" data-card="summary">
+                        <h2>Doctor‑style summary</h2>
+                        <p id="doctorSummaryText">A professional summary will appear here after a scan.</p>
+                    </article>
+
+                    <!-- Card 10 – Fasting Suggestion -->
+                    <article class="card full-card" data-card="fasting">
+                        <h2>Fasting suggestion</h2>
+                        <p id="fastingText">Fasting advice appears when intake and goals suggest it may help.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOTTOM MENU -->
+        <nav class="bottom-menu">
+            <a href="index.html" class="menu-item">
+                <span class="icon">🏠</span>
+                <span class="menu-label">Home</span>
+            </a>
+            <a href="health.html" class="menu-item">
+                <span class="icon">❤️</span>
+                <span class="menu-label">Health</span>
+            </a>
+            <a href="scan.html" class="menu-item active scan-button">
+                <span class="icon">📷</span>
+                <span class="menu-label">Scan</span>
+            </a>
+            <a href="profile.html" class="menu-item">
+                <span class="icon">👤</span>
+                <span class="menu-label">Profile</span>
+            </a>
+        </nav>
     </div>
 
-    <div class="flex justify-center mt-4 space-x-4">
-      <button id="captureBtn"
-        class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold shadow-md">
-        Capture
-      </button>
-
-      <button id="barcodeBtn"
-        class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold shadow-md">
-        Barcode
-      </button>
-    </div>
-
-    <p id="loadingBox" class="text-center text-gray-700 mt-3 hidden"></p>
-  </section>
-
-  <section id="resultSection" class="p-4 hidden">
-    <h2 class="text-xl font-bold text-gray-800 mb-2">Scan Result</h2>
-
-    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
-      <h3 class="text-lg font-semibold text-blue-600" id="foodName">Food Name</h3>
-      <p class="text-gray-600 text-sm" id="foodConfidence"></p>
-    </div>
-
-    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
-      <h3 class="text-lg font-semibold text-gray-800 mb-2">Nutrition</h3>
-      <div id="nutritionCard" class="text-gray-700 text-sm space-y-1"></div>
-    </div>
-
-    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
-      <h3 class="text-lg font-semibold text-gray-800 mb-2">Health Verdict</h3>
-      <p id="verdictText" class="text-gray-700"></p>
-    </div>
-
-    <div class="bg-white p-4 rounded-xl shadow-md mb-4">
-      <h3 class="text-lg font-semibold text-gray-800 mb-2">Better Alternative</h3>
-      <p id="alternativeText" class="text-gray-700"></p>
-    </div>
-
-    <button id="scanAgainBtn"
-      class="bg-gray-800 text-white px-6 py-3 rounded-full font-semibold shadow-md w-full hidden">
-      Scan Again
-    </button>
-  </section>
-
-  <nav class="bottom-nav fixed bottom-0 left-0 w-full bg-white shadow-lg flex justify-around items-center py-3">
-    <button onclick="window.location.href='index.html'">Meals</button>
-    <button onclick="window.location.href='health.html'">Health</button>
-    <a href="scan.html"><button class="bg-blue-600 text-white px-6 py-3 rounded-full shadow-md">Scan</button></a>
-    <button onclick="window.location.href='plants.html'">Plants</button>
-    <button onclick="window.location.href='profile.html'">Profile</button>
-  </nav>
-
-  <!-- Your script MUST be last -->
-  <script src="scan.js"></script>
-
+    <!-- ZXing for barcode -->
+    <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
+    <script src="scan.js"></script>
 </body>
 </html>

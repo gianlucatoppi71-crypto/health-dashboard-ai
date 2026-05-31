@@ -44,13 +44,10 @@ const alternativesList = document.getElementById("alternativesList");
 const doctorSummaryText = document.getElementById("doctorSummaryText");
 const fastingText = document.getElementById("fastingText");
 
-// INITIAL CALORIE GOAL (will be replaced by onboarding later)
+// INITIAL CALORIE GOAL
 function getCalorieGoal() {
     const stored = Number(localStorage.getItem("calorieGoal"));
-    if (!stored || stored < 800) {
-        // temporary default until onboarding exists
-        return 2000;
-    }
+    if (!stored || stored < 800) return 2000;
     return stored;
 }
 
@@ -59,18 +56,13 @@ async function startCamera(videoEl, forBarcode = false) {
     stopStreams();
     try {
         const constraints = {
-            video: {
-                facingMode: "environment"
-            },
+            video: { facingMode: "environment" },
             audio: false
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoEl.srcObject = stream;
-        if (forBarcode) {
-            barcodeStream = stream;
-        } else {
-            currentStream = stream;
-        }
+        if (forBarcode) barcodeStream = stream;
+        else currentStream = stream;
     } catch (err) {
         console.error("Camera error:", err);
         alert("Unable to access camera. Please check permissions.");
@@ -119,9 +111,7 @@ function resizeImageFromVideo(videoEl, maxWidth = 640, maxHeight = 640) {
         ctx.drawImage(videoEl, 0, 0, width, height);
 
         canvas.toBlob(
-            blob => {
-                resolve(blob);
-            },
+            blob => resolve(blob),
             "image/jpeg",
             0.8
         );
@@ -133,25 +123,21 @@ async function analyseFoodFromCamera() {
     loadingOverlay.classList.remove("hidden");
     try {
         const blob = await resizeImageFromVideo(cameraPreview);
-        if (!blob) {
-            throw new Error("No image captured.");
-        }
+        if (!blob) throw new Error("No image captured.");
 
         const formData = new FormData();
         formData.append("file", blob, "scan.jpg");
 
-        // TODO: replace with your real backend endpoint
-        const res = await fetch("YOUR_FOOD_SCAN_ENDPOINT_HERE", {
+        const res = await fetch("https://health-dashboard-ai.onrender.com/scan", {
             method: "POST",
             body: formData
         });
 
-        if (!res.ok) {
-            throw new Error("Scan failed");
-        }
+        if (!res.ok) throw new Error("Scan failed");
 
         const data = await res.json();
         handleFoodScanResult(data);
+
     } catch (err) {
         console.error(err);
         alert("There was a problem analysing this food. Please try again.");
@@ -160,24 +146,30 @@ async function analyseFoodFromCamera() {
     }
 }
 
-// HANDLE FOOD RESULT
+// HANDLE FOOD RESULT (UPDATED FOR YOLO)
 function handleFoodScanResult(data) {
-    // Example expected structure – adapt to your backend
-    const {
-        name = "Unknown food",
-        confidence = 0.0,
-        category = "–",
-        portion = "1 serving",
-        calories = 0,
-        protein = 0,
-        carbs = 0,
-        sugar = 0,
-        fat = 0,
-        fibre = 0,
-        salt = 0
-    } = data.food || {};
+    if (!data.success || !data.detections || data.detections.length === 0) {
+        alert("No food detected. Try again with a clearer image.");
+        return;
+    }
 
-    // Fill basic info
+    const det = data.detections[0];
+
+    const name = det.name || "Unknown food";
+    const confidence = det.confidence || 0;
+
+    // TEMPORARY PLACEHOLDERS (we will replace with real nutrition later)
+    const category = "General food";
+    const portion = "1 serving";
+    const calories = 150;
+    const protein = 2;
+    const carbs = 20;
+    const sugar = 10;
+    const fat = 5;
+    const fibre = 2;
+    const salt = 0.1;
+
+    // Fill UI
     foodNameEl.textContent = name;
     foodConfidenceEl.textContent = `${Math.round(confidence * 100)}%`;
     foodCategoryEl.textContent = category;
@@ -191,10 +183,8 @@ function handleFoodScanResult(data) {
     fibreEl.textContent = fibre.toFixed(1);
     saltEl.textContent = salt.toFixed(2);
 
-    // Update calories + goal
     updateCaloriesAndGoal(calories);
 
-    // Generate health logic
     const bpScore = computeBpScore(salt, potassiumFromCategory(category));
     const cholScore = computeCholScore(fat, saturatedFromCategory(category));
     const foodScore = computeFoodScore(calories, protein, fibre, sugar, salt);
@@ -204,7 +194,6 @@ function handleFoodScanResult(data) {
         (bpScore + cholScore + foodScore + calorieScore) / 4
     );
 
-    // Text explanations
     bpImpactText.textContent = buildBpText(salt, bpScore);
     cholImpactText.textContent = buildCholText(fat, cholScore);
     cvRiskText.textContent = buildCvRiskText(bpScore, cholScore, foodScore);
@@ -220,18 +209,15 @@ function handleFoodScanResult(data) {
     );
     fastingText.textContent = buildFastingText();
 
-    // Save to localStorage for AURA
     localStorage.setItem("foodScore", String(foodScore));
     localStorage.setItem("bpScore", String(bpScore));
     localStorage.setItem("cholScore", String(cholScore));
     localStorage.setItem("calorieScore", String(calorieScore));
     localStorage.setItem("healthScore", String(healthScore));
 
-    // Show results
     resultsSection.classList.remove("hidden");
     goToCard(0);
 }
-
 // CALORIE LOGIC
 function updateCaloriesAndGoal(foodCalories) {
     const goal = getCalorieGoal();
@@ -242,17 +228,14 @@ function updateCaloriesAndGoal(foodCalories) {
     todayCaloriesEl.textContent = Math.round(today);
     calorieGoalEl.textContent = goal;
 
-    const progress = Math.min((today / goal) * 100, 200); // cap at 200%
+    const progress = Math.min((today / goal) * 100, 200);
     calorieProgressFill.style.width = `${progress}%`;
 
     let status = "";
-    if (progress < 70) {
-        status = "You are within a comfortable range for today.";
-    } else if (progress < 100) {
-        status = "You are approaching your daily calorie goal.";
-    } else {
-        status = "You have exceeded your daily calorie goal. Consider lighter choices or fasting.";
-    }
+    if (progress < 70) status = "You are within a comfortable range for today.";
+    else if (progress < 100) status = "You are approaching your daily calorie goal.";
+    else status = "You have exceeded your daily calorie goal. Consider lighter choices or fasting.";
+
     calorieStatusText.textContent = status;
 }
 
@@ -261,18 +244,13 @@ function computeCalorieScore() {
     const today = Number(localStorage.getItem("todayCalories") || 0);
     if (!goal) return 50;
     const ratio = today / goal;
-    if (ratio <= 1) {
-        return Math.round(100 - (ratio - 0.7) * 100); // gentle drop near goal
-    }
-    if (ratio > 1 && ratio <= 1.5) {
-        return Math.round(70 - (ratio - 1) * 80);
-    }
+    if (ratio <= 1) return Math.round(100 - (ratio - 0.7) * 100);
+    if (ratio <= 1.5) return Math.round(70 - (ratio - 1) * 80);
     return 30;
 }
 
-// SIMPLE HEALTH SCORING HELPERS
+// HEALTH HELPERS
 function computeBpScore(salt, potassiumScore) {
-    // salt in g, potassiumScore 0–100
     let score = 100;
     if (salt > 2) score -= 25;
     if (salt > 4) score -= 25;
@@ -320,44 +298,28 @@ function clamp(v, min, max) {
 
 // TEXT BUILDERS
 function buildBpText(salt, bpScore) {
-    if (bpScore >= 75) {
-        return "This food is low in salt and generally supportive of healthy blood pressure.";
-    }
-    if (bpScore >= 50) {
-        return "This food has a moderate salt content. It is usually acceptable if eaten in moderation.";
-    }
+    if (bpScore >= 75) return "This food is low in salt and generally supportive of healthy blood pressure.";
+    if (bpScore >= 50) return "This food has a moderate salt content. It is usually acceptable if eaten in moderation.";
     return "This food is relatively high in salt and may contribute to raised blood pressure if eaten frequently.";
 }
 
 function buildCholText(fat, cholScore) {
-    if (cholScore >= 75) {
-        return "This food is relatively low in unhealthy fats and is compatible with cholesterol control.";
-    }
-    if (cholScore >= 50) {
-        return "This food contains some fat. It can fit into a balanced diet if portions are controlled.";
-    }
+    if (cholScore >= 75) return "This food is relatively low in unhealthy fats and is compatible with cholesterol control.";
+    if (cholScore >= 50) return "This food contains some fat. It can fit into a balanced diet if portions are controlled.";
     return "This food is high in fat that may raise LDL (“bad”) cholesterol if eaten regularly.";
 }
 
 function buildCvRiskText(bpScore, cholScore, foodScore) {
     const avg = (bpScore + cholScore + foodScore) / 3;
-    if (avg >= 75) {
-        return "This choice is not expected to significantly increase long‑term cardiovascular risk when eaten as part of a balanced diet.";
-    }
-    if (avg >= 50) {
-        return "If eaten often, this food may contribute to higher cardiovascular risk. Balancing it with heart‑healthy meals is advisable.";
-    }
+    if (avg >= 75) return "This choice is not expected to significantly increase long‑term cardiovascular risk when eaten as part of a balanced diet.";
+    if (avg >= 50) return "If eaten often, this food may contribute to higher cardiovascular risk. Balancing it with heart‑healthy meals is advisable.";
     return "Regular intake of foods like this may increase the risk of artery plaque, blood clots, stroke and heart attack over time.";
 }
 
 function buildLimitText(foodScore, bpScore, cholScore) {
     const avg = (foodScore + bpScore + cholScore) / 3;
-    if (avg >= 70) {
-        return "This food does not need strict limitation for most people when eaten in reasonable portions.";
-    }
-    if (avg >= 50) {
-        return "Limiting portion size and frequency can help protect blood pressure and cholesterol over the long term.";
-    }
+    if (avg >= 70) return "This food does not need strict limitation for most people when eaten in reasonable portions.";
+    if (avg >= 50) return "Limiting portion size and frequency can help protect blood pressure and cholesterol over the long term.";
     return "Because of its impact on salt, fat or calories, this food is best kept as an occasional choice rather than a daily habit.";
 }
 
@@ -391,16 +353,8 @@ function buildAlternativesList(category, ul) {
     });
 }
 
-function buildDoctorSummary(
-    name,
-    category,
-    bpScore,
-    cholScore,
-    foodScore,
-    calorieScore
-) {
+function buildDoctorSummary(name, category, bpScore, cholScore, foodScore, calorieScore) {
     const avg = Math.round((bpScore + cholScore + foodScore + calorieScore) / 4);
-    const cat = category || "this food";
 
     if (avg >= 75) {
         return `${name} appears generally compatible with heart health when eaten in appropriate portions. It is relatively favourable for blood pressure and cholesterol and can be included regularly as part of a balanced, varied diet.`;
@@ -425,7 +379,7 @@ function buildFastingText() {
     return "You have exceeded your daily calorie goal today. A structured overnight fast of around 14 hours, alongside lighter choices at the next meals, may help restore balance. People with diabetes or other medical conditions should always seek personalised medical advice before changing fasting patterns.";
 }
 
-// BARCODE SCANNING
+// BARCODE SCANNING (placeholder)
 let barcodeReader = null;
 let barcodeActive = false;
 
@@ -445,7 +399,7 @@ async function startBarcodeScanner() {
                 barcodeActive = false;
                 barcodeReader.reset();
                 stopStreams();
-                handleBarcodeResult(result.getText());
+                alert("Barcode scanning is not connected to nutrition yet.");
             }
         })
         .catch(err => {
@@ -455,27 +409,8 @@ async function startBarcodeScanner() {
         });
 }
 
-async function handleBarcodeResult(code) {
-    loadingOverlay.classList.remove("hidden");
-    try {
-        // TODO: replace with your real barcode nutrition endpoint
-        const res = await fetch(
-            `YOUR_BARCODE_ENDPOINT_HERE?code=${encodeURIComponent(code)}`
-        );
-        if (!res.ok) throw new Error("Barcode lookup failed");
-        const data = await res.json();
-        handleFoodScanResult(data);
-    } catch (err) {
-        console.error(err);
-        alert("Unable to retrieve nutrition data for this barcode.");
-    } finally {
-        loadingOverlay.classList.add("hidden");
-    }
-}
-
 // CAROUSEL SWIPE
 let startX = 0;
-let currentTranslate = 0;
 let isDragging = false;
 
 carouselTrack.addEventListener("touchstart", e => {
@@ -498,11 +433,8 @@ carouselTrack.addEventListener("touchend", e => {
     isDragging = false;
     const dx = e.changedTouches[0].clientX - startX;
     const threshold = 50;
-    if (dx > threshold && currentCardIndex > 0) {
-        currentCardIndex--;
-    } else if (dx < -threshold && currentCardIndex < totalCards - 1) {
-        currentCardIndex++;
-    }
+    if (dx > threshold && currentCardIndex > 0) currentCardIndex--;
+    else if (dx < -threshold && currentCardIndex < totalCards - 1) currentCardIndex++;
     goToCard(currentCardIndex);
 });
 
@@ -543,10 +475,8 @@ startBarcodeBtn.addEventListener("click", () => {
 
 // INIT
 window.addEventListener("load", () => {
-    // Start camera in camera mode by default
     startCamera(cameraPreview, false);
 
-    // Initialise calorie UI
     const goal = getCalorieGoal();
     const today = Number(localStorage.getItem("todayCalories") || 0);
     todayCaloriesEl.textContent = Math.round(today);

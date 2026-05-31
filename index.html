@@ -1,150 +1,755 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Scan – Health Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="scan.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HealthHub — Dashboard</title>
+
+<style>
+:root{
+  --accent:#42a5f5;
+  --accent-dark:#2b7bb8;
+  --bg:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+}
+
+html,body{
+  height:100%;margin:0;
+  font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+  background:#fff;color:var(--text);
+}
+
+.app{
+  display:flex;flex-direction:column;
+  height:100vh;max-width:480px;margin:0 auto;
+  border-left:1px solid #eee;border-right:1px solid #eee;
+}
+
+.topbar{
+  height:56px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;
+  border-bottom:1px solid #f0f3f7;background:#fff;
+}
+
+.content{flex:1;overflow:auto;padding:18px;}
+.tab{display:none;opacity:0;transition:opacity .25s;}
+.tab.active{display:block;opacity:1;}
+
+/* ------------------ AURA HEART RINGS ------------------ */
+.aura-wrap-new{
+  position:relative;
+  width:340px;
+  height:320px;
+  margin:0 auto;
+  margin-top:10px;
+}
+
+.ring-bp  { transform: scale(0.75); }
+.ring-chol{ transform: scale(0.95); }
+.ring-food{ transform: scale(1.20); }
+
+.heart-ring{
+  position:absolute;
+  top:0; left:0;
+  width:300px;
+  height:280px;
+}
+
+.heart-path{
+  fill:none;
+  stroke-width:14px;
+  stroke-linecap:round;
+  stroke:#cccccc;
+  filter: drop-shadow(0 0 12px currentColor)
+          drop-shadow(0 0 24px currentColor);
+}
+
+.center-heart{
+  position:absolute;
+  top:40px; left:40px;
+  width:220px; height:220px;
+}
+
+.center-heart .heart-fill{
+  fill:#4ade80;
+  filter: drop-shadow(0 0 10px #4ade80)
+          drop-shadow(0 0 20px #4ade80);
+  animation:heartPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseBP{
+  0%{stroke-width:14px;}
+  50%{stroke-width:18px;}
+  100%{stroke-width:14px;}
+}
+@keyframes pulseChol{
+  0%{stroke-width:14px;}
+  50%{stroke-width:17px;}
+  100%{stroke-width:14px;}
+}
+@keyframes pulseFood{
+  0%{stroke-width:14px;}
+  50%{stroke-width:16px;}
+  100%{stroke-width:14px;}
+}
+
+.ring-bp   .heart-path{ animation:pulseBP 2s infinite ease-in-out; }
+.ring-chol .heart-path{ animation:pulseChol 2.4s infinite ease-in-out; }
+.ring-food .heart-path{ animation:pulseFood 3s infinite ease-in-out; }
+
+/* PROFILE FIELDS */
+.profile-fields{
+  width:100%;padding:12px 6px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+}
+
+.field{
+  background:#fff;border-radius:12px;padding:10px;
+  border:1px solid #f1f5f9;
+}
+
+.field label{font-size:12px;color:var(--muted);}
+.field input,.field select{
+  width:100%;padding:6px;border-radius:8px;
+  border:1px solid #ddd;font-size:15px;
+}
+
+.value{font-weight:700;font-size:16px;}
+
+.btn-3d{
+  background:var(--accent);color:#fff;padding:12px 18px;
+  border-radius:12px;border:none;font-weight:700;
+  box-shadow:0 8px 0 var(--accent-dark);
+}
+
+.section-card{
+  background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;
+  border:1px solid #f1f5f9;
+}
+
+/* BMI BADGE */
+.bmi-badge {
+  display:inline-block;
+  padding:6px 12px;
+  margin-top:6px;
+  border-radius:20px;
+  font-weight:700;
+  color:white;
+  background:#28a745;
+}
+.bmi-underweight { background:#1e90ff; }
+.bmi-healthy { background:#28a745; }
+.bmi-overweight { background:#ffc107; color:black; }
+.bmi-obese { background:#dc3545; }
+
+/* Bottom navigation */
+.bottom-nav{
+  height:86px;padding:10px 18px;display:flex;
+  align-items:flex-end;justify-content:space-between;
+  border-top:1px solid #f3f6f9;
+  background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);
+}
+
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;background:none;border:none;
+  color:var(--muted);
+}
+
+.nav-btn.active{color:var(--accent);font-weight:700;}
+
+.center-wrap{flex:0 0 92px;display:flex;justify-content:center;margin-top:-28px;}
+.scan-btn{
+  width:84px;height:84px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 12px 0 var(--accent-dark);
+}
+
+.muted{color:var(--muted);}
+svg { overflow: visible !important; }
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="top-bar">
-            <h1>Scan</h1>
-            <p class="top-subtitle">Food & barcode health analysis</p>
-        </header>
+<div class="app">
 
-        <!-- SCAN MODE TOGGLE -->
-        <div class="scan-mode-toggle">
-            <button id="cameraModeBtn" class="mode-btn active">Camera</button>
-            <button id="barcodeModeBtn" class="mode-btn">Barcode</button>
+  <div class="topbar">
+    <div class="brand">HealthHub</div>
+    <div class="links">Home • Scan</div>
+  </div>
+
+  <main class="content">
+
+    <!-- PROFILE TAB -->
+    <section id="tab-profile" class="tab active">
+      <div class="profile-hero">
+
+        <!-- AURA -->
+        <div class="aura-wrap-new">
+
+          <!-- FOOD RING -->
+          <svg class="heart-ring ring-food" viewBox="0 0 200 180">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
+          <!-- CHOLESTEROL RING -->
+          <svg class="heart-ring ring-chol" viewBox="0 0 200 180">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
+          <!-- BLOOD PRESSURE RING -->
+          <svg class="heart-ring ring-bp" viewBox="0 0 200 180">
+            <path class="heart-path"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
+          <!-- CENTER HEART -->
+          <svg class="center-heart" viewBox="0 0 200 180">
+            <path class="heart-fill"
+              d="M100 170 L30 90 A40 40 0 1 1 100 40 A40 40 0 1 1 170 90 Z"/>
+          </svg>
+
         </div>
 
-        <!-- CAMERA AREA -->
-        <section id="cameraSection" class="scan-section active">
-            <div class="camera-wrapper">
-                <video id="cameraPreview" autoplay playsinline></video>
-                <button id="captureBtn" class="capture-btn">Scan Food</button>
-            </div>
-        </section>
+        <div style="text-align:center;">
+          <div id="health-label" style="font-weight:800;font-size:16px;margin-top:28px;position:relative;top:18px;margin-bottom:18px;">
+            Health Score: <span id="health-score">72</span>
+          </div>
+          <div class="muted">Aura indicates overall health</div>
+        </div>
+      </div>
 
-        <!-- BARCODE AREA -->
-        <section id="barcodeSection" class="scan-section">
-            <div class="camera-wrapper">
-                <video id="barcodePreview" autoplay playsinline></video>
-                <button id="startBarcodeBtn" class="capture-btn">Start Barcode Scan</button>
-            </div>
-        </section>
+      <!-- PROFILE FIELDS -->
+      <div class="profile-fields">
 
-        <!-- LOADING -->
-        <div id="loadingOverlay" class="loading-overlay hidden">
-            <div class="spinner"></div>
-            <p>Analysing food…</p>
+        <div class="field">
+          <label>Name</label>
+          <input id="name" type="text" value="User" disabled>
         </div>
 
-        <!-- RESULTS CAROUSEL -->
-        <section id="resultsSection" class="results-section hidden">
-            <div class="carousel">
-                <div class="carousel-track" id="carouselTrack">
-                    <!-- Card 1 – Food Identification -->
-                    <article class="card full-card" data-card="food">
-                        <h2>Food identification</h2>
-                        <p><span class="label">Food:</span> <span id="foodName">–</span></p>
-                        <p><span class="label">Confidence:</span> <span id="foodConfidence">–</span></p>
-                        <p><span class="label">Category:</span> <span id="foodCategory">–</span></p>
-                        <p><span class="label">Portion:</span> <span id="foodPortion">–</span></p>
-                    </article>
+        <div class="field">
+          <label>Gender</label>
+          <select id="gender" disabled onchange="toggleHip()">
+            <option value="male" selected>Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
 
-                    <!-- Card 2 – Calories & Goal -->
-                    <article class="card full-card" data-card="calories">
-                        <h2>Calories & goal</h2>
-                        <p><span class="label">This food:</span> <span id="foodCalories">–</span> kcal</p>
-                        <p><span class="label">Today:</span> <span id="todayCalories">0</span> / <span id="calorieGoal">–</span> kcal</p>
-                        <div class="progress-bar">
-                            <div id="calorieProgressFill" class="progress-fill"></div>
-                        </div>
-                        <p id="calorieStatusText" class="status-text">Waiting for scan…</p>
-                    </article>
+        <div class="field">
+          <label>Age</label>
+          <input id="age" type="number" value="45" disabled>
+        </div>
 
-                    <!-- Card 3 – Macronutrients -->
-                    <article class="card full-card" data-card="macros">
-                        <h2>Macronutrients</h2>
-                        <p><span class="label">Protein:</span> <span id="protein">–</span> g</p>
-                        <p><span class="label">Carbohydrates:</span> <span id="carbs">–</span> g</p>
-                        <p><span class="label">Sugar:</span> <span id="sugar">–</span> g</p>
-                        <p><span class="label">Fat:</span> <span id="fat">–</span> g</p>
-                        <p><span class="label">Fibre:</span> <span id="fibre">–</span> g</p>
-                        <p><span class="label">Salt:</span> <span id="salt">–</span> g</p>
-                    </article>
+        <div class="field">
+          <label>Weight (kg)</label>
+          <input id="weight" type="number" value="82" disabled>
+        </div>
 
-                    <!-- Card 4 – Blood Pressure Impact -->
-                    <article class="card full-card" data-card="bp">
-                        <h2>Blood pressure impact</h2>
-                        <p id="bpImpactText">Waiting for scan…</p>
-                    </article>
+        <div class="field">
+          <label>Height (cm)</label>
+          <input id="height" type="number" value="176" disabled>
+        </div>
 
-                    <!-- Card 5 – Cholesterol Impact -->
-                    <article class="card full-card" data-card="chol">
-                        <h2>Cholesterol impact</h2>
-                        <p id="cholImpactText">Waiting for scan…</p>
-                    </article>
+        <div class="field">
+          <label>Waist (cm)</label>
+          <input id="waist" type="number" value="92" disabled>
+        </div>
 
-                    <!-- Card 6 – Cardiovascular Risk -->
-                    <article class="card full-card" data-card="cv">
-                        <h2>Cardiovascular risk</h2>
-                        <p id="cvRiskText">Shown when food increases long‑term risk.</p>
-                    </article>
+        <div class="field">
+          <label>Neck (cm)</label>
+          <input id="neck" type="number" value="38" disabled>
+        </div>
 
-                    <!-- Card 7 – Why Limit This Food -->
-                    <article class="card full-card" data-card="limit">
-                        <h2>Why limit this food</h2>
-                        <p id="limitText">Shown when food is not heart‑friendly.</p>
-                    </article>
+        <div class="field" id="hip-field">
+          <label>Hip (cm) — women only</label>
+          <input id="hip" type="number" value="95" disabled>
+        </div>
 
-                    <!-- Card 8 – Healthier Alternatives -->
-                    <article class="card full-card" data-card="alternatives">
-                        <h2>Healthier alternatives</h2>
-                        <ul id="alternativesList"></ul>
-                    </article>
+        <div class="field">
+          <label>Body Fat %</label>
+          <input id="bodyfat" type="number" value="22" disabled>
+        </div>
 
-                    <!-- Card 9 – AI Doctor Summary -->
-                    <article class="card full-card" data-card="summary">
-                        <h2>Doctor‑style summary</h2>
-                        <p id="doctorSummaryText">A professional summary will appear here after a scan.</p>
-                    </article>
+        <div class="field">
+          <button id="calc-fat-btn" class="btn-3d" disabled onclick="autoCalcBodyFat()">
+            Calculate automatically
+          </button>
+        </div>
 
-                    <!-- Card 10 – Fasting Suggestion -->
-                    <article class="card full-card" data-card="fasting">
-                        <h2>Fasting suggestion</h2>
-                        <p id="fastingText">Fasting advice appears when intake and goals suggest it may help.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
+        <div class="field">
+          <label>BMI</label>
+          <div id="bmiBadge" class="bmi-badge bmi-healthy">BMI: --</div>
+        </div>
 
-        <!-- BOTTOM MENU -->
-        <nav class="bottom-menu">
-            <a href="index.html" class="menu-item">
-                <span class="icon">🏠</span>
-                <span class="menu-label">Home</span>
-            </a>
-            <a href="health.html" class="menu-item">
-                <span class="icon">❤️</span>
-                <span class="menu-label">Health</span>
-            </a>
-            <a href="scan.html" class="menu-item active scan-button">
-                <span class="icon">📷</span>
-                <span class="menu-label">Scan</span>
-            </a>
-            <a href="profile.html" class="menu-item">
-                <span class="icon">👤</span>
-                <span class="menu-label">Profile</span>
-            </a>
-        </nav>
+        <div class="field">
+          <label>Ideal weight</label>
+          <div class="value" id="ideal">75 kg</div>
+        </div>
+
+      </div>
+
+      <button id="edit-btn" class="btn-3d" onclick="enableEdit()">Edit Profile</button>
+      <button id="save-btn" class="btn-3d" onclick="saveProfile()" style="display:none;">Save</button>
+
+    </section>
+
+    <!-- SCAN TAB -->
+    <section id="tab-scan" class="tab">
+      <div class="section-card">
+        <h3>Scan Food</h3>
+        <p class="muted">Use the camera to scan food or barcode.</p>
+        <div style="margin-top:12px;display:flex;gap:10px;">
+          <button class="btn-3d" onclick="openFoodScanner()">Open Camera</button>
+          <button class="btn-3d" onclick="onBarcode()">Scan Barcode</button>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>Last scanned</h4>
+        <div id="last-scan" style="background:#fff;border-radius:12px;padding:12px;border:1px solid #f1f5f9;">
+          <em>No scans yet</em>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEALS TAB -->
+    <section id="tab-meals" class="tab">
+      <div class="section-card">
+        <h3>Today's Meals</h3>
+        <div id="meals-list" class="muted">No meals logged</div>
+      </div>
+      <div class="section-card">
+        <h4>Weekly calories</h4>
+        <div id="weekly-cal" class="muted">0 kcal</div>
+      </div>
+    </section>
+
+    <!-- HEALTH TAB -->
+    <section id="tab-health" class="tab">
+      <div class="section-card">
+        <h3>Health Overview</h3>
+        <p class="muted">Cholesterol, blood pressure, plant points.</p>
+        <div style="margin-top:12px;">
+          <div class="muted">Cholesterol: <strong id="chol-status">OK</strong></div>
+          <div class="muted">Blood pressure: <strong id="bp-status">120/78</strong></div>
+          <div class="muted">Plant points: <strong id="plant-points">+12</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANTS TAB -->
+    <section id="tab-plants" class="tab">
+      <div class="section-card">
+        <h3>Plant Points</h3>
+        <p class="muted">Add fruits/veg to gain points.</p>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn-3d" onclick="addPlantPoints(5)">Add Fruit +5</button>
+          <button class="btn-3d" onclick="addPlantPoints(-4)">Add Junk -4</button>
+        </div>
+        <div style="margin-top:12px;" class="muted">Daily points: <strong id="daily-points">0</strong></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" id="nav-meals" onclick="switchTab('meals')">Meals</button>
+    <button class="nav-btn" id="nav-health" onclick="window.location.href='health.html'">Health</button>
+
+    <div class="center-wrap">
+     <a href="scan.html">
+  <button class="scan-btn" id="nav-scan">Scan</button>
+</a>
+
     </div>
 
-    <!-- ZXing for barcode -->
-    <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
-    <script src="scan.js"></script>
+    <button class="nav-btn" id="nav-plants" onclick="switchTab('plants')">Plants</button>
+    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">Profile</button>
+  </nav>
+
+</div>
+<script>
+/* ---------- HEALTH REACTION ENGINE (initial state) ---------- */
+let lastHealth = {
+  bpSys: Number(localStorage.getItem("bpSys") || 120),
+  bpDia: Number(localStorage.getItem("bpDia") || 80),
+  cholTotal: Number(localStorage.getItem("cholTotal") || 5.0),
+  foodQuality: (Number(localStorage.getItem("foodScore") || 60) / 100),
+  score: 72
+};
+
+/* ---------- TABS ---------- */
+const tabs = {
+  profile: document.getElementById('tab-profile'),
+  scan: document.getElementById('tab-scan'),
+  meals: document.getElementById('tab-meals'),
+  health: document.getElementById('tab-health'),
+  plants: document.getElementById('tab-plants')
+};
+let currentTab = 'profile';
+
+function switchTab(name){
+  tabs[currentTab].classList.remove('active');
+  tabs[name].classList.add('active');
+  currentTab = name;
+}
+
+/* ---------- SHOW/HIDE HIP FIELD ---------- */
+function toggleHip(){
+  const gender = document.getElementById("gender").value;
+  document.getElementById("hip-field").style.display =
+    (gender === "female") ? "block" : "none";
+}
+
+/* ---------- FOOD SCANNER ---------- */
+function openFoodScanner() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.capture = "environment";
+
+  input.onchange = () => {
+    if (input.files && input.files[0]) {
+      handleFoodImage(input.files[0]);
+      switchTab('scan');
+    }
+  };
+
+  input.click();
+}
+
+function handleFoodImage(file) {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64 = reader.result.split(",")[1];
+    analyzeFood(base64);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeFood(imageBase64) {
+  try {
+    const res = await fetch("https://food-ai-backend.vercel.app/api/scan-food", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageBase64 })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("last-scan").innerHTML = `
+      <strong>Food:</strong> ${data.name || "Unknown"}<br>
+      <strong>Calories:</strong> ${data.calories || "?"}<br>
+      <strong>Protein:</strong> ${data.protein || "?"} g<br>
+      <strong>Carbs:</strong> ${data.carbs || "?"} g<br>
+      <strong>Fat:</strong> ${data.fat || "?"} g<br>
+      <strong>Description:</strong> ${data.description || "No description"}
+    `;
+
+    onFoodScanned(data);
+
+  } catch (err) {
+    document.getElementById("last-scan").innerText = "Scan failed";
+  }
+}
+
+function centerScanClick(){ openFoodScanner(); }
+function onBarcode(){ document.getElementById('last-scan').textContent = 'Barcode scan started...'; }
+
+/* ---------- PLANT POINTS (BASE FUNCTION) ---------- */
+let dailyPoints = 0;
+function addPlantPoints(n){
+  dailyPoints += n;
+  document.getElementById('daily-points').textContent = dailyPoints;
+}
+
+/* ---------- BODY FAT FORMULA ---------- */
+function autoCalcBodyFat() {
+  const gender = document.getElementById("gender").value;
+  const waist = Number(document.getElementById("waist").value);
+  const neck = Number(document.getElementById("neck").value);
+  const height = Number(document.getElementById("height").value);
+  const hip = Number(document.getElementById("hip").value);
+
+  if (!waist || !neck || !height) {
+    alert("Enter waist, neck and height first");
+    return;
+  }
+
+  let bf;
+
+  if (gender === "male") {
+    bf = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck)
+                + 0.15456 * Math.log10(height)) - 450;
+  } else {
+    if (!hip) {
+      alert("Enter hip measurement for female calculation");
+      return;
+    }
+    bf = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck)
+                + 0.22100 * Math.log10(height)) - 450;
+  }
+
+  const clean = Math.max(5, Math.min(60, bf.toFixed(1)));
+  document.getElementById("bodyfat").value = clean;
+
+  return clean;
+}
+
+/* ---------- HEALTH SCORE ---------- */
+function setHealthScore(score){
+  score = Math.max(0, Math.min(100, score));
+  document.getElementById('health-score').textContent = score;
+
+  lastHealth.score = score;
+  updateAura(lastHealth);
+}
+
+/* ---------- ENABLE EDIT MODE ---------- */
+function enableEdit() {
+  document.querySelectorAll("#name, #age, #weight, #height, #waist, #neck, #hip, #bodyfat, #gender")
+    .forEach(el => el.disabled = false);
+
+  document.getElementById("calc-fat-btn").disabled = false;
+
+  document.getElementById("edit-btn").style.display = "none";
+  document.getElementById("save-btn").style.display = "block";
+}
+
+/* ---------- BMI BADGE COLOR LOGIC ---------- */
+function updateBMIBadge(bmi) {
+  const badge = document.getElementById("bmiBadge");
+
+  badge.classList.remove("bmi-underweight", "bmi-healthy", "bmi-overweight", "bmi-obese");
+
+  if (bmi < 18.5) {
+    badge.classList.add("bmi-underweight");
+  } else if (bmi < 25) {
+    badge.classList.add("bmi-healthy");
+  } else if (bmi < 30) {
+    badge.classList.add("bmi-overweight");
+  } else {
+    badge.classList.add("bmi-obese");
+  }
+
+  badge.textContent = "BMI: " + bmi;
+}
+/* ---------- LOAD PROFILE ---------- */
+(function loadProfile() {
+  const p = JSON.parse(localStorage.getItem("profile"));
+  if (!p) return;
+
+  document.getElementById("name").value = p.name;
+  document.getElementById("gender").value = p.gender;
+  document.getElementById("age").value = p.age;
+  document.getElementById("weight").value = p.weight;
+  document.getElementById("height").value = p.height;
+  document.getElementById("waist").value = p.waist;
+  document.getElementById("neck").value = p.neck;
+  document.getElementById("hip").value = p.hip;
+  document.getElementById("bodyfat").value = p.bodyfat;
+
+  const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
+  updateBMIBadge(bmi);
+
+  const ideal = (22 * ((p.height/100)**2)).toFixed(1);
+  document.getElementById("ideal").textContent = ideal + " kg";
+
+  const score = Math.max(
+    20,
+    100
+    - Math.abs(bmi - 22) * 2
+    - Math.abs(p.bodyfat - 18) * 1.2
+  );
+
+  setHealthScore(score);
+
+  document.querySelector(".brand").textContent = p.name + "'s Dashboard";
+
+  toggleHip();
+})();
+
+/* ---------- INIT ---------- */
+(function init(){
+  updateAuraFromData();
+  switchTab('profile');
+  toggleHip();
+})();
+
+/* ---------- AUDIO ENGINE ---------- */
+let audioEnabled = JSON.parse(localStorage.getItem("audioEnabled") || "true");
+
+function updateAudioButton() {
+  const btn = document.getElementById("audio-toggle");
+  if (!btn) return;
+  btn.textContent = audioEnabled ? "🔊" : "🔇";
+  btn.classList.toggle("muted", !audioEnabled);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("audio-toggle");
+  if (btn) {
+    btn.onclick = () => {
+      audioEnabled = !audioEnabled;
+      localStorage.setItem("audioEnabled", JSON.stringify(audioEnabled));
+      updateAudioButton();
+    };
+    updateAudioButton();
+  }
+});
+
+function speak(text) {
+  if (!audioEnabled) return;
+
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "en-US";
+  msg.rate = 0.95;
+  msg.pitch = 1.0;
+  msg.volume = 1;
+
+  const voices = speechSynthesis.getVoices();
+  const english = voices.find(v => v.lang.startsWith("en"));
+  if (english) msg.voice = english;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
+}
+
+/* ---------- AURA ENGINE ---------- */
+function updateAura(state) {
+  const bpPath   = document.querySelector(".ring-bp .heart-path");
+  const cholPath = document.querySelector(".ring-chol .heart-path");
+  const foodPath = document.querySelector(".ring-food .heart-path");
+  const heart = document.querySelector(".center-heart path");
+
+  if (!bpPath || !cholPath || !foodPath || !heart) return;
+
+  const bpSys = state.bpSys;
+  const bpDia = state.bpDia;
+  const cholTotal = state.cholTotal;
+  const foodScore = (state.foodQuality || 0.6) * 100;
+  const score = state.score;
+
+  let bpColor = "#22c55e";
+  if (bpSys >= 160 || bpDia >= 100)      bpColor = "#ef4444";
+  else if (bpSys >= 140 || bpDia >= 90)  bpColor = "#f97316";
+  else if (bpSys >= 120 || bpDia >= 80)  bpColor = "#eab308";
+
+  let cholColor = "#22c55e";
+  if (cholTotal > 6.2)       cholColor = "#ef4444";
+  else if (cholTotal >= 5.0) cholColor = "#f97316";
+  else if (cholTotal >= 3.0) cholColor = "#eab308";
+
+  let foodColor = "#22c55e";
+  if (foodScore <= 2)        foodColor = "#ef4444";
+  else if (foodScore <= 4)   foodColor = "#f97316";
+  else if (foodScore <= 7)   foodColor = "#eab308";
+
+  let heartColor = "#22c55e";
+  if (score < 40)       heartColor = "#ef4444";
+  else if (score < 60)  heartColor = "#f97316";
+  else if (score < 80)  heartColor = "#eab308";
+
+  bpPath.style.stroke   = bpColor;
+  cholPath.style.stroke = cholColor;
+  foodPath.style.stroke = foodColor;
+
+  bpPath.style.filter   = `drop-shadow(0 0 12px ${bpColor}) drop-shadow(0 0 24px ${bpColor})`;
+  cholPath.style.filter = `drop-shadow(0 0 12px ${cholColor}) drop-shadow(0 0 24px ${cholColor})`;
+  foodPath.style.filter = `drop-shadow(0 0 12px ${foodColor}) drop-shadow(0 0 24px ${foodColor})`;
+
+  heart.setAttribute("fill", heartColor);
+  heart.style.filter = `drop-shadow(0 0 10px ${heartColor}) drop-shadow(0 0 20px ${heartColor})`;
+}
+
+/* ---------- HEALTH CHANGE REACTIONS ---------- */
+function updateHealth(bpSys, bpDia, cholTotal, foodQuality, score) {
+  const newHealth = { bpSys, bpDia, cholTotal, foodQuality, score };
+
+  updateAura(newHealth);
+
+  if (newHealth.bpSys > lastHealth.bpSys + 10) {
+    speak("Your blood pressure is rising. Let's keep an eye on salt and stress today.");
+  }
+  if (newHealth.cholTotal > lastHealth.cholTotal + 0.5) {
+    speak("Your cholesterol is slightly higher. Try adding more fiber and vegetables.");
+  }
+  if (newHealth.foodQuality > lastHealth.foodQuality + 0.1) {
+    speak("Great choice! Your food quality is improving.");
+  }
+  if (newHealth.score > lastHealth.score + 5) {
+    speak("Your overall health score is improving. Well done.");
+  }
+  if (newHealth.score < lastHealth.score - 5) {
+    speak("Your health score dropped a bit. No worries, we can improve this together.");
+  }
+
+  lastHealth = newHealth;
+}
+
+/* ---------- FOOD SCAN REACTION ---------- */
+function onFoodScanned(data) {
+  if (!data || !data.name) {
+    speak("I couldn't recognize this food. Try again.");
+    return;
+  }
+
+  if (data.calories < 200) {
+    speak("This food looks healthy and supports your goals.");
+  } else {
+    speak("This food is a bit heavy. Try to balance it with lighter meals.");
+  }
+}
+
+/* ---------- PLANT POINTS REACTION ---------- */
+const oldAddPlantPoints = addPlantPoints;
+addPlantPoints = function(n) {
+  oldAddPlantPoints(n);
+
+  if (n > 0) speak("Nice! Plant points added. Great choice.");
+  if (n < 0) speak("Careful. This food reduces your plant score.");
+
+  const foodScore = Math.max(0, Math.min(100, (lastHealth.foodQuality || 0.6) * 100 + n));
+  lastHealth.foodQuality = foodScore / 100;
+
+  localStorage.setItem("foodScore", foodScore);
+
+  updateAura(lastHealth);
+};
+
+/* ---------- AURA WRAPPER ---------- */
+function updateAuraFromData() {
+  const bpSys = Number(localStorage.getItem("bpSys") || 120);
+  const bpDia = Number(localStorage.getItem("bpDia") || 80);
+  const cholTotal = Number(localStorage.getItem("cholTotal") || 5.0);
+  const foodScore = Number(localStorage.getItem("foodScore") || 60);
+  const score = Number(document.getElementById("health-score").textContent || 72);
+
+  const state = {
+    bpSys,
+    bpDia,
+    cholTotal,
+    foodQuality: foodScore / 100,
+    score
+  };
+
+  lastHealth = state;
+  updateAura(state);
+}
+
+/* ---------- AUTO REFRESH AURA ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  updateAuraFromData();
+});
+
+window.addEventListener("focus", () => {
+  updateAuraFromData();
+});
+</script>
+
 </body>
 </html>

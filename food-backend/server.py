@@ -1,23 +1,47 @@
-from fastapi import FastAPI, UploadFile
-from fastapi.responses import JSONResponse
-from ultralytics import YOLO
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
+import io
 import base64
-import cv2
-import numpy as np
+from ultralytics import YOLO
 
 app = FastAPI()
-model = YOLO("best.pt")  # this file will live in the same folder
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Load model once
+model = YOLO("best.pt")
+
+def resize_image(image: Image.Image, max_size=640):
+    image.thumbnail((max_size, max_size))
+    return image
 
 @app.post("/predict")
-async def predict(file: UploadFile):
+async def predict(file: UploadFile = File(...)):
+    # Read file
     contents = await file.read()
-    nparr = np.frombuffer(contents, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    img = Image.open(io.BytesIO(contents)).convert("RGB")
 
-    results = model(img)[0]
-    annotated = results.plot()
+    # AUTO‑RESIZE
+    img = resize_image(img, 640)
 
-    _, buffer = cv2.imencode(".jpg", annotated)
-    encoded = base64.b64encode(buffer).decode("utf-8")
+    # Run YOLO
+    results = model(img)
 
-    return JSONResponse({"image": encoded})
+    # Save annotated image to memory
+    annotated = results[0].plot()
+    img_bytes = io.BytesIO()
+    Image.fromarray(annotated).save(img_bytes, format="JPEG")
+    img_bytes = img_bytes.getvalue()
+
+    # Encode to base64
+    encoded = base64.b64encode(img_bytes).decode("utf-8")
+
+    return {"image": encoded}

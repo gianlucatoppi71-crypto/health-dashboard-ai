@@ -25,17 +25,32 @@ const doctorText = document.getElementById("doctorText");
 let stream;
 
 // ===============================
-// START CAMERA (FRONT CAMERA)
+// START CAMERA (PIXEL 9 PRO FIX)
 // ===============================
 startCameraBtn.addEventListener("click", async () => {
     try {
-        // Force FRONT camera
         stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" }
+            video: {
+                facingMode: { ideal: "environment" },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
         });
+
         camera.srcObject = stream;
     } catch (err) {
-        alert("Camera access denied or unavailable.");
+        console.log("Back camera failed, using fallback:", err);
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+            });
+            camera.srcObject = stream;
+        } catch (err2) {
+            alert("Camera access denied.");
+        }
     }
 });
 
@@ -82,11 +97,9 @@ async function sendToBackend(file) {
 
         const data = await response.json();
 
-        // Show annotated image
         resultImage.src = "data:image/jpeg;base64," + data.image;
         resultImage.classList.remove("hidden");
 
-        // Generate all cards
         generateNutrition();
         generateVerdict();
         generateAlternative();
@@ -151,7 +164,7 @@ function updateTracking() {
     let calories = localStorage.getItem("weeklyCalories");
     if (!calories) calories = 0;
 
-    calories = Number(calories) + 320; // add today's food
+    calories = Number(calories) + 320;
     localStorage.setItem("weeklyCalories", calories);
 
     trackingContent.innerHTML = `

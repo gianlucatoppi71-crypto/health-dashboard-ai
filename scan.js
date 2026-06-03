@@ -32,8 +32,8 @@ startCameraBtn.addEventListener("click", async () => {
         stream = await navigator.mediaDevices.getUserMedia({
             video: {
                 facingMode: { ideal: "environment" },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
+                width: { ideal: 960 },
+                height: { ideal: 540 }
             },
             audio: false
         });
@@ -55,7 +55,7 @@ startCameraBtn.addEventListener("click", async () => {
 });
 
 // ===============================
-// CAPTURE PHOTO
+// CAPTURE PHOTO (COMPRESSED)
 // ===============================
 captureBtn.addEventListener("click", () => {
     if (!stream) return alert("Start the camera first!");
@@ -69,7 +69,7 @@ captureBtn.addEventListener("click", () => {
 
     canvas.toBlob((blob) => {
         sendToBackend(blob);
-    }, "image/jpeg");
+    }, "image/jpeg", 0.6); // ⭐ compress to 60%
 });
 
 // ===============================
@@ -107,7 +107,7 @@ async function sendToBackend(file) {
         generateDoctorSummary();
 
     } catch (err) {
-        alert("Error contacting the AI server.");
+        alert("Server error. Try again.");
     }
 
     loading.classList.add("hidden");
@@ -186,3 +186,4 @@ function generateDoctorSummary() {
         Suitable in moderation for cholesterol and blood pressure.
     `;
 }
+

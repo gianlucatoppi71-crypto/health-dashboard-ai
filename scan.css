@@ -1,225 +1,137 @@
-* {
-    box-sizing: border-box;
+/* GENERAL PAGE STYLE */
+body {
     margin: 0;
     padding: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4f7fb;
+    color: #1a1a1a;
 }
 
-body {
-    background: #050814;
-    color: #f5f7ff;
+/* HEADER */
+.header {
+    background: #005eb8; /* NHS Blue */
+    color: white;
+    padding: 25px;
+    text-align: center;
 }
 
-.app-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 72px; /* space for bottom menu */
+.header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
 }
 
-/* TOP BAR */
-.top-bar {
-    padding: 16px 16px 8px;
-}
-.top-bar h1 {
-    font-size: 22px;
-    font-weight: 600;
-}
-.top-subtitle {
-    font-size: 13px;
-    opacity: 0.7;
+.subtitle {
+    margin-top: 5px;
+    font-size: 16px;
+    opacity: 0.9;
 }
 
-/* MODE TOGGLE */
-.scan-mode-toggle {
-    display: flex;
-    gap: 8px;
-    padding: 8px 16px 12px;
-}
-.mode-btn {
-    flex: 1;
-    padding: 10px 0;
-    border-radius: 999px;
-    border: 1px solid #2a3148;
-    background: #0b1020;
-    color: #cfd5ff;
-    font-size: 14px;
-}
-.mode-btn.active {
-    background: linear-gradient(135deg, #4f8cff, #7b5cff);
-    border-color: transparent;
-    color: #fff;
+/* MAIN CONTAINER */
+.container {
+    width: 95%;
+    max-width: 900px;
+    margin: 25px auto;
 }
 
-/* CAMERA / BARCODE SECTION */
-.scan-section {
-    display: none;
-    padding: 0 16px;
-}
-.scan-section.active {
-    display: block;
+/* SCAN BOX */
+.scan-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
 }
 
-.camera-wrapper {
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
-    background: #000;
-    height: 260px;
-    margin-bottom: 12px;
-}
-#cameraPreview,
-#barcodePreview {
+video {
     width: 100%;
-    height: 100%;
+    max-height: 350px;
+    border-radius: 12px;
+    background: #000;
     object-fit: cover;
 }
 
-.capture-btn {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 22px;
-    border-radius: 999px;
-    border: none;
-    background: rgba(0, 0, 0, 0.7);
-    color: #fff;
-    font-size: 14px;
-    backdrop-filter: blur(10px);
+#resultImage {
+    width: 100%;
+    margin-top: 15px;
+    border-radius: 12px;
 }
 
-/* LOADING OVERLAY */
-.loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(5, 8, 20, 0.85);
+/* BUTTONS */
+.buttons {
+    margin-top: 15px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    z-index: 20;
-}
-.loading-overlay.hidden {
-    display: none;
-}
-.spinner {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.2);
-    border-top-color: #7b5cff;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 12px;
-}
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-/* RESULTS CAROUSEL */
-.results-section {
-    margin-top: 10px;
-    flex: 1;
-}
-.results-section.hidden {
-    display: none;
-}
-
-.carousel {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-}
-.carousel-track {
-    display: flex;
-    transition: transform 0.35s ease-out;
-    will-change: transform;
+button {
+    background: #0072ce;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-/* FULL-SCREEN CARDS */
-.card.full-card {
-    min-width: 100%;
-    padding: 18px 16px 24px;
-    background: radial-gradient(circle at top, #151b34, #050814);
+button:hover {
+    background: #005eb8;
 }
-.card h2 {
+
+#upload {
+    padding: 10px;
+}
+
+/* LOADING */
+.loading {
+    margin-top: 15px;
     font-size: 18px;
-    margin-bottom: 10px;
-}
-.card p,
-.card li {
-    font-size: 14px;
-    line-height: 1.4;
-    margin-bottom: 4px;
-}
-.label {
-    opacity: 0.7;
+    font-weight: bold;
+    color: #005eb8;
 }
 
-/* ALTERNATIVES LIST */
-#alternativesList {
-    list-style: disc;
-    padding-left: 18px;
-}
-
-/* PROGRESS BAR */
-.progress-bar {
-    width: 100%;
-    height: 10px;
-    border-radius: 999px;
-    background: #151b34;
-    overflow: hidden;
-    margin: 8px 0 4px;
-}
-.progress-fill {
-    height: 100%;
-    width: 0%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #3ddc84, #ffd54f, #ff5252);
-    transition: width 0.35s ease-out;
-}
-.status-text {
-    font-size: 13px;
-    opacity: 0.8;
-}
-
-/* BOTTOM MENU */
-.bottom-menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 64px;
-    background: rgba(5, 8, 20, 0.96);
-    border-top: 1px solid #151b34;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    backdrop-filter: blur(16px);
-    z-index: 30;
-}
-.menu-item {
-    flex: 1;
-    text-align: center;
-    text-decoration: none;
-    color: #a9b2ff;
-    font-size: 11px;
-}
-.menu-item .icon {
-    display: block;
-    font-size: 18px;
-    margin-bottom: 2px;
-}
-.menu-item.active {
-    color: #ffffff;
-}
-.menu-item.active .icon {
-    text-shadow: 0 0 10px rgba(123, 92, 255, 0.8);
-}
-
-/* UTILS */
 .hidden {
     display: none;
+}
+
+/* CARDS */
+.card {
+    background: white;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card h2 {
+    margin-top: 0;
+    color: #005eb8;
+    font-size: 22px;
+    border-bottom: 2px solid #e6e6e6;
+    padding-bottom: 8px;
+}
+
+/* CONTENT SECTIONS */
+#nutritionContent,
+#verdictContent,
+#alternativeContent,
+#trackingContent {
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+/* AI DOCTOR SUMMARY */
+#doctorText {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* MOBILE FRIENDLY */
+@media (max-width: 600px) {
+    button {
+        width: 100%;
+    }
 }

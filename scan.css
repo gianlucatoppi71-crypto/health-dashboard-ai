@@ -1,137 +1,58 @@
-/* GENERAL PAGE STYLE */
 body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
     margin: 0;
     padding: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #f4f7fb;
-    color: #1a1a1a;
 }
 
-/* HEADER */
 .header {
-    background: #005eb8; /* NHS Blue */
-    color: white;
-    padding: 25px;
     text-align: center;
-}
-
-.header h1 {
-    margin: 0;
-    font-size: 32px;
-    font-weight: 700;
-}
-
-.subtitle {
-    margin-top: 5px;
-    font-size: 16px;
-    opacity: 0.9;
-}
-
-/* MAIN CONTAINER */
-.container {
-    width: 95%;
-    max-width: 900px;
-    margin: 25px auto;
-}
-
-/* SCAN BOX */
-.scan-box {
-    background: white;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    text-align: center;
 }
 
-video {
+.container {
+    width: 90%;
+    max-width: 600px;
+    margin: auto;
+}
+
+.scan-box {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#camera {
     width: 100%;
-    max-height: 350px;
-    border-radius: 12px;
+    height: auto;
+    max-height: 420px;
     background: #000;
+    border-radius: 12px;
     object-fit: cover;
 }
 
-#resultImage {
-    width: 100%;
-    margin-top: 15px;
-    border-radius: 12px;
-}
-
-/* BUTTONS */
 .buttons {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    margin-top: 10px;
 }
 
 button {
-    background: #0072ce;
-    color: white;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-    transition: 0.2s;
+    padding: 10px 15px;
+    margin: 5px;
+    font-size: 16px;
 }
 
-button:hover {
-    background: #005eb8;
-}
-
-#upload {
-    padding: 10px;
-}
-
-/* LOADING */
 .loading {
-    margin-top: 15px;
+    margin-top: 10px;
     font-size: 18px;
-    font-weight: bold;
-    color: #005eb8;
 }
 
 .hidden {
     display: none;
 }
 
-/* CARDS */
 .card {
     background: white;
-    padding: 20px;
-    margin-top: 20px;
+    padding: 15px;
+    margin-top: 15px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.card h2 {
-    margin-top: 0;
-    color: #005eb8;
-    font-size: 22px;
-    border-bottom: 2px solid #e6e6e6;
-    padding-bottom: 8px;
-}
-
-/* CONTENT SECTIONS */
-#nutritionContent,
-#verdictContent,
-#alternativeContent,
-#trackingContent {
-    margin-top: 10px;
-    line-height: 1.6;
-}
-
-/* AI DOCTOR SUMMARY */
-#doctorText {
-    font-size: 16px;
-    line-height: 1.6;
-}
-
-/* MOBILE FRIENDLY */
-@media (max-width: 600px) {
-    button {
-        width: 100%;
-    }
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }

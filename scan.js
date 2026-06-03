@@ -24,17 +24,30 @@ const doctorText = document.getElementById("doctorText");
 
 let stream;
 
-// Start camera
+// ===============================
+// START CAMERA (BACK CAMERA FIX)
+// ===============================
 startCameraBtn.addEventListener("click", async () => {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Try to force the back camera
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { exact: "environment" } }
+        });
         camera.srcObject = stream;
     } catch (err) {
-        alert("Camera access denied or unavailable.");
+        // Fallback if device doesn't support facingMode
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            camera.srcObject = stream;
+        } catch (err2) {
+            alert("Camera access denied or unavailable.");
+        }
     }
 });
 
-// Capture photo
+// ===============================
+// CAPTURE PHOTO
+// ===============================
 captureBtn.addEventListener("click", () => {
     if (!stream) return alert("Start the camera first!");
 
@@ -50,7 +63,9 @@ captureBtn.addEventListener("click", () => {
     }, "image/jpeg");
 });
 
-// Upload image
+// ===============================
+// UPLOAD IMAGE
+// ===============================
 uploadInput.addEventListener("change", () => {
     const file = uploadInput.files[0];
     if (file) sendToBackend(file);
@@ -92,7 +107,7 @@ async function sendToBackend(file) {
 }
 
 // ===============================
-// NUTRITION (FAKE AI FOR NOW)
+// NUTRITION (TEMPORARY PLACEHOLDER)
 // ===============================
 function generateNutrition() {
     nutritionCard.classList.remove("hidden");

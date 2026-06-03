@@ -25,46 +25,16 @@ const doctorText = document.getElementById("doctorText");
 let stream;
 
 // ===============================
-// START CAMERA (FINAL WORKING VERSION)
+// START CAMERA (FRONT CAMERA)
 // ===============================
 startCameraBtn.addEventListener("click", async () => {
     try {
-        // First attempt: request back camera normally
+        // Force FRONT camera
         stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" }
+            video: { facingMode: "user" }
         });
         camera.srcObject = stream;
-        return;
-    } catch (err1) {
-        console.log("FacingMode environment failed, trying manual selection…");
-    }
-
-    try {
-        // Second attempt: manually find the back camera
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(d => d.kind === "videoinput");
-
-        let backCamera = videoDevices.find(d =>
-            d.label.toLowerCase().includes("back") ||
-            d.label.toLowerCase().includes("rear")
-        );
-
-        if (backCamera) {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: backCamera.deviceId }
-            });
-            camera.srcObject = stream;
-            return;
-        }
-    } catch (err2) {
-        console.log("Manual back camera selection failed.");
-    }
-
-    try {
-        // Final fallback: any camera
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        camera.srcObject = stream;
-    } catch (err3) {
+    } catch (err) {
         alert("Camera access denied or unavailable.");
     }
 });

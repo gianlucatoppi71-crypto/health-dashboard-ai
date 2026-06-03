@@ -1,9 +1,10 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
-import io
-import base64
 from ultralytics import YOLO
+import cv2
+import numpy as np
+import base64
+import gc
 
 app = FastAPI()
 
@@ -16,32 +17,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load model once
+# Load YOLO model (low memory mode)
 model = YOLO("best.pt")
+model.to("cpu")  # force CPU mode to reduce RAM
 
-def resize_image(image: Image.Image, max_size=640):
-    image.thumbnail((max_size, max_size))
-    return image
+def resize_image_cv2(img, max_size=320):
+    h, w = img.shape[:2]
+    scale = max_size / max(h, w)
+    new_w = int(w * scale)
+    new_h = int(h * scale)
+    return cv2.resize(img, (new_w, new_h))
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     # Read file
     contents = await file.read()
-    img = Image.open(io.BytesIO(contents)).convert("RGB")
+    nparr = np.frombuffer(contents, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # AUTO‑RESIZE
-    img = resize_image(img, 640)
+    # Resize to reduce RAM usage
+    img = resize_image_cv2(img, 320)
 
     # Run YOLO
-    results = model(img)
+    results = model(img)[0]
 
-    # Save annotated image to memory
-    annotated = results[0].plot()
-    img_bytes = io.BytesIO()
-    Image.fromarray(annotated).save(img_bytes, format="JPEG")
-    img_bytes = img_bytes.getvalue()
+    # Annotate
+    annotated = results.plot()
 
-    # Encode to base64
-    encoded = base64.b64encode(img_bytes).decode("utf-8")
+    # Encode to JPEG
+    _, buffer = cv2.imencode(".jpg", annotated)
+    encoded = base64.b64encode(buffer).decode("utf-8")
+
+    # Free memory
+    del img, annotated, buffer, results, nparr
+    gc.collect()
 
     return {"image": encoded}

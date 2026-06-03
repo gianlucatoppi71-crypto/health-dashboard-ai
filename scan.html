@@ -1,150 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Scan – Health Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="scan.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Food Scanner</title>
+    <link rel="stylesheet" href="scan.css">
 </head>
+
 <body>
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="top-bar">
-            <h1>Scan</h1>
-            <p class="top-subtitle">Food & barcode health analysis</p>
-        </header>
 
-        <!-- SCAN MODE TOGGLE -->
-        <div class="scan-mode-toggle">
-            <button id="cameraModeBtn" class="mode-btn active">Camera</button>
-            <button id="barcodeModeBtn" class="mode-btn">Barcode</button>
-        </div>
+    <header class="header">
+        <h1>AI Food Scanner</h1>
+        <p class="subtitle">Instant nutrition, health impact & smart suggestions</p>
+    </header>
 
-        <!-- CAMERA AREA -->
-        <section id="cameraSection" class="scan-section active">
-            <div class="camera-wrapper">
-                <video id="cameraPreview" autoplay playsinline></video>
-                <button id="captureBtn" class="capture-btn">Scan Food</button>
+    <main class="container">
+
+        <!-- CAMERA + UPLOAD SECTION -->
+        <section class="scan-box">
+            <video id="camera" autoplay playsinline></video>
+
+            <div class="buttons">
+                <button id="startCamera">📷 Start Camera</button>
+                <button id="capture">📸 Capture</button>
+                <input type="file" id="upload" accept="image/*">
             </div>
+
+            <div id="loading" class="loading hidden">Analyzing…</div>
+
+            <img id="resultImage" class="hidden" />
         </section>
 
-        <!-- BARCODE AREA -->
-        <section id="barcodeSection" class="scan-section">
-            <div class="camera-wrapper">
-                <video id="barcodePreview" autoplay playsinline></video>
-                <button id="startBarcodeBtn" class="capture-btn">Start Barcode Scan</button>
-            </div>
+        <!-- NUTRITION CARD -->
+        <section id="nutritionCard" class="card hidden">
+            <h2>Nutrition Facts</h2>
+            <div id="nutritionContent"></div>
         </section>
 
-        <!-- LOADING -->
-        <div id="loadingOverlay" class="loading-overlay hidden">
-            <div class="spinner"></div>
-            <p>Analysing food…</p>
-        </div>
-
-        <!-- RESULTS CAROUSEL -->
-        <section id="resultsSection" class="results-section hidden">
-            <div class="carousel">
-                <div class="carousel-track" id="carouselTrack">
-                    <!-- Card 1 – Food Identification -->
-                    <article class="card full-card" data-card="food">
-                        <h2>Food identification</h2>
-                        <p><span class="label">Food:</span> <span id="foodName">–</span></p>
-                        <p><span class="label">Confidence:</span> <span id="foodConfidence">–</span></p>
-                        <p><span class="label">Category:</span> <span id="foodCategory">–</span></p>
-                        <p><span class="label">Portion:</span> <span id="foodPortion">–</span></p>
-                    </article>
-
-                    <!-- Card 2 – Calories & Goal -->
-                    <article class="card full-card" data-card="calories">
-                        <h2>Calories & goal</h2>
-                        <p><span class="label">This food:</span> <span id="foodCalories">–</span> kcal</p>
-                        <p><span class="label">Today:</span> <span id="todayCalories">0</span> / <span id="calorieGoal">–</span> kcal</p>
-                        <div class="progress-bar">
-                            <div id="calorieProgressFill" class="progress-fill"></div>
-                        </div>
-                        <p id="calorieStatusText" class="status-text">Waiting for scan…</p>
-                    </article>
-
-                    <!-- Card 3 – Macronutrients -->
-                    <article class="card full-card" data-card="macros">
-                        <h2>Macronutrients</h2>
-                        <p><span class="label">Protein:</span> <span id="protein">–</span> g</p>
-                        <p><span class="label">Carbohydrates:</span> <span id="carbs">–</span> g</p>
-                        <p><span class="label">Sugar:</span> <span id="sugar">–</span> g</p>
-                        <p><span class="label">Fat:</span> <span id="fat">–</span> g</p>
-                        <p><span class="label">Fibre:</span> <span id="fibre">–</span> g</p>
-                        <p><span class="label">Salt:</span> <span id="salt">–</span> g</p>
-                    </article>
-
-                    <!-- Card 4 – Blood Pressure Impact -->
-                    <article class="card full-card" data-card="bp">
-                        <h2>Blood pressure impact</h2>
-                        <p id="bpImpactText">Waiting for scan…</p>
-                    </article>
-
-                    <!-- Card 5 – Cholesterol Impact -->
-                    <article class="card full-card" data-card="chol">
-                        <h2>Cholesterol impact</h2>
-                        <p id="cholImpactText">Waiting for scan…</p>
-                    </article>
-
-                    <!-- Card 6 – Cardiovascular Risk -->
-                    <article class="card full-card" data-card="cv">
-                        <h2>Cardiovascular risk</h2>
-                        <p id="cvRiskText">Shown when food increases long‑term risk.</p>
-                    </article>
-
-                    <!-- Card 7 – Why Limit This Food -->
-                    <article class="card full-card" data-card="limit">
-                        <h2>Why limit this food</h2>
-                        <p id="limitText">Shown when food is not heart‑friendly.</p>
-                    </article>
-
-                    <!-- Card 8 – Healthier Alternatives -->
-                    <article class="card full-card" data-card="alternatives">
-                        <h2>Healthier alternatives</h2>
-                        <ul id="alternativesList"></ul>
-                    </article>
-
-                    <!-- Card 9 – AI Doctor Summary -->
-                    <article class="card full-card" data-card="summary">
-                        <h2>Doctor‑style summary</h2>
-                        <p id="doctorSummaryText">A professional summary will appear here after a scan.</p>
-                    </article>
-
-                    <!-- Card 10 – Fasting Suggestion -->
-                    <article class="card full-card" data-card="fasting">
-                        <h2>Fasting suggestion</h2>
-                        <p id="fastingText">Fasting advice appears when intake and goals suggest it may help.</p>
-                    </article>
-                </div>
-            </div>
+        <!-- HEALTH VERDICTS -->
+        <section id="verdictCard" class="card hidden">
+            <h2>Health Verdict</h2>
+            <div id="verdictContent"></div>
         </section>
 
-        <!-- BOTTOM MENU -->
-        <nav class="bottom-menu">
-            <a href="index.html" class="menu-item">
-                <span class="icon">🏠</span>
-                <span class="menu-label">Home</span>
-            </a>
-            <a href="health.html" class="menu-item">
-                <span class="icon">❤️</span>
-                <span class="menu-label">Health</span>
-            </a>
-            <a href="scan.html" class="menu-item active scan-button">
-                <span class="icon">📷</span>
-                <span class="menu-label">Scan</span>
-            </a>
-            <a href="profile.html" class="menu-item">
-                <span class="icon">👤</span>
-                <span class="menu-label">Profile</span>
-            </a>
-        </nav>
-    </div>
+        <!-- ALTERNATIVES -->
+        <section id="alternativeCard" class="card hidden">
+            <h2>Better Alternative</h2>
+            <div id="alternativeContent"></div>
+        </section>
 
-    <!-- ZXing for barcode -->
-    <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
+        <!-- WEEKLY TRACKING -->
+        <section id="trackingCard" class="card hidden">
+            <h2>Weekly Tracking</h2>
+            <div id="trackingContent"></div>
+        </section>
+
+        <!-- AI DOCTOR SUMMARY -->
+        <section id="doctorCard" class="card hidden">
+            <h2>AI Doctor Summary</h2>
+            <p id="doctorText"></p>
+        </section>
+
+    </main>
+
     <script src="scan.js"></script>
 </body>
 </html>

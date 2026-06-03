@@ -1,3 +1,6 @@
+/* ===============================
+   FOOD CLASS LIST
+=============================== */
 const CLASS_TO_NAME = {
   0: "Apple",
   1: "Asparagus",
@@ -75,14 +78,13 @@ const CLASS_TO_NAME = {
   73: "Tomato Slice",
   74: "Tomatoes",
   75: "Tzatziki",
+  76: "White Grapes",
+  77: "Yolk"
+};
 
-
-
-
-
-// ===============================
-// CAMERA SETUP
-// ===============================
+/* ===============================
+   CAMERA SETUP
+=============================== */
 const camera = document.getElementById("camera");
 const startCameraBtn = document.getElementById("startCamera");
 const captureBtn = document.getElementById("capture");
@@ -106,9 +108,9 @@ const doctorText = document.getElementById("doctorText");
 
 let stream;
 
-// ===============================
-// START CAMERA (PIXEL 9 PRO FIX)
-// ===============================
+/* ===============================
+   START CAMERA
+=============================== */
 startCameraBtn.addEventListener("click", async () => {
     try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -136,9 +138,9 @@ startCameraBtn.addEventListener("click", async () => {
     }
 });
 
-// ===============================
-// CAPTURE PHOTO (COMPRESSED)
-// ===============================
+/* ===============================
+   CAPTURE PHOTO
+=============================== */
 captureBtn.addEventListener("click", () => {
     if (!stream) return alert("Start the camera first!");
 
@@ -151,20 +153,20 @@ captureBtn.addEventListener("click", () => {
 
     canvas.toBlob((blob) => {
         sendToBackend(blob);
-    }, "image/jpeg", 0.6); // ⭐ compress to 60%
+    }, "image/jpeg", 0.6);
 });
 
-// ===============================
-// UPLOAD IMAGE
-// ===============================
+/* ===============================
+   UPLOAD IMAGE
+=============================== */
 uploadInput.addEventListener("change", () => {
     const file = uploadInput.files[0];
     if (file) sendToBackend(file);
 });
 
-// ===============================
-// SEND IMAGE TO BACKEND
-// ===============================
+/* ===============================
+   SEND IMAGE TO BACKEND
+=============================== */
 async function sendToBackend(file) {
     loading.classList.remove("hidden");
 
@@ -178,15 +180,21 @@ async function sendToBackend(file) {
         });
 
         const data = await response.json();
+        console.log("Backend response:", data);
 
+        // Show image
         resultImage.src = "data:image/jpeg;base64," + data.image;
         resultImage.classList.remove("hidden");
 
-        generateNutrition();
-        generateVerdict();
-        generateAlternative();
-        updateTracking();
-        generateDoctorSummary();
+        // Extract class ID
+        const classId = data.class_id;
+        const foodName = CLASS_TO_NAME[classId] || "Unknown Food";
+
+        generateNutrition(foodName);
+        generateVerdict(foodName);
+        generateAlternative(foodName);
+        updateTracking(foodName);
+        generateDoctorSummary(foodName);
 
     } catch (err) {
         alert("Server error. Try again.");
@@ -195,13 +203,14 @@ async function sendToBackend(file) {
     loading.classList.add("hidden");
 }
 
-// ===============================
-// NUTRITION (TEMPORARY PLACEHOLDER)
-// ===============================
-function generateNutrition() {
+/* ===============================
+   NUTRITION
+=============================== */
+function generateNutrition(food) {
     nutritionCard.classList.remove("hidden");
 
     nutritionContent.innerHTML = `
+        <strong>Food:</strong> ${food}<br>
         <strong>Calories:</strong> 320 kcal<br>
         <strong>Protein:</strong> 12g<br>
         <strong>Carbs:</strong> 28g<br>
@@ -212,35 +221,36 @@ function generateNutrition() {
     `;
 }
 
-// ===============================
-// HEALTH VERDICT
-// ===============================
-function generateVerdict() {
+/* ===============================
+   HEALTH VERDICT
+=============================== */
+function generateVerdict(food) {
     verdictCard.classList.remove("hidden");
 
     verdictContent.innerHTML = `
+        <strong>Food:</strong> ${food}<br>
         <strong>Cholesterol Impact:</strong> ⚠️ Moderate<br>
         <strong>Blood Pressure:</strong> ⚠️ High sodium<br>
         <strong>Overall Health Score:</strong> 6.5 / 10
     `;
 }
 
-// ===============================
-// ALTERNATIVE SUGGESTION
-// ===============================
-function generateAlternative() {
+/* ===============================
+   ALTERNATIVE SUGGESTION
+=============================== */
+function generateAlternative(food) {
     alternativeCard.classList.remove("hidden");
 
     alternativeContent.innerHTML = `
-        Try <strong>grilled chicken with vegetables</strong> instead.<br>
+        Instead of <strong>${food}</strong>, try <strong>grilled chicken with vegetables</strong>.<br>
         Lower sodium, lower fat, higher protein.
     `;
 }
 
-// ===============================
-// WEEKLY TRACKING
-// ===============================
-function updateTracking() {
+/* ===============================
+   WEEKLY TRACKING
+=============================== */
+function updateTracking(food) {
     trackingCard.classList.remove("hidden");
 
     let calories = localStorage.getItem("weeklyCalories");
@@ -250,22 +260,22 @@ function updateTracking() {
     localStorage.setItem("weeklyCalories", calories);
 
     trackingContent.innerHTML = `
+        <strong>Last scanned:</strong> ${food}<br>
         <strong>Total this week:</strong> ${calories} kcal<br>
         <strong>Goal:</strong> 14,000 kcal<br>
         <strong>Progress:</strong> ${(calories / 14000 * 100).toFixed(1)}%
     `;
 }
 
-// ===============================
-// AI DOCTOR SUMMARY
-// ===============================
-function generateDoctorSummary() {
+/* ===============================
+   AI DOCTOR SUMMARY
+=============================== */
+function generateDoctorSummary(food) {
     doctorCard.classList.remove("hidden");
 
     doctorText.innerHTML = `
-        This food appears moderately high in sodium and saturated fat.
+        <strong>${food}</strong> appears moderately high in sodium and saturated fat.
         Consider balancing it with vegetables or lean protein.
         Suitable in moderation for cholesterol and blood pressure.
     `;
 }
-
